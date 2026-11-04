@@ -380,27 +380,30 @@ export default class HTMLButtonElement extends HTMLElement {
 			return false;
 		}
 
-		const returnValue = super.dispatchEvent(event);
+		return super.dispatchEvent(event);
+	}
 
-		if (
-			!event[PropertySymbol.defaultPrevented] &&
-			event.type === 'click' &&
-			event.eventPhase === EventPhaseEnum.none &&
-			event instanceof MouseEvent
-		) {
-			const type = this.type;
-			if (type === 'submit' || type === 'reset') {
-				const form = this.form;
-				if (form) {
-					if (type === 'submit' && this[PropertySymbol.isConnected]) {
-						form.requestSubmit(this);
-					} else if (type === 'reset') {
-						form.reset();
-					}
+	/**
+	 * Runs the activation behavior after a "click" event has been dispatched to the button or one of its descendants.
+	 *
+	 * @see https://html.spec.whatwg.org/multipage/form-elements.html#the-button-element
+	 */
+	public override [PropertySymbol.activationBehavior](): void {
+		if (this.disabled) {
+			return;
+		}
+
+		const type = this.type;
+
+		if (type === 'submit' || type === 'reset') {
+			const form = this.form;
+			if (form) {
+				if (type === 'submit' && this[PropertySymbol.isConnected]) {
+					form.requestSubmit(this);
+				} else if (type === 'reset') {
+					form.reset();
 				}
 			}
 		}
-
-		return returnValue;
 	}
 }
