@@ -1,5 +1,6 @@
 import * as PropertySymbol from '../PropertySymbol.js';
 import Event from './Event.js';
+import MouseEvent from './events/MouseEvent.js';
 import type IEventListenerOptions from './IEventListenerOptions.js';
 import EventPhaseEnum from './EventPhaseEnum.js';
 import WindowBrowserContext from '../window/WindowBrowserContext.js';
@@ -15,6 +16,13 @@ import type BrowserWindow from '../window/BrowserWindow.js';
 export default class EventTarget {
 	// Used by HTMLElement to upgrade an existing element in-place when a custom element is defined.
 	public declare static [PropertySymbol.customElementUpgradeTarget]: EventTarget | null;
+
+	/**
+	 * Activation behavior. Implemented by elements such as <button>, and run after a "click" event has been dispatched to the element or one of its descendants.
+	 *
+	 * @param event Event.
+	 */
+	public [PropertySymbol.activationBehavior]?(event: Event): void;
 
 	// Injected by WindowContextClassExtender
 	protected declare [PropertySymbol.window]: BrowserWindow;
@@ -154,9 +162,19 @@ export default class EventTarget {
 			event[PropertySymbol.dispatching] = true;
 			event[PropertySymbol.target] = (<any>this)[PropertySymbol.proxy] || this;
 
-			this.#goThroughDispatchEventPhases(event);
+			const composedPath = event.composedPath();
+
+			// The activation target is selected before listeners run, so they can not change it by moving the target.
+			const activationTarget = this.#getActivationTarget(event, composedPath);
+
+			this.#goThroughDispatchEventPhases(event, composedPath);
 
 			event[PropertySymbol.dispatching] = false;
+
+			// Stopping propagation does not cancel the activation behavior, only preventDefault() does.
+			if (activationTarget && !event[PropertySymbol.defaultPrevented]) {
+				activationTarget[PropertySymbol.activationBehavior]!(event);
+			}
 
 			return !(event[PropertySymbol.cancelable] && event[PropertySymbol.defaultPrevented]);
 		}
@@ -205,13 +223,37 @@ export default class EventTarget {
 	}
 
 	/**
+	 * Returns the activation target of an event.
+	 *
+	 * @see https://dom.spec.whatwg.org/#concept-event-dispatch
+	 * @param event Event.
+	 * @param composedPath Composed path.
+	 * @returns Activation target.
+	 */
+	#getActivationTarget(event: Event, composedPath: EventTarget[]): EventTarget | null {
+		if (event[PropertySymbol.type] !== 'click' || !(event instanceof MouseEvent)) {
+			return null;
+		}
+
+		// The target itself, or the nearest ancestor with activation behavior if the event bubbles.
+		const length = event[PropertySymbol.bubbles] ? composedPath.length : 1;
+
+		for (let i = 0; i < length; i++) {
+			if (composedPath[i][PropertySymbol.activationBehavior]) {
+				return composedPath[i];
+			}
+		}
+
+		return null;
+	}
+
+	/**
 	 * Goes through dispatch event phases.
 	 *
 	 * @param event Event.
+	 * @param composedPath Composed path.
 	 */
-	#goThroughDispatchEventPhases(event: Event): void {
-		const composedPath = event.composedPath();
-
+	#goThroughDispatchEventPhases(event: Event, composedPath: EventTarget[]): void {
 		// Capturing phase
 		event[PropertySymbol.eventPhase] = EventPhaseEnum.capturing;
 

@@ -1,4 +1,5 @@
 export const abort = Symbol('abort');
+export const activationBehavior = Symbol('activationBehavior');
 export const activeElement = Symbol('activeElement');
 export const asyncTaskManager = Symbol('asyncTaskManager');
 export const bodyBuffer = Symbol('bodyBuffer');
