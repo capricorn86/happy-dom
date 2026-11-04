@@ -164,12 +164,12 @@ export default class ParentNodeUtility {
 		tagName: string
 	): HTMLCollection<Element> {
 		// When the namespace is HTML, the tag name is case-insensitive.
-		const formattedTagName =
+		const isHTML =
 			namespaceURI === NamespaceURI.html &&
-			parentNode[PropertySymbol.ownerDocument][PropertySymbol.contentType] === 'text/html'
-				? tagName.toUpperCase()
-				: tagName;
+			parentNode[PropertySymbol.ownerDocument][PropertySymbol.contentType] === 'text/html';
+		const formattedTagName = isHTML ? tagName.toUpperCase() : tagName;
 		const includeAll = tagName === '*';
+		const cacheKey = `${namespaceURI}:${tagName}`;
 
 		const find = (
 			parent: Element | DocumentFragment | Document,
@@ -179,7 +179,9 @@ export default class ParentNodeUtility {
 
 			for (const element of (<DocumentFragment>parent)[PropertySymbol.elementArray]) {
 				if (
-					(includeAll || element[PropertySymbol.tagName] === formattedTagName) &&
+					(includeAll ||
+						(isHTML ? element[PropertySymbol.tagName] : element[PropertySymbol.localName]) ===
+							formattedTagName) &&
 					element[PropertySymbol.namespaceURI] === namespaceURI
 				) {
 					elements.push(<Element>element);
@@ -197,7 +199,7 @@ export default class ParentNodeUtility {
 
 		const query = (): Element[] => {
 			const cache = parentNode[PropertySymbol.cache].elementsByTagNameNS;
-			const cachedItems = cache.get(tagName);
+			const cachedItems = cache.get(cacheKey);
 
 			if (cachedItems?.result) {
 				const items = cachedItems.result.deref();
@@ -210,7 +212,7 @@ export default class ParentNodeUtility {
 			const items = find(parentNode, cachedResult);
 
 			cachedResult.result = new WeakRef(items);
-			cache.set(tagName, cachedResult);
+			cache.set(cacheKey, cachedResult);
 
 			return items;
 		};
