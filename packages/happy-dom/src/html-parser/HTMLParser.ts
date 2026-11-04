@@ -234,7 +234,7 @@ export default class HTMLParser {
 					// Plain text between tags.
 					if (
 						match.index !== lastIndex &&
-						(match[1] || match[2] || match[3] || match[4] || match[5] !== undefined || match[6])
+						(match[1] || match[2] || match[3] || match[5] !== undefined || match[6])
 					) {
 						this.parsePlainText(html.substring(lastIndex, match.index));
 					}

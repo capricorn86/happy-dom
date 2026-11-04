@@ -143,7 +143,7 @@ export default class XMLParser {
 				case MarkupReadStateEnum.any:
 					if (
 						match.index !== this.lastIndex &&
-						(match[1] || match[2] || match[3] || match[4] || match[5] !== undefined || match[6])
+						(match[1] || match[2] || match[3] || match[5] !== undefined || match[6])
 					) {
 						// Plain text between tags.
 						this.parsePlainText(xml.substring(this.lastIndex, match.index));
