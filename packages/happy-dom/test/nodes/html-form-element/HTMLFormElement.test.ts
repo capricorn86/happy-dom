@@ -1307,6 +1307,65 @@ describe('HTMLFormElement', () => {
 			expect((<HTMLOutputElement>root.children[9]).value).toBe('Default value');
 			expect((<HTMLOutputElement>root.children[9]).textContent).toBe('Default value');
 		});
+
+		it('Dispatches the "reset" event before resetting the form controls.', () => {
+			element.innerHTML = '<input type="text" value="Default value">';
+			document.body.appendChild(element);
+
+			const input = <HTMLInputElement>element.children[0];
+			let valueInListener: string | null = null;
+
+			input.value = 'New value';
+
+			element.addEventListener('reset', () => (valueInListener = input.value));
+
+			element.reset();
+
+			expect(valueInListener).toBe('New value');
+			expect(input.value).toBe('Default value');
+		});
+
+		it('Does not reset the form controls if the "reset" event is cancelled.', () => {
+			element.innerHTML = '<input type="text" value="Default value">';
+			document.body.appendChild(element);
+
+			const input = <HTMLInputElement>element.children[0];
+
+			input.value = 'New value';
+
+			element.addEventListener('reset', (event: Event) => event.preventDefault());
+
+			element.reset();
+
+			expect(input.value).toBe('New value');
+		});
+
+		it('Ignores calls to reset() from a "reset" event listener.', () => {
+			element.innerHTML = '<input type="text" value="Default value">';
+			document.body.appendChild(element);
+
+			const input = <HTMLInputElement>element.children[0];
+			let resetEventCount = 0;
+
+			input.value = 'New value';
+
+			element.addEventListener('reset', () => {
+				resetEventCount++;
+				element.reset();
+			});
+
+			element.reset();
+
+			expect(resetEventCount).toBe(1);
+			expect(input.value).toBe('Default value');
+
+			input.value = 'New value';
+
+			element.reset();
+
+			expect(resetEventCount).toBe(2);
+			expect(input.value).toBe('Default value');
+		});
 	});
 
 	describe('appendChild()', () => {

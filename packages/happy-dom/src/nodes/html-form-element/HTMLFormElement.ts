@@ -35,6 +35,7 @@ export default class HTMLFormElement extends HTMLElement {
 	// Internal properties.
 	public [PropertySymbol.elements]: HTMLFormControlsCollection | null = null;
 	public [PropertySymbol.proxy]: HTMLFormElement;
+	#isLockedForReset = false;
 
 	/* eslint-enable jsdoc/require-jsdoc */
 
@@ -433,8 +434,29 @@ export default class HTMLFormElement extends HTMLElement {
 
 	/**
 	 * Resets form.
+	 *
+	 * @see https://html.spec.whatwg.org/multipage/form-control-infrastructure.html#concept-form-reset
 	 */
 	public reset(): void {
+		// A "reset" event listener that calls reset() again should not reset the form again.
+		if (this.#isLockedForReset) {
+			return;
+		}
+
+		this.#isLockedForReset = true;
+
+		let isCancelled: boolean;
+
+		try {
+			isCancelled = !this.dispatchEvent(new Event('reset', { bubbles: true, cancelable: true }));
+		} finally {
+			this.#isLockedForReset = false;
+		}
+
+		if (isCancelled) {
+			return;
+		}
+
 		for (const element of this[PropertySymbol.getFormControlItems]()) {
 			switch (element[PropertySymbol.tagName]) {
 				case 'TEXTAREA':
@@ -464,8 +486,6 @@ export default class HTMLFormElement extends HTMLElement {
 					break;
 			}
 		}
-
-		this.dispatchEvent(new Event('reset', { bubbles: true, cancelable: true }));
 	}
 
 	/**
