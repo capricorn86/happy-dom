@@ -28,7 +28,7 @@ export default class HistoryItemList {
 			// Data URLs are considered a data source
 			if (url.origin === 'null' && url.protocol !== 'data:') {
 				throw new Error(
-					`Failed to execute "push" on "HistoryItemList": An history item should not have an opaque URL as its source.`
+					`Failed to execute "push" on "HistoryItemList": An history item should not have an opaque URL that is not a data URL as its source.`
 				);
 			}
 		}
@@ -55,7 +55,7 @@ export default class HistoryItemList {
 			const url = new URL(historyItem.sourceURL);
 			if (url.origin === 'null' && url.protocol !== 'data:') {
 				throw new Error(
-					`Failed to execute "replace" on "HistoryItemList": An history item should not have an opaque URL as its source.`
+					`Failed to execute "replace" on "HistoryItemList": An history item should not have an opaque URL that is not a data URL as its source.`
 				);
 			}
 		}

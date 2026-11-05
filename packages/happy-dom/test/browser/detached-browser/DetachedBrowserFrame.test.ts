@@ -181,9 +181,9 @@ describe('DetachedBrowserFrame', () => {
 			frame1.evaluate('setTimeout(() => { globalThis.test = 2; }, 10);');
 			frame2.evaluate('setTimeout(() => { globalThis.test = 3; }, 10);');
 			await page.waitUntilComplete();
-			expect(page.mainFrame.window['test']).toBe(1);
-			expect(frame1.window['test']).toBe(2);
-			expect(frame2.window['test']).toBe(3);
+			expect((<any>page.mainFrame.window)['test']).toBe(1);
+			expect((<any>frame1.window)['test']).toBe(2);
+			expect((<any>frame2.window)['test']).toBe(3);
 		});
 	});
 
@@ -236,9 +236,9 @@ describe('DetachedBrowserFrame', () => {
 			frame2.evaluate('setTimeout(() => { globalThis.test = 2; }, 10);');
 			page.abort();
 			await new Promise((resolve) => setTimeout(resolve, 50));
-			expect(page.mainFrame.window['test']).toBeUndefined();
-			expect(frame1.window['test']).toBeUndefined();
-			expect(frame2.window['test']).toBeUndefined();
+			expect((<any>page.mainFrame.window)['test']).toBeUndefined();
+			expect((<any>frame1.window)['test']).toBeUndefined();
+			expect((<any>frame2.window)['test']).toBeUndefined();
 		});
 	});
 
@@ -250,7 +250,7 @@ describe('DetachedBrowserFrame', () => {
 			);
 			const page = browser.defaultContext.pages[0];
 			expect(page.mainFrame.evaluate('globalThis.test = 1')).toBe(1);
-			expect(page.mainFrame.window['test']).toBe(1);
+			expect((<any>page.mainFrame.window)['test']).toBe(1);
 		});
 
 		it("Evaluates a VM script in the frame's context.", () => {
@@ -260,14 +260,14 @@ describe('DetachedBrowserFrame', () => {
 			);
 			const page = browser.defaultContext.pages[0];
 			expect(page.mainFrame.evaluate(new Script('globalThis.test = 1'))).toBe(1);
-			expect(page.mainFrame.window['test']).toBe(1);
+			expect((<any>page.mainFrame.window)['test']).toBe(1);
 		});
 	});
 
 	describe('goto()', () => {
 		it('Navigates to a URL.', async () => {
 			let request: Request | null = null;
-			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<Response> {
+			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (this: any): Promise<Response> {
 				request = this.request;
 				return Promise.resolve(<Response>{
 					url: request?.url,
@@ -299,7 +299,7 @@ describe('DetachedBrowserFrame', () => {
 
 		it('Triggers "beforeContentCallback" before content is loaded into the document', async () => {
 			let request: Request | null = null;
-			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<Response> {
+			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (this: any): Promise<Response> {
 				request = this.request;
 				return Promise.resolve(<Response>{
 					url: request?.url,
@@ -329,7 +329,7 @@ describe('DetachedBrowserFrame', () => {
 
 		it('Triggers "browser.settings.navigation.beforeContentCallback" before content is loaded into the document', async () => {
 			let request: Request | null = null;
-			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<Response> {
+			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (this: any): Promise<Response> {
 				request = this.request;
 				return Promise.resolve(<Response>{
 					url: request?.url,
@@ -409,7 +409,7 @@ describe('DetachedBrowserFrame', () => {
 					timeout: 1
 				});
 			} catch (e) {
-				error = e;
+				error = <Error>e;
 			}
 
 			expect(error).toEqual(
@@ -426,7 +426,7 @@ describe('DetachedBrowserFrame', () => {
 
 		it('Handles error status code in response.', async () => {
 			let request: Request | null = null;
-			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<Response> {
+			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (this: any): Promise<Response> {
 				request = this.request;
 				return Promise.resolve(<Response>{
 					url: request?.url,
@@ -473,7 +473,7 @@ describe('DetachedBrowserFrame', () => {
 			try {
 				await page.mainFrame.goto('http://localhost:9999');
 			} catch (e) {
-				error = e;
+				error = <Error>e;
 			}
 
 			expect(error).toEqual(new Error('Error'));
@@ -558,7 +558,10 @@ describe('DetachedBrowserFrame', () => {
 			);
 			const page = browser.defaultContext.pages[0];
 			const childPage = browser.newPage();
-			childPage.mainFrame[PropertySymbol.popupOpenerFrame] = page.mainFrame;
+			childPage.mainFrame[PropertySymbol.opener] = {
+				frame: page.mainFrame,
+				window: page.mainFrame.window
+			};
 			const oldWindow = childPage.mainFrame.window;
 
 			page.mainFrame.url = 'https://github.com';
@@ -590,7 +593,10 @@ describe('DetachedBrowserFrame', () => {
 			);
 			const page = browser.defaultContext.pages[0];
 			const childPage = browser.newPage();
-			childPage.mainFrame[PropertySymbol.popupOpenerFrame] = page.mainFrame;
+			childPage.mainFrame[PropertySymbol.opener] = {
+				frame: page.mainFrame,
+				window: page.mainFrame.window
+			};
 			const oldWindow = childPage.mainFrame.window;
 
 			page.mainFrame.url = 'https://github.com';
@@ -648,7 +654,10 @@ describe('DetachedBrowserFrame', () => {
 			);
 			const page = browser.defaultContext.pages[0];
 			const childPage = browser.newPage();
-			childPage.mainFrame[PropertySymbol.popupOpenerFrame] = page.mainFrame;
+			childPage.mainFrame[PropertySymbol.opener] = {
+				frame: page.mainFrame,
+				window: page.mainFrame.window
+			};
 			const oldWindow = childPage.mainFrame.window;
 
 			page.mainFrame.url = 'http://github.com';
@@ -679,7 +688,10 @@ describe('DetachedBrowserFrame', () => {
 			);
 			const page = browser.defaultContext.pages[0];
 			const childPage = browser.newPage();
-			childPage.mainFrame[PropertySymbol.popupOpenerFrame] = page.mainFrame;
+			childPage.mainFrame[PropertySymbol.opener] = {
+				frame: page.mainFrame,
+				window: page.mainFrame.window
+			};
 			const oldWindow = childPage.mainFrame.window;
 
 			page.mainFrame.url = 'https://github.com';
@@ -710,7 +722,10 @@ describe('DetachedBrowserFrame', () => {
 			);
 			const page = browser.defaultContext.pages[0];
 			const childPage = browser.newPage();
-			childPage.mainFrame[PropertySymbol.popupOpenerFrame] = page.mainFrame;
+			childPage.mainFrame[PropertySymbol.opener] = {
+				frame: page.mainFrame,
+				window: page.mainFrame.window
+			};
 			const oldWindow = childPage.mainFrame.window;
 
 			await childPage.mainFrame.goto('http://github.com/capricorn86/happy-dom');
@@ -739,7 +754,10 @@ describe('DetachedBrowserFrame', () => {
 			);
 			const page = browser.defaultContext.pages[0];
 			const childPage = browser.newPage();
-			childPage.mainFrame[PropertySymbol.popupOpenerFrame] = page.mainFrame;
+			childPage.mainFrame[PropertySymbol.opener] = {
+				frame: page.mainFrame,
+				window: page.mainFrame.window
+			};
 			const oldWindow = childPage.mainFrame.window;
 
 			page.mainFrame.url = 'https://github.com';
@@ -854,7 +872,10 @@ describe('DetachedBrowserFrame', () => {
 			);
 			const page = browser.defaultContext.pages[0];
 			const childPage = browser.newPage();
-			childPage.mainFrame[PropertySymbol.popupOpenerFrame] = page.mainFrame;
+			childPage.mainFrame[PropertySymbol.opener] = {
+				frame: page.mainFrame,
+				window: page.mainFrame.window
+			};
 			const oldWindow = childPage.mainFrame.window;
 
 			await childPage.mainFrame.goto('http://localhost:9999');
@@ -881,7 +902,10 @@ describe('DetachedBrowserFrame', () => {
 			);
 			const page = browser.defaultContext.pages[0];
 			const childPage = browser.newPage();
-			childPage.mainFrame[PropertySymbol.popupOpenerFrame] = page.mainFrame;
+			childPage.mainFrame[PropertySymbol.opener] = {
+				frame: page.mainFrame,
+				window: page.mainFrame.window
+			};
 			const oldWindow = childPage.mainFrame.window;
 
 			const response = await childPage.mainFrame.goto('http://localhost:9999');
@@ -1093,7 +1117,7 @@ describe('DetachedBrowserFrame', () => {
 
 	describe('goBack()', () => {
 		it('Navigates back in history.', async () => {
-			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<Response> {
+			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (this: any): Promise<Response> {
 				return Promise.resolve(<Response>{
 					status: 200,
 					text: () =>
@@ -1147,7 +1171,7 @@ describe('DetachedBrowserFrame', () => {
 
 	describe('goForward()', () => {
 		it('Navigates forward in history.', async () => {
-			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<Response> {
+			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (this: any): Promise<Response> {
 				return Promise.resolve(<Response>{
 					status: 200,
 					text: () =>
@@ -1202,7 +1226,7 @@ describe('DetachedBrowserFrame', () => {
 
 	describe('goSteps()', () => {
 		it('Navigates a delta in history.', async () => {
-			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<Response> {
+			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (this: any): Promise<Response> {
 				return Promise.resolve(<Response>{
 					status: 200,
 					text: () =>

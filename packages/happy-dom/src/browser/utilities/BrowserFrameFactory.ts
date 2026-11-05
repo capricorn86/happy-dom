@@ -77,9 +77,9 @@ export default class BrowserFrameFactory {
 							frame[PropertySymbol.listeners].navigation = [];
 						}
 
-						for (const popup of frame.openedPages) {
-							popup.mainFrame[PropertySymbol.opener] = null;
-							BrowserFrameCrossOriginIsolation.isolate(popup.mainFrame);
+						for (const openedPage of frame.openedPages) {
+							openedPage.mainFrame[PropertySymbol.opener] = null;
+							BrowserFrameCrossOriginIsolation.isolate(openedPage.mainFrame);
 						}
 
 						frame.childFrames.length = 0;
