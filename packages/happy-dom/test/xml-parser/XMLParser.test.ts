@@ -28,6 +28,12 @@ describe('XMLParser', () => {
 			expect((<HTMLElement>result.childNodes[0]).tagName).toBe('div');
 		});
 
+		it('Parses text containing "-->" outside of a comment.', () => {
+			const result = new XMLParser(window).parse('<root>a --> b</root>');
+			expect(result.childNodes.length).toBe(1);
+			expect(result.childNodes[0].textContent).toBe('a --> b');
+		});
+
 		it('Parses XML with a single <div> with attributes.', () => {
 			const result = new XMLParser(window).parse(
 				'<div class="class1 class2" id="id" data-no-value=""></div>'

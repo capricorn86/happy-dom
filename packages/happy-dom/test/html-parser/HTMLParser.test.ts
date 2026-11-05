@@ -123,6 +123,19 @@ describe('HTMLParser', () => {
 			expect((<HTMLElement>result.childNodes[0]).id).toBe('æøåÆØÅ');
 		});
 
+		it('Parses text containing "-->" outside of a comment.', () => {
+			const result = new HTMLParser(window).parse(
+				'<pre><code>a -->(b) c ---> d</code></pre><p>-->x</p>'
+			);
+
+			expect(result.childNodes.length).toBe(2);
+			expect(result.childNodes[0].textContent).toBe('a -->(b) c ---> d');
+			expect(result.childNodes[1].textContent).toBe('-->x');
+			expect(new HTMLSerializer().serializeToString(result)).toBe(
+				'<pre><code>a --&gt;(b) c ---&gt; d</code></pre><p>--&gt;x</p>'
+			);
+		});
+
 		it('Parses comments containing "<!--" in their data.', () => {
 			const result = new HTMLParser(window).parse(
 				'<!--[if !mso]><!--><div>hello</div><!--<![endif]-->'
