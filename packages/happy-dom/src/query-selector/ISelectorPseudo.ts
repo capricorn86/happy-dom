@@ -3,6 +3,6 @@ import type SelectorItem from './SelectorItem.js';
 export default interface ISelectorPseudo {
 	name: string;
 	arguments: string | null;
-	selectorItems: SelectorItem[] | null;
+	selectorGroups: SelectorItem[][] | null;
 	nthFunction: ((n: number) => boolean) | null;
 }

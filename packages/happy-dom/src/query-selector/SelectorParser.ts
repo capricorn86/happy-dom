@@ -540,7 +540,7 @@ export default class SelectorParser {
 		}
 
 		if (!args) {
-			return { name: lowerName, arguments: null, selectorItems: null, nthFunction: null };
+			return { name: lowerName, arguments: null, selectorGroups: null, nthFunction: null };
 		}
 
 		switch (lowerName) {
@@ -553,7 +553,7 @@ export default class SelectorParser {
 				return {
 					name: lowerName,
 					arguments: args,
-					selectorItems: selectorItem ? [selectorItem] : null,
+					selectorGroups: selectorItem ? [[selectorItem]] : null,
 					nthFunction: this.getPseudoNthFunction(nthFunction)
 				};
 			case 'nth-of-type':
@@ -561,38 +561,20 @@ export default class SelectorParser {
 				return {
 					name: lowerName,
 					arguments: args,
-					selectorItems: null,
+					selectorGroups: null,
 					nthFunction: this.getPseudoNthFunction(args)
 				};
 			case 'not':
-				const notSelectorItems = [];
-				for (const group of this.getSelectorGroups(args)) {
-					if (group[0]) {
-						notSelectorItems.push(group[0]);
-					}
-				}
-				return {
-					name: lowerName,
-					arguments: args,
-					selectorItems: notSelectorItems,
-					nthFunction: null
-				};
 			case 'is':
 			case 'where':
-				const selectorItems = [];
-				for (const group of this.getSelectorGroups(args)) {
-					if (group[0]) {
-						selectorItems.push(group[0]);
-					}
-				}
 				return {
 					name: lowerName,
 					arguments: args,
-					selectorItems,
+					selectorGroups: this.getSelectorGroups(args),
 					nthFunction: null
 				};
 			case 'has':
-				const hasSelectorItems = [];
+				const hasSelectorGroups = [];
 
 				// The ":has()" pseudo selector doesn't allow for it to be nested inside another ":has()" pseudo selector, as it can lead to cyclic querying.
 				if (!args.includes(':has(')) {
@@ -604,7 +586,7 @@ export default class SelectorParser {
 					}
 					for (const group of this.getSelectorGroups(newArgs)) {
 						if (group[0]) {
-							hasSelectorItems.push(group[0]);
+							hasSelectorGroups.push([group[0]]);
 						}
 					}
 				}
@@ -612,13 +594,13 @@ export default class SelectorParser {
 				return {
 					name: lowerName,
 					arguments: args || '',
-					selectorItems: hasSelectorItems,
+					selectorGroups: hasSelectorGroups,
 					nthFunction: null
 				};
 			case 'scope':
 			case 'root':
 			default:
-				return { name: lowerName, arguments: args, selectorItems: null, nthFunction: null };
+				return { name: lowerName, arguments: args, selectorGroups: null, nthFunction: null };
 		}
 	}
 

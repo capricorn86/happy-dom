@@ -13,6 +13,7 @@ import type ISVGElementTagNameMap from '../config/ISVGElementTagNameMap.js';
 import type ICachedQuerySelectorAllItem from '../nodes/node/ICachedQuerySelectorAllResult.js';
 import type ICachedQuerySelectorItem from '../nodes/node/ICachedQuerySelectorResult.js';
 import type ICachedMatchesItem from '../nodes/node/ICachedMatchesResult.js';
+import type ICachedResult from '../nodes/node/ICachedResult.js';
 import type ShadowRoot from '../nodes/shadow-root/ShadowRoot.js';
 import type { TGlobalMatchFunction } from './TGlobalMatchFunction.js';
 
@@ -32,7 +33,11 @@ const INVALID_SELECTOR_REGEXP = /^[.#\[]?\d|[.#]$/;
  * @class QuerySelector
  */
 export default class QuerySelector {
-	public static globalMatchFunction: TGlobalMatchFunction = this.matches.bind(this);
+	// Parsed pseudo arguments apply shadow restrictions independently of the string entry.
+	public static globalMatchFunction: TGlobalMatchFunction = (element, selector, options) =>
+		typeof selector === 'string'
+			? this.matches(element, selector, options)
+			: this.matchSelectorGroups(element, selector, options, true);
 
 	/**
 	 * Finds elements based on a query selector.
@@ -388,41 +393,61 @@ export default class QuerySelector {
 
 		element[PropertySymbol.cache].matches.set(selector, cachedItem);
 
-		if (element[PropertySymbol.isConnected]) {
-			// Document is affected for the ":target" selector
-			(element[PropertySymbol.ownerDocument] || element)[PropertySymbol.affectsCache].push(
-				cachedItem
-			);
-			if (
-				element[PropertySymbol.nodeType] === NodeTypeEnum.documentFragmentNode &&
-				(<any>element).host
-			) {
-				(<any>element).host[PropertySymbol.affectsCache].push(cachedItem);
-			}
-		}
-
 		const scopeOrElement = options?.scope || element;
 		const scope =
 			scopeOrElement[PropertySymbol.nodeType] === NodeTypeEnum.documentNode
 				? (<Document>scopeOrElement).documentElement
 				: scopeOrElement;
 		const globalMatchFunction = this.globalMatchFunction;
-		for (const items of new SelectorParser({
+		const groups = new SelectorParser({
 			ignoreErrors: options?.ignoreErrors,
 			window,
 			scope,
 			globalMatchFunction
-		}).getSelectorGroups(selector)) {
+		}).getSelectorGroups(selector);
+		const result = this.matchSelectorGroups(element, groups, { scope, cachedItem, ignoreErrors });
+		if (result) {
+			cachedItem.result!.match = result;
+		}
+		return result;
+	}
+
+	/**
+	 * Matches pre-parsed groups without using the element's selector-text result cache.
+	 *
+	 * @param element Target element.
+	 * @param groups Selector groups.
+	 * @param [options] Match options.
+	 * @param [respectShadowBoundary] Applies shadow-host restrictions to pseudo arguments.
+	 * @returns Match result.
+	 */
+	private static matchSelectorGroups(
+		element: Element,
+		groups: SelectorItem[][],
+		options?: Parameters<TGlobalMatchFunction>[2],
+		respectShadowBoundary = false
+	): ISelectorMatch | null {
+		const scopeOrElement = options?.scope || element;
+		const scope =
+			scopeOrElement[PropertySymbol.nodeType] === NodeTypeEnum.documentNode
+				? (<Document>scopeOrElement).documentElement
+				: scopeOrElement;
+		const cachedItem = options?.cachedItem || { result: null };
+		const ignoreErrors = options?.ignoreErrors;
+		this.affectsCache(element, cachedItem);
+		if (element[PropertySymbol.isConnected]) {
+			this.affectsCache(element[PropertySymbol.ownerDocument] || element, cachedItem);
+		}
+		for (const items of groups) {
 			const result = this.matchSelector({
 				scope,
 				element,
 				selectorItems: items.slice().reverse(),
 				cachedItem,
-				ignoreErrors
+				ignoreErrors,
+				respectShadowBoundary
 			});
-
 			if (result) {
-				cachedItem.result!.match = result;
 				return result;
 			}
 		}
@@ -440,6 +465,7 @@ export default class QuerySelector {
 	 * @param options.selectorItems Selector items.
 	 * @param options.cachedItem Cached item.
 	 * @param [options.ignoreErrors] Ignores errors.
+	 * @param [options.respectShadowBoundary] Applies shadow-host restrictions to pseudo arguments.
 	 * @param [previousSelectorItem] Previous selector item.
 	 * @param [priorityWeight] Priority weight.
 	 * @returns Result.
@@ -449,20 +475,28 @@ export default class QuerySelector {
 			scope: Element | Document | DocumentFragment | null;
 			element: Element | ShadowRoot;
 			selectorItems: SelectorItem[];
-			cachedItem: ICachedMatchesItem;
+			cachedItem: ICachedResult;
 			ignoreErrors?: boolean;
+			respectShadowBoundary?: boolean;
 		},
 		previousSelectorItem: SelectorItem | null = null,
 		priorityWeight = 0
 	): ISelectorMatch | null {
-		const { scope, element, selectorItems, cachedItem, ignoreErrors } = options;
+		const { scope, element, selectorItems, cachedItem, ignoreErrors, respectShadowBoundary } =
+			options;
 		const selectorItem = selectorItems[0];
 
 		if (!selectorItem) {
 			return null;
 		}
 
-		const result = selectorItem.match(scope, element, ignoreErrors);
+		const result = selectorItem.match(
+			scope,
+			element,
+			ignoreErrors,
+			cachedItem,
+			respectShadowBoundary
+		);
 
 		if (result) {
 			if (selectorItems.length === 1) {
@@ -483,7 +517,8 @@ export default class QuerySelector {
 								element: previousElementSibling,
 								selectorItems: selectorItems.slice(1),
 								cachedItem: cachedItem,
-								ignoreErrors
+								ignoreErrors,
+								respectShadowBoundary
 							},
 							selectorItem,
 							priorityWeight + result.priorityWeight
@@ -507,7 +542,8 @@ export default class QuerySelector {
 								element: <Element>parentElement,
 								selectorItems: selectorItems.slice(1),
 								cachedItem: cachedItem,
-								ignoreErrors
+								ignoreErrors,
+								respectShadowBoundary
 							},
 							selectorItem,
 							priorityWeight + result.priorityWeight
@@ -540,7 +576,8 @@ export default class QuerySelector {
 									element: sibling,
 									selectorItems: selectorItems.slice(1),
 									cachedItem: cachedItem,
-									ignoreErrors
+									ignoreErrors,
+									respectShadowBoundary
 								},
 								selectorItem,
 								priorityWeight + result.priorityWeight
@@ -567,7 +604,8 @@ export default class QuerySelector {
 						element: <Element>parentElement,
 						selectorItems: selectorItems,
 						cachedItem: cachedItem,
-						ignoreErrors
+						ignoreErrors,
+						respectShadowBoundary
 					},
 					previousSelectorItem,
 					priorityWeight
@@ -616,7 +654,7 @@ export default class QuerySelector {
 
 			this.affectsCache(child, cachedItem);
 
-			if (selectorItem.match(scope, child)) {
+			if (selectorItem.match(scope, child, undefined, cachedItem)) {
 				if (!nextSelectorItem) {
 					if (rootElement !== child) {
 						matched.push({
@@ -741,7 +779,7 @@ export default class QuerySelector {
 
 			this.affectsCache(child, cachedItem);
 
-			if (selectorItem.match(scope, child)) {
+			if (selectorItem.match(scope, child, undefined, cachedItem)) {
 				if (!nextSelectorItem) {
 					if (rootElement !== child) {
 						return { documentPosition: position, element: child };

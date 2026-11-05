@@ -9,6 +9,7 @@ import type DocumentFragment from '../nodes/document-fragment/DocumentFragment.j
 import NodeTypeEnum from '../nodes/node/NodeTypeEnum.js';
 import type ShadowRoot from '../nodes/shadow-root/ShadowRoot.js';
 import type { TGlobalMatchFunction } from './TGlobalMatchFunction.js';
+import type ICachedResult from '../nodes/node/ICachedResult.js';
 
 /**
  * Selector item.
@@ -63,12 +64,16 @@ export default class SelectorItem {
 	 * @param scope Scope.
 	 * @param element HTML element.
 	 * @param [ignoreErrors] Ignores errors.
+	 * @param [cachedItem] Owning query cache item.
+	 * @param [respectShadowBoundary] Applies shadow-host restrictions to pseudo arguments.
 	 * @returns Result.
 	 */
 	public match(
 		scope: Element | DocumentFragment | null,
 		element: Element | ShadowRoot,
-		ignoreErrors?: boolean
+		ignoreErrors?: boolean,
+		cachedItem?: ICachedResult,
+		respectShadowBoundary = false
 	): ISelectorMatch | null {
 		let priorityWeight = 0;
 
@@ -76,11 +81,23 @@ export default class SelectorItem {
 			return null;
 		}
 
-		element = <Element>(
-			(element[PropertySymbol.nodeType] === NodeTypeEnum.documentFragmentNode
-				? (<ShadowRoot>element).host!
-				: element)
-		);
+		if (element[PropertySymbol.nodeType] === NodeTypeEnum.documentFragmentNode) {
+			const host = (<ShadowRoot>element).host;
+			if (!respectShadowBoundary) {
+				element = host!;
+			} else {
+				// Ordinary ancestor conditions must not observe the host across a shadow boundary.
+				if (!host || !this.canMatchShadowHost()) {
+					return null;
+				}
+				if (
+					this.pseudos!.some((pseudo) => pseudo.name === 'host' || pseudo.name === 'host-context')
+				) {
+					element = host;
+				}
+			}
+		}
+		element = <Element>element;
 
 		if (!element) {
 			return null;
@@ -122,7 +139,7 @@ export default class SelectorItem {
 
 		// Pseudo match
 		if (this.pseudos) {
-			const result = this.matchPseudo(scope, element, ignoreErrors);
+			const result = this.matchPseudo(scope, element, ignoreErrors, cachedItem);
 			if (!result) {
 				return null;
 			}
@@ -138,12 +155,14 @@ export default class SelectorItem {
 	 * @param scope Scope.
 	 * @param element Element.
 	 * @param [ignoreErrors] Ignores errors.
+	 * @param [cachedItem] Owning query cache item.
 	 * @returns Result.
 	 */
 	private matchPseudo(
 		scope: Element | DocumentFragment | null,
 		element: Element,
-		ignoreErrors?: boolean
+		ignoreErrors?: boolean,
+		cachedItem?: ICachedResult
 	): ISelectorMatch | null {
 		const parent = <Element>element[PropertySymbol.parentNode];
 		const parentChildren = element[PropertySymbol.parentNode]
@@ -202,7 +221,8 @@ export default class SelectorItem {
 				element,
 				parentChildren,
 				pseudo,
-				ignoreErrors
+				ignoreErrors,
+				cachedItem
 			);
 
 			if (!selectorMatch) {
@@ -223,13 +243,15 @@ export default class SelectorItem {
 	 * @param parentChildren Parent children.
 	 * @param pseudo Pseudo.
 	 * @param [ignoreErrors] Ignores errors.
+	 * @param [cachedItem] Owning query cache item.
 	 */
 	private matchPseudoItem(
 		scope: Element | DocumentFragment | null,
 		element: Element,
 		parentChildren: Element[],
 		pseudo: ISelectorPseudo,
-		ignoreErrors?: boolean
+		ignoreErrors?: boolean,
+		cachedItem?: ICachedResult
 	): ISelectorMatch | null {
 		const root = this.getRootElement(scope);
 		switch (pseudo.name) {
@@ -297,21 +319,26 @@ export default class SelectorItem {
 					? { priorityWeight: 10 }
 					: null;
 			case 'not':
-				for (const selectorItem of pseudo.selectorItems!) {
-					if (selectorItem.match(scope, element)) {
-						return null;
-					}
-				}
-				return { priorityWeight: 10 };
+				return this.globalMatchFunction(element, pseudo.selectorGroups!, {
+					scope,
+					ignoreErrors,
+					cachedItem
+				})
+					? null
+					: { priorityWeight: 10 };
 			case 'nth-child':
 				let nthChildIndex = -1;
-				if (pseudo.selectorItems?.[0] && !pseudo.selectorItems[0].match(scope, element)) {
+				const nthChildSelectorItem = pseudo.selectorGroups?.[0]?.[0];
+				if (
+					nthChildSelectorItem &&
+					!nthChildSelectorItem.match(scope, element, undefined, cachedItem)
+				) {
 					return null;
 				}
 				for (let i = 0, max = parentChildren.length; i < max; i++) {
 					if (
-						!pseudo.selectorItems?.[0] ||
-						pseudo.selectorItems![0].match(scope, parentChildren[i])
+						!nthChildSelectorItem ||
+						nthChildSelectorItem.match(scope, parentChildren[i], undefined, cachedItem)
 					) {
 						nthChildIndex++;
 					}
@@ -337,13 +364,17 @@ export default class SelectorItem {
 				return null;
 			case 'nth-last-child':
 				let nthLastChildIndex = -1;
-				if (pseudo.selectorItems?.[0] && !pseudo.selectorItems[0].match(scope, element)) {
+				const nthLastChildSelectorItem = pseudo.selectorGroups?.[0]?.[0];
+				if (
+					nthLastChildSelectorItem &&
+					!nthLastChildSelectorItem.match(scope, element, undefined, cachedItem)
+				) {
 					return null;
 				}
 				for (let i = parentChildren.length - 1; i >= 0; i--) {
 					if (
-						!pseudo.selectorItems?.[0] ||
-						pseudo.selectorItems![0].match(scope, parentChildren[i])
+						!nthLastChildSelectorItem ||
+						nthLastChildSelectorItem.match(scope, parentChildren[i], undefined, cachedItem)
 					) {
 						nthLastChildIndex++;
 					}
@@ -375,44 +406,50 @@ export default class SelectorItem {
 				return element.isConnected && element.id === hash.slice(1) ? { priorityWeight: 10 } : null;
 			case 'is':
 				let priorityWeightForIs = 0;
-				if (!pseudo.selectorItems) {
+				if (!pseudo.selectorGroups) {
 					return null;
 				}
-				for (const selectorItem of pseudo.selectorItems) {
-					const match = selectorItem.match(scope, element);
+				for (const group of pseudo.selectorGroups) {
+					const match = this.globalMatchFunction(element, [group], {
+						scope,
+						ignoreErrors,
+						cachedItem
+					});
 					if (match && priorityWeightForIs < match.priorityWeight) {
 						priorityWeightForIs = match.priorityWeight;
 					}
 				}
 				return priorityWeightForIs ? { priorityWeight: priorityWeightForIs } : null;
 			case 'where':
-				if (!pseudo.selectorItems) {
+				if (!pseudo.selectorGroups) {
 					return null;
 				}
-				for (const selectorItem of pseudo.selectorItems) {
-					if (selectorItem.match(scope, element)) {
+				for (const group of pseudo.selectorGroups) {
+					if (this.globalMatchFunction(element, [group], { scope, ignoreErrors, cachedItem })) {
 						return { priorityWeight: 0 };
 					}
 				}
 				return null;
 			case 'has':
 				let priorityWeightForHas = 0;
-				if (pseudo.arguments && pseudo.selectorItems) {
+				if (pseudo.arguments && pseudo.selectorGroups) {
 					if (pseudo.arguments[0] === '+') {
 						const nextSibling = element.nextElementSibling;
 						if (!nextSibling) {
 							return null;
 						}
-						for (const selectorItem of pseudo.selectorItems) {
-							const match = selectorItem.match(scope, nextSibling);
+						for (const group of pseudo.selectorGroups) {
+							const selectorItem = group[0];
+							const match = selectorItem.match(scope, nextSibling, undefined, cachedItem);
 							if (match && priorityWeightForHas < match.priorityWeight) {
 								priorityWeightForHas = match.priorityWeight;
 							}
 						}
 					} else if (pseudo.arguments[0] === '>') {
-						for (const selectorItem of pseudo.selectorItems) {
+						for (const group of pseudo.selectorGroups) {
+							const selectorItem = group[0];
 							for (const child of element[PropertySymbol.elementArray]) {
-								const match = selectorItem.match(scope, child);
+								const match = selectorItem.match(scope, child, undefined, cachedItem);
 								if (match && priorityWeightForHas < match.priorityWeight) {
 									priorityWeightForHas = match.priorityWeight;
 									break;
@@ -420,8 +457,15 @@ export default class SelectorItem {
 							}
 						}
 					} else {
-						for (const selectorItem of pseudo.selectorItems) {
-							const match = this.matchChildOfElement(scope, selectorItem, element, ignoreErrors);
+						for (const group of pseudo.selectorGroups) {
+							const selectorItem = group[0];
+							const match = this.matchChildOfElement(
+								scope,
+								selectorItem,
+								element,
+								ignoreErrors,
+								cachedItem
+							);
 							if (match && priorityWeightForHas < match.priorityWeight) {
 								priorityWeightForHas = match.priorityWeight;
 							}
@@ -439,6 +483,35 @@ export default class SelectorItem {
 			default:
 				return null;
 		}
+	}
+
+	/**
+	 * Whether this compound selector is allowed to match a featureless shadow host.
+	 *
+	 * See https://drafts.csswg.org/selectors/#featureless.
+	 *
+	 * @returns Whether the selector can target the shadow host.
+	 */
+	private canMatchShadowHost(): boolean {
+		if (this.tagName || this.id || this.classNames || this.attributes || !this.pseudos) {
+			return false;
+		}
+		let hasHostSelector = false;
+		for (const pseudo of this.pseudos) {
+			if (pseudo.name === 'host' || pseudo.name === 'host-context') {
+				hasHostSelector = true;
+			} else if (pseudo.name === 'is' || pseudo.name === 'where' || pseudo.name === 'not') {
+				if (
+					!pseudo.selectorGroups?.some((group) => group[group.length - 1]?.canMatchShadowHost())
+				) {
+					return false;
+				}
+				hasHostSelector = true;
+			} else if (pseudo.name !== 'has') {
+				return false;
+			}
+		}
+		return hasHostSelector;
 	}
 
 	/**
@@ -508,20 +581,28 @@ export default class SelectorItem {
 	 * @param selectorItem Selector item.
 	 * @param element Element.
 	 * @param [ignoreErrors] Ignores errors.
+	 * @param [cachedItem] Owning query cache item.
 	 * @returns Result.
 	 */
 	private matchChildOfElement(
 		scope: Element | DocumentFragment | null,
 		selectorItem: SelectorItem,
 		element: Element,
-		ignoreErrors?: boolean
+		ignoreErrors?: boolean,
+		cachedItem?: ICachedResult
 	): { priorityWeight: number } | null {
 		for (const child of element[PropertySymbol.elementArray]) {
-			const match = selectorItem.match(scope, child, ignoreErrors);
+			const match = selectorItem.match(scope, child, ignoreErrors, cachedItem);
 			if (match) {
 				return match;
 			}
-			const childMatch = this.matchChildOfElement(scope, selectorItem, child, ignoreErrors);
+			const childMatch = this.matchChildOfElement(
+				scope,
+				selectorItem,
+				child,
+				ignoreErrors,
+				cachedItem
+			);
 			if (childMatch) {
 				return childMatch;
 			}
