@@ -1660,6 +1660,107 @@ describe('HTMLInputElement', () => {
 	});
 
 	describe('dispatchEvent()', () => {
+		it('Dispatches a "click" event to its listeners and runs the activation behavior even if the input is disabled.', () => {
+			const input = <HTMLInputElement>document.createElement('input');
+
+			let clickCount = 0;
+			let inputCount = 0;
+			let changeCount = 0;
+
+			input.type = 'checkbox';
+			input.disabled = true;
+
+			input.addEventListener('click', () => clickCount++);
+			input.addEventListener('input', () => inputCount++);
+			input.addEventListener('change', () => changeCount++);
+
+			document.body.appendChild(input);
+
+			const returnValue = input.dispatchEvent(
+				new MouseEvent('click', { bubbles: true, cancelable: true })
+			);
+
+			expect(clickCount).toBe(1);
+			expect(inputCount).toBe(1);
+			expect(changeCount).toBe(1);
+			expect(returnValue).toBe(true);
+			expect(input.checked).toBe(true);
+		});
+
+		it('Restores "checked" if preventDefault() is called in a "click" listener of a disabled input.', () => {
+			const input = <HTMLInputElement>document.createElement('input');
+
+			input.type = 'checkbox';
+			input.disabled = true;
+
+			input.addEventListener('click', (event) => event.preventDefault());
+
+			document.body.appendChild(input);
+
+			const returnValue = input.dispatchEvent(
+				new MouseEvent('click', { bubbles: true, cancelable: true })
+			);
+
+			expect(returnValue).toBe(false);
+			expect(input.checked).toBe(false);
+		});
+
+		it('Sets "checked" to "true" if type is "radio" and the input is disabled.', () => {
+			const input = <HTMLInputElement>document.createElement('input');
+
+			input.type = 'radio';
+			input.disabled = true;
+
+			document.body.appendChild(input);
+
+			input.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+
+			expect(input.checked).toBe(true);
+		});
+
+		it('Doesn\'t submit form if type is "submit" and the input is disabled.', () => {
+			const form = <HTMLFormElement>document.createElement('form');
+			const input = <HTMLInputElement>document.createElement('input');
+
+			let submitTriggeredCount = 0;
+			let clickCount = 0;
+
+			input.type = 'submit';
+			input.disabled = true;
+			input.addEventListener('click', () => clickCount++);
+
+			form.appendChild(input);
+
+			document.body.appendChild(form);
+
+			form.addEventListener('submit', () => submitTriggeredCount++);
+
+			input.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+
+			expect(clickCount).toBe(1);
+			expect(submitTriggeredCount).toBe(0);
+		});
+
+		it('Doesn\'t reset form if type is "reset" and the input is disabled.', () => {
+			const form = <HTMLFormElement>document.createElement('form');
+			const input = <HTMLInputElement>document.createElement('input');
+
+			let resetTriggeredCount = 0;
+
+			input.type = 'reset';
+			input.disabled = true;
+
+			form.appendChild(input);
+
+			document.body.appendChild(form);
+
+			form.addEventListener('reset', () => resetTriggeredCount++);
+
+			input.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+
+			expect(resetTriggeredCount).toBe(0);
+		});
+
 		it('Sets "checked" to "true" if type is "checkbox" and is a "click" event.', () => {
 			let isInputTriggered = false;
 			let isChangeTriggered = false;
@@ -1936,6 +2037,25 @@ describe('HTMLInputElement', () => {
 			button.click();
 
 			expect(resetTriggeredCount).toBe(1);
+		});
+	});
+
+	describe('click()', () => {
+		it('Doesn\'t dispatch a "click" event or run the activation behavior if the input is disabled.', () => {
+			const input = <HTMLInputElement>document.createElement('input');
+
+			let clickCount = 0;
+
+			input.type = 'checkbox';
+			input.disabled = true;
+			input.addEventListener('click', () => clickCount++);
+
+			document.body.appendChild(input);
+
+			input.click();
+
+			expect(clickCount).toBe(0);
+			expect(input.checked).toBe(false);
 		});
 	});
 });
