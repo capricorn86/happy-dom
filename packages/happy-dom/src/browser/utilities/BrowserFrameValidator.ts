@@ -19,8 +19,8 @@ export default class BrowserFrameValidator {
 		const settings = frame.page.context.browser.settings;
 		let fromURL = frame.page.mainFrame.window.location;
 
-		if (frame[PropertySymbol.openerFrame]) {
-			fromURL = frame[PropertySymbol.openerFrame].window.location;
+		if (frame[PropertySymbol.opener]?.frame) {
+			fromURL = frame[PropertySymbol.opener].frame.window.location;
 		} else if (frame.parentFrame) {
 			fromURL = frame.parentFrame.window.location;
 		}
@@ -75,7 +75,7 @@ export default class BrowserFrameValidator {
 			return false;
 		}
 
-		if (settings.navigation.disableChildPageNavigation && !!frame[PropertySymbol.openerFrame]) {
+		if (settings.navigation.disableChildPageNavigation && !!frame[PropertySymbol.opener]) {
 			return false;
 		}
 

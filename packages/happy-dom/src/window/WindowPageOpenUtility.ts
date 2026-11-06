@@ -52,14 +52,23 @@ export default class WindowPageOpenUtility {
 			default:
 				const newPage = browserFrame.page.context.newPage();
 				targetFrame = newPage.mainFrame;
-				targetFrame[PropertySymbol.openerFrame] = browserFrame;
+				targetFrame[PropertySymbol.opener] = {
+					frame: null,
+					window: null
+				};
+				if (!features.noopener && !features.noreferrer) {
+					targetFrame[PropertySymbol.opener].frame = browserFrame;
+					targetFrame[PropertySymbol.opener].window = browserFrame.window;
+				}
+				browserFrame.openedPages.push(newPage);
 				break;
 		}
 
 		targetFrame
 			.goto(targetURL.href, {
 				referrer: features.noreferrer ? undefined : browserFrame.window.location.origin,
-				referrerPolicy: features.noreferrer ? 'no-referrer' : undefined
+				referrerPolicy: features.noreferrer ? 'no-referrer' : undefined,
+				inheritOrigin: !!targetFrame[PropertySymbol.opener]
 			})
 			.catch((error) => {
 				targetFrame.page.console.error(error);
@@ -74,7 +83,7 @@ export default class WindowPageOpenUtility {
 			return null;
 		}
 
-		if (features.popup && target !== '_self' && target !== '_top' && target !== '_parent') {
+		if (features.popup && !!targetFrame[PropertySymbol.opener]) {
 			targetFrame[PropertySymbol.popup] = true;
 
 			if (features?.width || features?.height) {
@@ -105,25 +114,11 @@ export default class WindowPageOpenUtility {
 			(<string>targetFrame.window.name) = target;
 		}
 
-		const isCORS = FetchCORSUtility.isCORS(originURL, targetFrame.url);
-
-		if (
-			!features.noopener &&
-			!features.noreferrer &&
-			browserFrame.window &&
-			targetFrame[PropertySymbol.openerFrame] &&
-			targetFrame.window !== browserFrame.window
-		) {
-			targetFrame[PropertySymbol.openerWindow] = isCORS
-				? new CrossOriginBrowserWindow(browserFrame.window)
-				: browserFrame.window;
-		}
-
 		if (features.noopener || features.noreferrer) {
 			return null;
 		}
 
-		if (isCORS) {
+		if (FetchCORSUtility.isCORS(originURL, targetFrame.url)) {
 			return new CrossOriginBrowserWindow(targetFrame.window, browserFrame.window);
 		}
 

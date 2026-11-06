@@ -61,12 +61,14 @@ export default class Location {
 
 			history.push({
 				title: '',
-				href: url.href,
+				url: url.href,
+				navigationURL: history.currentItem.navigationURL,
 				state: history.currentItem.state,
 				popState: true,
 				scrollRestoration: HistoryScrollRestorationEnum.manual,
 				method: history.currentItem.method,
-				formData: history.currentItem.formData || null
+				formData: history.currentItem.formData || null,
+				inheritOrigin: history.currentItem.inheritOrigin
 			});
 
 			this[PropertySymbol.setURL](this.#browserFrame, url.href);
@@ -126,6 +128,12 @@ export default class Location {
 	public set href(url: string) {
 		if (!this.#browserFrame) {
 			return;
+		}
+
+		if (new URL(url).protocol === 'data:') {
+			throw new this.#browserFrame.window.Error(
+				'Not allowed to navigate top frame to data URL: ' + url
+			);
 		}
 
 		this.#browserFrame.goto(url).catch((error) => {

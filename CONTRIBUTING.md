@@ -129,6 +129,14 @@ The code is documented with JSDoc comments. The comments should be clear and con
 
 When making a contribution, try to follow the existing coding style and conventions as much as possible. This will make it easier for the maintainers to review your code and will increase the chances of your pull request being merged.
 
+## Exceptions
+
+Exceptions thrown inside a window instance should use the error class from the window instance (e.g. `new window.TypeError()` or `new this[PropertySymbol.window].DOMException()`), and not the global `Error` or an imported `DOMException`.
+
+This is required for errors to be caught on process level when the setting `errorCapture` is set to `"processLevel"`. The `BrowserExceptionObserver` finds out which window an error came from by testing it with `instanceof` against the error classes of each window (`window.Error` and `window.DOMException`). An error that is not an instance of a window's error class can't be matched to that window, and will not be dispatched as an error event on it.
+
+We should also aim to throw the same type of exceptions and messages as the browser. Trying to simulate the behavior in a browser and see what it throws is usually a good idea.
+
 # Dependencies
 
 Happy DOM aims at being lightweight and fast, so we try to minimize the number of dependencies. We only use dependencies that are necessary for the functionality of the library. If you want to add a dependency, please make sure to justify why it is necessary and how it will benefit the library.

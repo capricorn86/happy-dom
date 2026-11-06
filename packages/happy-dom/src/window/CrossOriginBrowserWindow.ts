@@ -1,9 +1,10 @@
 import EventTarget from '../event/EventTarget.js';
 import type BrowserWindow from './BrowserWindow.js';
-import DOMException from '../exception/DOMException.js';
 import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum.js';
+import type DOMException from '../exception/DOMException.js';
 import type Location from '../location/Location.js';
 import * as PropertySymbol from '../PropertySymbol.js';
+import WindowBrowserContext from './WindowBrowserContext.js';
 
 /**
  * Browser window with limited access due to CORS restrictions in iframes.
@@ -27,28 +28,24 @@ export default class CrossOriginBrowserWindow
 	 * Constructor.
 	 *
 	 * @param target Target window.
-	 * @param [parent] Parent window.
+	 * @param [options] Options.
+	 * @param [options.parent] Parent window.
+	 * @param [options.top] Top window.
 	 */
-	constructor(target: BrowserWindow, parent?: BrowserWindow) {
+	constructor(target: BrowserWindow, options?: { parent: BrowserWindow; top: BrowserWindow }) {
 		super();
 
-		this[PropertySymbol.parent] = parent ?? this;
-		this[PropertySymbol.top] = parent ?? this;
+		this[PropertySymbol.parent] = options?.parent ?? this;
+		this[PropertySymbol.top] = options?.top ?? this;
 
 		this.location = <Location>new Proxy(
 			{},
 			{
 				get: () => {
-					throw new DOMException(
-						`Blocked a frame with origin "${this.parent.location.origin}" from accessing a cross-origin frame.`,
-						DOMExceptionNameEnum.securityError
-					);
+					throw this.#createBlockedOriginException();
 				},
 				set: () => {
-					throw new DOMException(
-						`Blocked a frame with origin "${this.parent.location.origin}" from accessing a cross-origin frame.`,
-						DOMExceptionNameEnum.securityError
-					);
+					throw this.#createBlockedOriginException();
 				}
 			}
 		);
@@ -148,5 +145,25 @@ export default class CrossOriginBrowserWindow
 	 */
 	public postMessage(message: unknown, targetOrigin = '*', transfer?: unknown[]): void {
 		this.#targetWindow.postMessage(message, targetOrigin, transfer);
+	}
+
+	/**
+	 * Creates a DOMException for blocked cross-origin access.
+	 *
+	 * @returns DOMException.
+	 */
+	#createBlockedOriginException(): DOMException {
+		const frame = new WindowBrowserContext(this.#targetWindow).getBrowserFrame();
+		const sourceFrame = frame?.parentFrame || frame?.[PropertySymbol.opener]?.frame;
+		if (!sourceFrame) {
+			return new this.#targetWindow.DOMException(
+				`Blocked a frame from accessing a cross-origin frame.`,
+				DOMExceptionNameEnum.securityError
+			);
+		}
+		return new this.#targetWindow.DOMException(
+			`Blocked a frame with origin "${sourceFrame.url}" from accessing a cross-origin frame.`,
+			DOMExceptionNameEnum.securityError
+		);
 	}
 }

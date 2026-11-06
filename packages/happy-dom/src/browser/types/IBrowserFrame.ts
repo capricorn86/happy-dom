@@ -9,12 +9,14 @@ import type { Script } from 'vm';
 import type IReloadOptions from './IReloadOptions.js';
 import type CrossOriginBrowserWindow from '../../window/CrossOriginBrowserWindow.js';
 import type HistoryItemList from '../../history/HistoryItemList.js';
+import type IBrowserFrameOpener from './IBrowserFrameOpener.js';
 
 /**
  * Browser frame.
  */
 export default interface IBrowserFrame {
 	readonly childFrames: IBrowserFrame[];
+	readonly openedPages: IBrowserPage[];
 	readonly parentFrame: IBrowserFrame | null;
 	readonly page: IBrowserPage;
 	readonly window: BrowserWindow;
@@ -22,11 +24,12 @@ export default interface IBrowserFrame {
 	readonly closed: boolean;
 	content: string;
 	url: string;
+	navigationURL: string;
 	[PropertySymbol.history]: HistoryItemList;
 	[PropertySymbol.asyncTaskManager]: AsyncTaskManager;
 	[PropertySymbol.listeners]: { navigation: Array<() => void> };
-	[PropertySymbol.openerFrame]: IBrowserFrame | null;
-	[PropertySymbol.openerWindow]: BrowserWindow | CrossOriginBrowserWindow | null;
+	[PropertySymbol.contentWindow]: BrowserWindow | CrossOriginBrowserWindow | null;
+	[PropertySymbol.opener]: IBrowserFrameOpener | null;
 	[PropertySymbol.popup]: boolean;
 
 	/**

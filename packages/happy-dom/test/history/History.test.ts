@@ -19,7 +19,8 @@ describe('History', () => {
 		it('Returns the length of the page history.', () => {
 			browserFrame[PropertySymbol.history].items.push({
 				title: 'Example',
-				href: 'https://example.com',
+				url: 'https://example.com',
+				navigationURL: 'https://example.com',
 				state: null,
 				popState: false,
 				scrollRestoration: HistoryScrollRestorationEnum.auto,
@@ -29,7 +30,8 @@ describe('History', () => {
 
 			browserFrame[PropertySymbol.history].items.push({
 				title: 'Example2',
-				href: 'https://example2.com',
+				url: 'https://example2.com',
+				navigationURL: 'https://example2.com',
 				state: null,
 				popState: false,
 				scrollRestoration: HistoryScrollRestorationEnum.auto,
@@ -90,7 +92,7 @@ describe('History', () => {
 		it('Navigates back in history for navigated history items', async () => {
 			let request: Request | null = null;
 
-			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<Response> {
+			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (this: any): Promise<Response> {
 				request = this.request;
 				return Promise.resolve(<Response>{
 					url: request?.url,
@@ -101,7 +103,8 @@ describe('History', () => {
 
 			browserFrame[PropertySymbol.history].push({
 				title: 'Github',
-				href: 'https://www.github.com',
+				url: 'https://www.github.com',
+				navigationURL: 'https://www.github.com',
 				state: null,
 				popState: false,
 				scrollRestoration: HistoryScrollRestorationEnum.auto,
@@ -111,7 +114,8 @@ describe('History', () => {
 
 			browserFrame[PropertySymbol.history].push({
 				title: 'Example',
-				href: 'https://www.example.com',
+				url: 'https://www.example.com',
+				navigationURL: 'https://www.example.com',
 				state: null,
 				popState: false,
 				scrollRestoration: HistoryScrollRestorationEnum.auto,
@@ -121,7 +125,8 @@ describe('History', () => {
 
 			browserFrame[PropertySymbol.history].push({
 				title: '',
-				href: 'https://localhost:3000/',
+				url: 'https://localhost:3000/',
+				navigationURL: 'https://localhost:3000/',
 				state: null,
 				popState: false,
 				scrollRestoration: HistoryScrollRestorationEnum.auto,
@@ -156,7 +161,7 @@ describe('History', () => {
 		it('Navigates back in history for pushed state', async () => {
 			let request: Request | null = null;
 
-			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<Response> {
+			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (this: any): Promise<Response> {
 				request = this.request;
 				return Promise.resolve(<Response>{
 					url: request?.url,
@@ -231,7 +236,7 @@ describe('History', () => {
 		it('Navigates forward in history', async () => {
 			let request: Request | null = null;
 
-			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<Response> {
+			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (this: any): Promise<Response> {
 				request = this.request;
 				return Promise.resolve(<Response>{
 					url: request?.url,
@@ -242,7 +247,8 @@ describe('History', () => {
 
 			browserFrame[PropertySymbol.history].push({
 				title: 'Github',
-				href: 'https://www.github.com',
+				url: 'https://www.github.com',
+				navigationURL: 'https://www.github.com',
 				state: null,
 				popState: false,
 				scrollRestoration: HistoryScrollRestorationEnum.auto,
@@ -252,7 +258,8 @@ describe('History', () => {
 
 			browserFrame[PropertySymbol.history].push({
 				title: 'Example',
-				href: 'https://www.example.com',
+				url: 'https://www.example.com',
+				navigationURL: 'https://www.example.com',
 				state: null,
 				popState: false,
 				scrollRestoration: HistoryScrollRestorationEnum.auto,
@@ -262,7 +269,8 @@ describe('History', () => {
 
 			browserFrame[PropertySymbol.history].push({
 				title: '',
-				href: 'https://localhost:3000/',
+				url: 'https://localhost:3000/',
+				navigationURL: 'https://localhost:3000/',
 				state: null,
 				popState: false,
 				scrollRestoration: HistoryScrollRestorationEnum.auto,
@@ -306,7 +314,7 @@ describe('History', () => {
 		it('Navigates to a specific position in history', async () => {
 			let request: Request | null = null;
 
-			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<Response> {
+			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (this: any): Promise<Response> {
 				request = this.request;
 				return Promise.resolve(<Response>{
 					url: request?.url,
@@ -317,7 +325,8 @@ describe('History', () => {
 
 			browserFrame[PropertySymbol.history].push({
 				title: 'Github',
-				href: 'https://www.github.com',
+				url: 'https://www.github.com',
+				navigationURL: 'https://www.github.com',
 				state: null,
 				popState: false,
 				scrollRestoration: HistoryScrollRestorationEnum.auto,
@@ -327,7 +336,8 @@ describe('History', () => {
 
 			browserFrame[PropertySymbol.history].push({
 				title: 'Example',
-				href: 'https://www.example.com',
+				url: 'https://www.example.com',
+				navigationURL: 'https://www.example.com',
 				state: null,
 				popState: false,
 				scrollRestoration: HistoryScrollRestorationEnum.auto,
@@ -337,7 +347,8 @@ describe('History', () => {
 
 			browserFrame[PropertySymbol.history].push({
 				title: '',
-				href: 'https://localhost:3000/',
+				url: 'https://localhost:3000/',
+				navigationURL: 'https://localhost:3000/',
 				state: null,
 				popState: false,
 				scrollRestoration: HistoryScrollRestorationEnum.auto,
@@ -373,6 +384,20 @@ describe('History', () => {
 	});
 
 	describe('pushState()', () => {
+		it('Passes down the source URL from the current history item.', () => {
+			browserFrame.url = 'https://www.example.com/current/';
+			browserFrame[PropertySymbol.history].currentItem.navigationURL = 'https://www.example.com/';
+
+			browserFrame.window.history.pushState({ key: 'value' }, '', '/test/');
+
+			expect(browserFrame[PropertySymbol.history].currentItem.navigationURL).toBe(
+				'https://www.example.com/'
+			);
+			expect(browserFrame[PropertySymbol.history].currentItem.url).toBe(
+				'https://www.example.com/test/'
+			);
+		});
+
 		it('Pushes a new state to the history.', () => {
 			browserFrame.window.history.pushState({ key: 'value' }, '', '');
 
@@ -381,7 +406,8 @@ describe('History', () => {
 			expect(browserFrame[PropertySymbol.history].items).toEqual([
 				{
 					title: '',
-					href: 'about:blank',
+					url: 'about:blank',
+					navigationURL: null,
 					state: null,
 					scrollRestoration: HistoryScrollRestorationEnum.auto,
 					method: 'GET',
@@ -390,7 +416,8 @@ describe('History', () => {
 				},
 				{
 					title: '',
-					href: 'about:blank',
+					url: 'about:blank',
+					navigationURL: null,
 					state: { key: 'value' },
 					scrollRestoration: HistoryScrollRestorationEnum.auto,
 					method: 'GET',
@@ -402,6 +429,20 @@ describe('History', () => {
 	});
 
 	describe('replaceState()', () => {
+		it('Passes down the source URL from the current history item.', () => {
+			browserFrame.url = 'https://www.example.com/current/';
+			browserFrame[PropertySymbol.history].currentItem.navigationURL = 'https://www.example.com/';
+
+			browserFrame.window.history.replaceState({ key: 'value' }, '', '/test/');
+
+			expect(browserFrame[PropertySymbol.history].currentItem.navigationURL).toBe(
+				'https://www.example.com/'
+			);
+			expect(browserFrame[PropertySymbol.history].currentItem.url).toBe(
+				'https://www.example.com/test/'
+			);
+		});
+
 		it('Replaces the current state in the history.', () => {
 			browserFrame.window.history.pushState({ key: 'value' }, '', '');
 
@@ -410,7 +451,8 @@ describe('History', () => {
 			expect(browserFrame[PropertySymbol.history].items).toEqual([
 				{
 					title: '',
-					href: 'about:blank',
+					url: 'about:blank',
+					navigationURL: null,
 					state: null,
 					scrollRestoration: HistoryScrollRestorationEnum.auto,
 					method: 'GET',
@@ -419,7 +461,8 @@ describe('History', () => {
 				},
 				{
 					title: '',
-					href: 'about:blank',
+					url: 'about:blank',
+					navigationURL: null,
 					state: { key: 'value' },
 					scrollRestoration: HistoryScrollRestorationEnum.auto,
 					method: 'GET',
@@ -435,7 +478,8 @@ describe('History', () => {
 			expect(browserFrame[PropertySymbol.history].items).toEqual([
 				{
 					title: '',
-					href: 'about:blank',
+					url: 'about:blank',
+					navigationURL: null,
 					state: null,
 					scrollRestoration: HistoryScrollRestorationEnum.auto,
 					method: 'GET',
@@ -444,7 +488,8 @@ describe('History', () => {
 				},
 				{
 					title: '',
-					href: 'about:blank',
+					url: 'about:blank',
+					navigationURL: null,
 					state: { key: 'value2' },
 					scrollRestoration: HistoryScrollRestorationEnum.auto,
 					method: 'GET',

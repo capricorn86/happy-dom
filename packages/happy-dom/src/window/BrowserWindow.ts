@@ -914,7 +914,9 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 		this[PropertySymbol.location] = new Location(this.#browserFrame, options?.url ?? 'about:blank');
 		this[PropertySymbol.history] = new History(this.#browserFrame, this);
 
-		browserFrame[PropertySymbol.history].currentItem.href = options?.url ?? 'about:blank';
+		if (options?.url) {
+			browserFrame[PropertySymbol.history].currentItem.url = options?.url;
+		}
 
 		WindowBrowserContext.setWindowBrowserFrameRelation(this, this.#browserFrame);
 
@@ -2090,7 +2092,7 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	 * @returns Opener.
 	 */
 	public get opener(): BrowserWindow | CrossOriginBrowserWindow | null {
-		return this.#browserFrame[PropertySymbol.openerWindow];
+		return this.#browserFrame[PropertySymbol.opener]?.window ?? null;
 	}
 
 	/**
@@ -2382,17 +2384,22 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 
 	/**
 	 * Closes the window.
+	 *
+	 * @see https://developer.mozilla.org/en-US/docs/Web/API/Window/close
 	 */
 	public close(): void {
 		// Users can only close the main frame of a page (not child frames such as iframes).
+		// Windows are script-closable if they were created by web content. This generally includes:
+		// - Windows opened using Window.open()
+		// - Windows opened via web content, such as links (<a target="_blank">) or forms (<form target="_blank">), without user modifier actions
 		if (
 			this.#browserFrame.page.mainFrame === this.#browserFrame &&
-			// Scripts may close only the windows that were opened by them.
-			// In this case, this means windows that have been opened by another window
-			this.#browserFrame[PropertySymbol.openerWindow]
+			this.#browserFrame[PropertySymbol.opener]
 		) {
 			this[PropertySymbol.destroy]();
 			this.#browserFrame.page.close();
+		} else if (!this.#browserFrame[PropertySymbol.opener]) {
+			this.console.warn('Scripts may close only the windows that were opened by them.');
 		}
 	}
 

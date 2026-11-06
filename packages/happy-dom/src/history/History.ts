@@ -134,7 +134,7 @@ export default class History {
 		const location = this.#window[PropertySymbol.location];
 		const newURL = url ? BrowserFrameURL.getRelativeURL(this.#browserFrame, url) : location;
 
-		if (url && newURL.origin !== location.origin) {
+		if (url && newURL.origin !== 'null' && newURL.origin !== location.origin) {
 			throw new this.#window.DOMException(
 				`Failed to execute 'pushState' on 'History': A history state object with URL '${url.toString()}' cannot be created in a document with origin '${
 					location.origin
@@ -147,15 +147,17 @@ export default class History {
 
 		history.push({
 			title: this.#window.document.title,
-			href: newURL.href,
+			url: newURL.href,
+			navigationURL: history.currentItem.navigationURL,
 			state,
 			popState: true,
 			scrollRestoration: history.currentItem.scrollRestoration,
 			method: history.currentItem.method || 'GET',
-			formData: history.currentItem.formData || null
+			formData: history.currentItem.formData || null,
+			inheritOrigin: history.currentItem.inheritOrigin
 		});
 
-		location[PropertySymbol.setURL](this.#browserFrame, history.currentItem.href);
+		location[PropertySymbol.setURL](this.#browserFrame, history.currentItem.url);
 	}
 
 	/**
@@ -185,9 +187,9 @@ export default class History {
 		const location = this.#window[PropertySymbol.location];
 		const newURL = url ? BrowserFrameURL.getRelativeURL(this.#browserFrame, url) : location;
 
-		if (url && newURL.origin !== location.origin) {
+		if (url && newURL.origin !== 'null' && newURL.origin !== location.origin) {
 			throw new this.#window.DOMException(
-				`Failed to execute 'pushState' on 'History': A history state object with URL '${url.toString()}' cannot be created in a document with origin '${
+				`Failed to execute 'replaceState' on 'History': A history state object with URL '${url.toString()}' cannot be created in a document with origin '${
 					location.origin
 				}' and URL '${location.href}'.`,
 				DOMExceptionNameEnum.securityError
@@ -196,16 +198,18 @@ export default class History {
 
 		history.replace({
 			title: this.#window.document.title,
-			href: newURL.href,
+			url: newURL.href,
+			navigationURL: history.currentItem.navigationURL,
 			state,
 			popState: history.currentItem.popState,
 			scrollRestoration: history.currentItem.scrollRestoration,
 			method: history.currentItem.method,
-			formData: history.currentItem.formData
+			formData: history.currentItem.formData,
+			inheritOrigin: history.currentItem.inheritOrigin
 		});
 
 		if (url) {
-			location[PropertySymbol.setURL](this.#browserFrame, history.currentItem.href);
+			location[PropertySymbol.setURL](this.#browserFrame, history.currentItem.url);
 		}
 	}
 
