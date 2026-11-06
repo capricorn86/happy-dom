@@ -20,7 +20,7 @@ describe('History', () => {
 			browserFrame[PropertySymbol.history].items.push({
 				title: 'Example',
 				url: 'https://example.com',
-				sourceURL: 'https://example.com',
+				navigationURL: 'https://example.com',
 				state: null,
 				popState: false,
 				scrollRestoration: HistoryScrollRestorationEnum.auto,
@@ -31,7 +31,7 @@ describe('History', () => {
 			browserFrame[PropertySymbol.history].items.push({
 				title: 'Example2',
 				url: 'https://example2.com',
-				sourceURL: 'https://example2.com',
+				navigationURL: 'https://example2.com',
 				state: null,
 				popState: false,
 				scrollRestoration: HistoryScrollRestorationEnum.auto,
@@ -104,7 +104,7 @@ describe('History', () => {
 			browserFrame[PropertySymbol.history].push({
 				title: 'Github',
 				url: 'https://www.github.com',
-				sourceURL: 'https://www.github.com',
+				navigationURL: 'https://www.github.com',
 				state: null,
 				popState: false,
 				scrollRestoration: HistoryScrollRestorationEnum.auto,
@@ -115,7 +115,7 @@ describe('History', () => {
 			browserFrame[PropertySymbol.history].push({
 				title: 'Example',
 				url: 'https://www.example.com',
-				sourceURL: 'https://www.example.com',
+				navigationURL: 'https://www.example.com',
 				state: null,
 				popState: false,
 				scrollRestoration: HistoryScrollRestorationEnum.auto,
@@ -126,7 +126,7 @@ describe('History', () => {
 			browserFrame[PropertySymbol.history].push({
 				title: '',
 				url: 'https://localhost:3000/',
-				sourceURL: 'https://localhost:3000/',
+				navigationURL: 'https://localhost:3000/',
 				state: null,
 				popState: false,
 				scrollRestoration: HistoryScrollRestorationEnum.auto,
@@ -248,7 +248,7 @@ describe('History', () => {
 			browserFrame[PropertySymbol.history].push({
 				title: 'Github',
 				url: 'https://www.github.com',
-				sourceURL: 'https://www.github.com',
+				navigationURL: 'https://www.github.com',
 				state: null,
 				popState: false,
 				scrollRestoration: HistoryScrollRestorationEnum.auto,
@@ -259,7 +259,7 @@ describe('History', () => {
 			browserFrame[PropertySymbol.history].push({
 				title: 'Example',
 				url: 'https://www.example.com',
-				sourceURL: 'https://www.example.com',
+				navigationURL: 'https://www.example.com',
 				state: null,
 				popState: false,
 				scrollRestoration: HistoryScrollRestorationEnum.auto,
@@ -270,7 +270,7 @@ describe('History', () => {
 			browserFrame[PropertySymbol.history].push({
 				title: '',
 				url: 'https://localhost:3000/',
-				sourceURL: 'https://localhost:3000/',
+				navigationURL: 'https://localhost:3000/',
 				state: null,
 				popState: false,
 				scrollRestoration: HistoryScrollRestorationEnum.auto,
@@ -326,7 +326,7 @@ describe('History', () => {
 			browserFrame[PropertySymbol.history].push({
 				title: 'Github',
 				url: 'https://www.github.com',
-				sourceURL: 'https://www.github.com',
+				navigationURL: 'https://www.github.com',
 				state: null,
 				popState: false,
 				scrollRestoration: HistoryScrollRestorationEnum.auto,
@@ -337,7 +337,7 @@ describe('History', () => {
 			browserFrame[PropertySymbol.history].push({
 				title: 'Example',
 				url: 'https://www.example.com',
-				sourceURL: 'https://www.example.com',
+				navigationURL: 'https://www.example.com',
 				state: null,
 				popState: false,
 				scrollRestoration: HistoryScrollRestorationEnum.auto,
@@ -348,7 +348,7 @@ describe('History', () => {
 			browserFrame[PropertySymbol.history].push({
 				title: '',
 				url: 'https://localhost:3000/',
-				sourceURL: 'https://localhost:3000/',
+				navigationURL: 'https://localhost:3000/',
 				state: null,
 				popState: false,
 				scrollRestoration: HistoryScrollRestorationEnum.auto,
@@ -386,11 +386,11 @@ describe('History', () => {
 	describe('pushState()', () => {
 		it('Passes down the source URL from the current history item.', () => {
 			browserFrame.url = 'https://www.example.com/current/';
-			browserFrame[PropertySymbol.history].currentItem.sourceURL = 'https://www.example.com/';
+			browserFrame[PropertySymbol.history].currentItem.navigationURL = 'https://www.example.com/';
 
 			browserFrame.window.history.pushState({ key: 'value' }, '', '/test/');
 
-			expect(browserFrame[PropertySymbol.history].currentItem.sourceURL).toBe(
+			expect(browserFrame[PropertySymbol.history].currentItem.navigationURL).toBe(
 				'https://www.example.com/'
 			);
 			expect(browserFrame[PropertySymbol.history].currentItem.url).toBe(
@@ -407,7 +407,7 @@ describe('History', () => {
 				{
 					title: '',
 					url: 'about:blank',
-					sourceURL: null,
+					navigationURL: null,
 					state: null,
 					scrollRestoration: HistoryScrollRestorationEnum.auto,
 					method: 'GET',
@@ -417,7 +417,7 @@ describe('History', () => {
 				{
 					title: '',
 					url: 'about:blank',
-					sourceURL: null,
+					navigationURL: null,
 					state: { key: 'value' },
 					scrollRestoration: HistoryScrollRestorationEnum.auto,
 					method: 'GET',
@@ -431,11 +431,11 @@ describe('History', () => {
 	describe('replaceState()', () => {
 		it('Passes down the source URL from the current history item.', () => {
 			browserFrame.url = 'https://www.example.com/current/';
-			browserFrame[PropertySymbol.history].currentItem.sourceURL = 'https://www.example.com/';
+			browserFrame[PropertySymbol.history].currentItem.navigationURL = 'https://www.example.com/';
 
 			browserFrame.window.history.replaceState({ key: 'value' }, '', '/test/');
 
-			expect(browserFrame[PropertySymbol.history].currentItem.sourceURL).toBe(
+			expect(browserFrame[PropertySymbol.history].currentItem.navigationURL).toBe(
 				'https://www.example.com/'
 			);
 			expect(browserFrame[PropertySymbol.history].currentItem.url).toBe(
@@ -452,7 +452,7 @@ describe('History', () => {
 				{
 					title: '',
 					url: 'about:blank',
-					sourceURL: null,
+					navigationURL: null,
 					state: null,
 					scrollRestoration: HistoryScrollRestorationEnum.auto,
 					method: 'GET',
@@ -462,7 +462,7 @@ describe('History', () => {
 				{
 					title: '',
 					url: 'about:blank',
-					sourceURL: null,
+					navigationURL: null,
 					state: { key: 'value' },
 					scrollRestoration: HistoryScrollRestorationEnum.auto,
 					method: 'GET',
@@ -479,7 +479,7 @@ describe('History', () => {
 				{
 					title: '',
 					url: 'about:blank',
-					sourceURL: null,
+					navigationURL: null,
 					state: null,
 					scrollRestoration: HistoryScrollRestorationEnum.auto,
 					method: 'GET',
@@ -489,7 +489,7 @@ describe('History', () => {
 				{
 					title: '',
 					url: 'about:blank',
-					sourceURL: null,
+					navigationURL: null,
 					state: { key: 'value2' },
 					scrollRestoration: HistoryScrollRestorationEnum.auto,
 					method: 'GET',

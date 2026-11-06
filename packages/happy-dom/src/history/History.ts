@@ -148,12 +148,13 @@ export default class History {
 		history.push({
 			title: this.#window.document.title,
 			url: newURL.href,
-			sourceURL: history.currentItem.sourceURL,
+			navigationURL: history.currentItem.navigationURL,
 			state,
 			popState: true,
 			scrollRestoration: history.currentItem.scrollRestoration,
 			method: history.currentItem.method || 'GET',
-			formData: history.currentItem.formData || null
+			formData: history.currentItem.formData || null,
+			inheritOrigin: history.currentItem.inheritOrigin
 		});
 
 		location[PropertySymbol.setURL](this.#browserFrame, history.currentItem.url);
@@ -198,12 +199,13 @@ export default class History {
 		history.replace({
 			title: this.#window.document.title,
 			url: newURL.href,
-			sourceURL: history.currentItem.sourceURL,
+			navigationURL: history.currentItem.navigationURL,
 			state,
 			popState: history.currentItem.popState,
 			scrollRestoration: history.currentItem.scrollRestoration,
 			method: history.currentItem.method,
-			formData: history.currentItem.formData
+			formData: history.currentItem.formData,
+			inheritOrigin: history.currentItem.inheritOrigin
 		});
 
 		if (url) {

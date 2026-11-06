@@ -42,12 +42,7 @@ export default class BrowserFrameURL {
 
 		const parentURL = this.getInheritedFrameURL(parentFrame);
 		const childURL = this.getInheritedFrameURL(childFrame);
-		// Data URLs are treated as unique opaque origins by modern browsers, rather than inheriting the origin of the settings object responsible for the navigation.
-		// @see https://developer.mozilla.org/en-US/docs/Web/URI/Reference/Schemes/data
-		return (
-			new URL(childFrame.url).protocol !== 'data:' &&
-			(parentURL === null || childURL === null || parentURL.origin === childURL.origin)
-		);
+		return parentURL === null || childURL === null || parentURL.origin === childURL.origin;
 	}
 
 	/**
@@ -58,23 +53,28 @@ export default class BrowserFrameURL {
 	 * @returns Frame URL or inherited frame URL, or null if opaque origin.
 	 */
 	private static getInheritedFrameURL(frame: IBrowserFrame): URL | null {
+		const navigationURL = new URL(frame.navigationURL);
+
+		if (!frame[PropertySymbol.history].currentItem.inheritOrigin) {
+			return navigationURL;
+		}
+
+		// Data URLs are treated as unique opaque origins by modern browsers, rather than inheriting the origin of the settings object responsible for the navigation.
+		// @see https://developer.mozilla.org/en-US/docs/Web/URI/Reference/Schemes/data
+		if (navigationURL.origin !== 'null' || navigationURL.protocol === 'data:') {
+			return navigationURL;
+		}
+
 		// Popup frame
 		if (frame[PropertySymbol.opener]?.frame) {
-			// We use the fetched source URL if available, otherwise we inherit from the opener frame.
-			if (frame.sourceURL) {
-				return new URL(frame.sourceURL);
-			}
 			return this.getInheritedFrameURL(frame[PropertySymbol.opener].frame);
 		}
+
 		// Child frame (e.g. iframe)
 		if (frame.parentFrame) {
-			// We use the fetched source URL if available, otherwise we inherit from the parent frame.
-			if (frame.sourceURL) {
-				return new URL(frame.sourceURL);
-			}
 			return this.getInheritedFrameURL(frame.parentFrame);
 		}
 
-		return frame.sourceURL ? new URL(frame.sourceURL) : null;
+		return null;
 	}
 }

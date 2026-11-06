@@ -14,4 +14,9 @@ export default interface IGoToOptions extends IReloadOptions {
 	 * Referrer policy.
 	 */
 	referrerPolicy?: TRequestReferrerPolicy;
+
+	/**
+	 * Indicates whether the origin should be inherited from the parent frame.
+	 */
+	inheritOrigin?: boolean;
 }

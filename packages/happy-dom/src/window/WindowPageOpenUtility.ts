@@ -67,7 +67,8 @@ export default class WindowPageOpenUtility {
 		targetFrame
 			.goto(targetURL.href, {
 				referrer: features.noreferrer ? undefined : browserFrame.window.location.origin,
-				referrerPolicy: features.noreferrer ? 'no-referrer' : undefined
+				referrerPolicy: features.noreferrer ? 'no-referrer' : undefined,
+				inheritOrigin: !!targetFrame[PropertySymbol.opener]
 			})
 			.catch((error) => {
 				targetFrame.page.console.error(error);
@@ -82,7 +83,7 @@ export default class WindowPageOpenUtility {
 			return null;
 		}
 
-		if (features.popup && target !== '_self' && target !== '_top' && target !== '_parent') {
+		if (features.popup && !!targetFrame[PropertySymbol.opener]) {
 			targetFrame[PropertySymbol.popup] = true;
 
 			if (features?.width || features?.height) {

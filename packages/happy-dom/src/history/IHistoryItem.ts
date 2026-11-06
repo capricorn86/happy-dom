@@ -9,6 +9,8 @@ export default interface IHistoryItem {
 	scrollRestoration: HistoryScrollRestorationEnum;
 	method: string;
 	formData: FormData | null;
-	// The fetched source URL.
-	sourceURL: string | null;
+	// The navigated URL using the browser, links etc.
+	navigationURL: string;
+	// Indicates whether the history item should inherit the origin from the parent frame.
+	inheritOrigin: boolean;
 }

@@ -24,7 +24,7 @@ export default interface IBrowserFrame {
 	readonly closed: boolean;
 	content: string;
 	url: string;
-	sourceURL: string | null;
+	navigationURL: string;
 	[PropertySymbol.history]: HistoryItemList;
 	[PropertySymbol.asyncTaskManager]: AsyncTaskManager;
 	[PropertySymbol.listeners]: { navigation: Array<() => void> };

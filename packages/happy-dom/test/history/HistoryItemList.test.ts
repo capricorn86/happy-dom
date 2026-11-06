@@ -9,7 +9,7 @@ describe('HistoryItemList', () => {
 			expect(history.currentItem).toEqual({
 				title: '',
 				url: 'about:blank',
-				sourceURL: null,
+				navigationURL: null,
 				state: null,
 				popState: false,
 				scrollRestoration: HistoryScrollRestorationEnum.auto,
@@ -19,7 +19,7 @@ describe('HistoryItemList', () => {
 			history.push({
 				title: 'Example',
 				url: 'https://example.com',
-				sourceURL: null,
+				navigationURL: null,
 				state: null,
 				popState: false,
 				scrollRestoration: HistoryScrollRestorationEnum.auto,
@@ -29,7 +29,7 @@ describe('HistoryItemList', () => {
 			expect(history.currentItem).toEqual({
 				title: 'Example',
 				url: 'https://example.com',
-				sourceURL: null,
+				navigationURL: null,
 				state: null,
 				popState: false,
 				scrollRestoration: HistoryScrollRestorationEnum.auto,
@@ -46,7 +46,7 @@ describe('HistoryItemList', () => {
 				{
 					title: '',
 					url: 'about:blank',
-					sourceURL: null,
+					navigationURL: null,
 					state: null,
 					popState: false,
 					scrollRestoration: HistoryScrollRestorationEnum.auto,
@@ -57,7 +57,7 @@ describe('HistoryItemList', () => {
 			history.push({
 				title: 'Example',
 				url: 'https://example.com',
-				sourceURL: null,
+				navigationURL: null,
 				state: null,
 				popState: false,
 				scrollRestoration: HistoryScrollRestorationEnum.auto,
@@ -68,7 +68,7 @@ describe('HistoryItemList', () => {
 				{
 					title: '',
 					url: 'about:blank',
-					sourceURL: null,
+					navigationURL: null,
 					state: null,
 					popState: false,
 					scrollRestoration: HistoryScrollRestorationEnum.auto,
@@ -78,7 +78,7 @@ describe('HistoryItemList', () => {
 				{
 					title: 'Example',
 					url: 'https://example.com',
-					sourceURL: null,
+					navigationURL: null,
 					state: null,
 					popState: false,
 					scrollRestoration: HistoryScrollRestorationEnum.auto,
@@ -95,7 +95,7 @@ describe('HistoryItemList', () => {
 			history.push({
 				title: 'Example',
 				url: 'https://example.com',
-				sourceURL: null,
+				navigationURL: null,
 				state: null,
 				popState: false,
 				scrollRestoration: HistoryScrollRestorationEnum.auto,
@@ -106,7 +106,7 @@ describe('HistoryItemList', () => {
 				{
 					title: '',
 					url: 'about:blank',
-					sourceURL: null,
+					navigationURL: null,
 					state: null,
 					popState: false,
 					scrollRestoration: HistoryScrollRestorationEnum.auto,
@@ -116,7 +116,7 @@ describe('HistoryItemList', () => {
 				{
 					title: 'Example',
 					url: 'https://example.com',
-					sourceURL: null,
+					navigationURL: null,
 					state: null,
 					popState: false,
 					scrollRestoration: HistoryScrollRestorationEnum.auto,
@@ -127,7 +127,7 @@ describe('HistoryItemList', () => {
 			expect(history.currentItem).toEqual({
 				title: 'Example',
 				url: 'https://example.com',
-				sourceURL: null,
+				navigationURL: null,
 				state: null,
 				popState: false,
 				scrollRestoration: HistoryScrollRestorationEnum.auto,
@@ -137,7 +137,7 @@ describe('HistoryItemList', () => {
 			history.push({
 				title: 'Example 2',
 				url: 'https://example2.com',
-				sourceURL: null,
+				navigationURL: null,
 				state: null,
 				popState: false,
 				scrollRestoration: HistoryScrollRestorationEnum.manual,
@@ -147,7 +147,7 @@ describe('HistoryItemList', () => {
 			expect(history.currentItem).toEqual({
 				title: 'Example 2',
 				url: 'https://example2.com',
-				sourceURL: null,
+				navigationURL: null,
 				state: null,
 				popState: false,
 				scrollRestoration: HistoryScrollRestorationEnum.manual,
@@ -161,14 +161,14 @@ describe('HistoryItemList', () => {
 			history.push({
 				title: 'Example',
 				url: 'https://example.com',
-				sourceURL: 'https://example.com',
+				navigationURL: 'https://example.com',
 				state: null,
 				popState: false,
 				scrollRestoration: HistoryScrollRestorationEnum.auto,
 				method: 'GET',
 				formData: null
 			});
-			expect(history.currentItem.sourceURL).toBe('https://example.com');
+			expect(history.currentItem.navigationURL).toBe('https://example.com');
 		});
 
 		it('Supports a data URL as the source URL', () => {
@@ -176,14 +176,14 @@ describe('HistoryItemList', () => {
 			history.push({
 				title: 'Example',
 				url: 'https://example.com',
-				sourceURL: 'data:text/plain;base64,SGVsbG8sIFdvcmxkIQ==',
+				navigationURL: 'data:text/plain;base64,SGVsbG8sIFdvcmxkIQ==',
 				state: null,
 				popState: false,
 				scrollRestoration: HistoryScrollRestorationEnum.auto,
 				method: 'GET',
 				formData: null
 			});
-			expect(history.currentItem.sourceURL).toBe('data:text/plain;base64,SGVsbG8sIFdvcmxkIQ==');
+			expect(history.currentItem.navigationURL).toBe('data:text/plain;base64,SGVsbG8sIFdvcmxkIQ==');
 		});
 
 		it('Throws an error when pushing an history item with an opaque URL that is not a data URL as its source', () => {
@@ -192,7 +192,7 @@ describe('HistoryItemList', () => {
 				history.push({
 					title: 'Example',
 					url: 'https://example.com',
-					sourceURL: 'about:blank',
+					navigationURL: 'about:blank',
 					state: null,
 					popState: false,
 					scrollRestoration: HistoryScrollRestorationEnum.auto,
@@ -209,7 +209,7 @@ describe('HistoryItemList', () => {
 			history.push({
 				title: 'Example',
 				url: 'https://example.com',
-				sourceURL: null,
+				navigationURL: null,
 				state: null,
 				popState: false,
 				scrollRestoration: HistoryScrollRestorationEnum.auto,
@@ -219,7 +219,7 @@ describe('HistoryItemList', () => {
 			history.replace({
 				title: 'Example 2',
 				url: 'https://example2.com',
-				sourceURL: null,
+				navigationURL: null,
 				state: null,
 				popState: false,
 				scrollRestoration: HistoryScrollRestorationEnum.manual,
@@ -230,7 +230,7 @@ describe('HistoryItemList', () => {
 				{
 					title: '',
 					url: 'about:blank',
-					sourceURL: null,
+					navigationURL: null,
 					state: null,
 					popState: false,
 					scrollRestoration: HistoryScrollRestorationEnum.auto,
@@ -240,7 +240,7 @@ describe('HistoryItemList', () => {
 				{
 					title: 'Example 2',
 					url: 'https://example2.com',
-					sourceURL: null,
+					navigationURL: null,
 					state: null,
 					popState: false,
 					scrollRestoration: HistoryScrollRestorationEnum.manual,
@@ -251,7 +251,7 @@ describe('HistoryItemList', () => {
 			expect(history.currentItem).toEqual({
 				title: 'Example 2',
 				url: 'https://example2.com',
-				sourceURL: null,
+				navigationURL: null,
 				state: null,
 				popState: false,
 				scrollRestoration: HistoryScrollRestorationEnum.manual,
@@ -265,14 +265,14 @@ describe('HistoryItemList', () => {
 			history.replace({
 				title: 'Example',
 				url: 'https://example.com',
-				sourceURL: 'https://example.com',
+				navigationURL: 'https://example.com',
 				state: null,
 				popState: false,
 				scrollRestoration: HistoryScrollRestorationEnum.auto,
 				method: 'GET',
 				formData: null
 			});
-			expect(history.currentItem.sourceURL).toBe('https://example.com');
+			expect(history.currentItem.navigationURL).toBe('https://example.com');
 		});
 
 		it('Supports a data URL as the source URL', () => {
@@ -280,14 +280,14 @@ describe('HistoryItemList', () => {
 			history.replace({
 				title: 'Example',
 				url: 'https://example.com',
-				sourceURL: 'data:text/plain;base64,SGVsbG8sIFdvcmxkIQ==',
+				navigationURL: 'data:text/plain;base64,SGVsbG8sIFdvcmxkIQ==',
 				state: null,
 				popState: false,
 				scrollRestoration: HistoryScrollRestorationEnum.auto,
 				method: 'GET',
 				formData: null
 			});
-			expect(history.currentItem.sourceURL).toBe('data:text/plain;base64,SGVsbG8sIFdvcmxkIQ==');
+			expect(history.currentItem.navigationURL).toBe('data:text/plain;base64,SGVsbG8sIFdvcmxkIQ==');
 		});
 
 		it('Throws an error when pushing an history item with an opaque URL that is not a data URL as its source', () => {
@@ -296,7 +296,7 @@ describe('HistoryItemList', () => {
 				history.replace({
 					title: 'Example',
 					url: 'https://example.com',
-					sourceURL: 'about:blank',
+					navigationURL: 'about:blank',
 					state: null,
 					popState: false,
 					scrollRestoration: HistoryScrollRestorationEnum.auto,
@@ -313,7 +313,7 @@ describe('HistoryItemList', () => {
 			history.push({
 				title: 'Example',
 				url: 'https://example.com',
-				sourceURL: null,
+				navigationURL: null,
 				state: null,
 				popState: false,
 				scrollRestoration: HistoryScrollRestorationEnum.auto,
@@ -323,7 +323,7 @@ describe('HistoryItemList', () => {
 			history.push({
 				title: 'Example 2',
 				url: 'https://example2.com',
-				sourceURL: null,
+				navigationURL: null,
 				state: null,
 				popState: false,
 				scrollRestoration: HistoryScrollRestorationEnum.manual,
@@ -335,7 +335,7 @@ describe('HistoryItemList', () => {
 				{
 					title: '',
 					url: 'about:blank',
-					sourceURL: null,
+					navigationURL: null,
 					state: null,
 					popState: false,
 					scrollRestoration: HistoryScrollRestorationEnum.auto,
@@ -346,7 +346,7 @@ describe('HistoryItemList', () => {
 			expect(history.currentItem).toEqual({
 				title: '',
 				url: 'about:blank',
-				sourceURL: null,
+				navigationURL: null,
 				state: null,
 				popState: false,
 				scrollRestoration: HistoryScrollRestorationEnum.auto,

@@ -419,7 +419,8 @@ export default class HTMLIFrameElement extends HTMLElement {
 		this.#iframe
 			.goto(targetURL.href, {
 				referrer: originURL.origin,
-				referrerPolicy: <TRequestReferrerPolicy>this.referrerPolicy
+				referrerPolicy: <TRequestReferrerPolicy>this.referrerPolicy,
+				inheritOrigin: true
 			})
 			.then(() => this.dispatchEvent(new Event('load')))
 			.catch((error) => {

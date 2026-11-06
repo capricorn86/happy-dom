@@ -62,12 +62,13 @@ export default class Location {
 			history.push({
 				title: '',
 				url: url.href,
-				sourceURL: history.currentItem.sourceURL,
+				navigationURL: history.currentItem.navigationURL,
 				state: history.currentItem.state,
 				popState: true,
 				scrollRestoration: HistoryScrollRestorationEnum.manual,
 				method: history.currentItem.method,
-				formData: history.currentItem.formData || null
+				formData: history.currentItem.formData || null,
+				inheritOrigin: history.currentItem.inheritOrigin
 			});
 
 			this[PropertySymbol.setURL](this.#browserFrame, url.href);

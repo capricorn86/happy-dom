@@ -93,8 +93,7 @@ export default class BrowserFrame implements IBrowserFrame {
 
 		this.window[PropertySymbol.location][PropertySymbol.setURL](this, relativeURLHref);
 		this[PropertySymbol.history].currentItem.url = relativeURLHref;
-		this[PropertySymbol.history].currentItem.sourceURL =
-			relativeURL.origin !== 'null' ? relativeURLHref : '';
+		this[PropertySymbol.history].currentItem.navigationURL = relativeURLHref;
 
 		BrowserFrameCrossOriginIsolation.isolate(this);
 	}
@@ -104,8 +103,8 @@ export default class BrowserFrame implements IBrowserFrame {
 	 *
 	 * @returns URL.
 	 */
-	public get sourceURL(): string | null {
-		return this[PropertySymbol.history].currentItem.sourceURL;
+	public get navigationURL(): string {
+		return this[PropertySymbol.history].currentItem.navigationURL;
 	}
 
 	/**

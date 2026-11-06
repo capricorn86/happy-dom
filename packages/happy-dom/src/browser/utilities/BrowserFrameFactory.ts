@@ -22,6 +22,7 @@ export default class BrowserFrameFactory {
 		frame.window[PropertySymbol.parent] = parentFrame.window;
 		frame.window[PropertySymbol.top] = parentFrame.window.top;
 		frame[PropertySymbol.contentWindow] = frame.window;
+		frame[PropertySymbol.history].currentItem.inheritOrigin = true;
 		return frame;
 	}
 

@@ -345,7 +345,7 @@ Task #1
 				const frame = BrowserFrameFactory.createChildFrame(parentFrame);
 				mockFetch(page.mainFrame.window);
 
-				await frame.goto(childURL);
+				await frame.goto(childURL, { inheritOrigin: true });
 
 				return { browser, page, parentFrame, frame };
 			};
@@ -536,7 +536,7 @@ Task #1
 
 				await frame.goto('https://child.example/');
 
-				await frame.goto('about:blank');
+				await frame.goto('about:blank', { inheritOrigin: true });
 				expect(frame.window.parent).toBe(page.mainFrame.window);
 				expect(frame.window.top).toBe(page.mainFrame.window);
 
@@ -563,7 +563,7 @@ Task #1
 				await browser.close();
 			});
 
-			it.only('Keeps the opaque origin of a "data:" document when a frame navigates to "about:blank".', async () => {
+			it('Keeps the opaque origin of a "data:" document when a frame navigates to "about:blank".', async () => {
 				const browser = new Browser();
 				const page = browser.newPage();
 				page.mainFrame.url = 'https://parent.example/';

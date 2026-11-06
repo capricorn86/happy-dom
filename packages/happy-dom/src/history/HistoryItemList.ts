@@ -8,12 +8,13 @@ export default class HistoryItemList {
 	public currentItem: IHistoryItem = {
 		title: '',
 		url: 'about:blank',
-		sourceURL: null,
+		navigationURL: 'about:blank',
 		state: null,
 		popState: false,
 		scrollRestoration: HistoryScrollRestorationEnum.auto,
 		method: 'GET',
-		formData: null
+		formData: null,
+		inheritOrigin: false
 	};
 	public readonly items: IHistoryItem[] = [this.currentItem];
 
@@ -23,16 +24,6 @@ export default class HistoryItemList {
 	 * @param historyItem History item.
 	 */
 	public push(historyItem: IHistoryItem): void {
-		if (historyItem.sourceURL) {
-			const url = new URL(historyItem.sourceURL);
-			// Data URLs are considered a data source
-			if (url.origin === 'null' && url.protocol !== 'data:') {
-				throw new Error(
-					`Failed to execute "push" on "HistoryItemList": An history item should not have an opaque URL that is not a data URL as its source.`
-				);
-			}
-		}
-
 		const index = this.items.indexOf(this.currentItem);
 
 		// If the current item is not the last one, remove all items after it.
@@ -50,16 +41,6 @@ export default class HistoryItemList {
 	 * @param historyItem History item to replace the current one with.
 	 */
 	public replace(historyItem: IHistoryItem): void {
-		if (historyItem.sourceURL) {
-			// Data URLs are considered a data source.
-			const url = new URL(historyItem.sourceURL);
-			if (url.origin === 'null' && url.protocol !== 'data:') {
-				throw new Error(
-					`Failed to execute "replace" on "HistoryItemList": An history item should not have an opaque URL that is not a data URL as its source.`
-				);
-			}
-		}
-
 		const index = this.items.indexOf(this.currentItem);
 
 		// If the current item is not the last one, remove all items after it.
@@ -83,12 +64,13 @@ export default class HistoryItemList {
 		this.currentItem = {
 			title: '',
 			url: 'about:blank',
-			sourceURL: null,
+			navigationURL: 'about:blank',
 			state: null,
 			popState: false,
 			scrollRestoration: HistoryScrollRestorationEnum.auto,
 			method: 'GET',
-			formData: null
+			formData: null,
+			inheritOrigin: this.items[0]?.inheritOrigin ?? false
 		};
 		this.items.push(this.currentItem);
 	}

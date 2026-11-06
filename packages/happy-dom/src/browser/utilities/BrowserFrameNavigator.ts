@@ -75,12 +75,13 @@ export default class BrowserFrameNavigator {
 				history.push({
 					title: '',
 					url: targetURL.href,
-					sourceURL: history.currentItem.sourceURL,
+					navigationURL: history.currentItem.navigationURL,
 					state: null,
 					popState: true,
 					scrollRestoration: HistoryScrollRestorationEnum.manual,
 					method: method || (formData ? 'POST' : 'GET'),
-					formData: formData || null
+					formData: formData || null,
+					inheritOrigin: history.currentItem.inheritOrigin
 				});
 			}
 
@@ -132,8 +133,7 @@ export default class BrowserFrameNavigator {
 			if (!frame.page.context.browser.settings.navigation.disableFallbackToSetURL) {
 				frame.window.location[PropertySymbol.setURL](frame, targetURL.href);
 				frame[PropertySymbol.history].currentItem.url = targetURL.href;
-				frame[PropertySymbol.history].currentItem.sourceURL =
-					targetURL.origin !== 'null' || targetURL.protocol === 'data:' ? targetURL.href : null;
+				frame[PropertySymbol.history].currentItem.navigationURL = targetURL.href;
 				BrowserFrameCrossOriginIsolation.isolate(frame);
 			}
 
@@ -147,13 +147,13 @@ export default class BrowserFrameNavigator {
 			history.push({
 				title: '',
 				url: targetURL.href,
-				sourceURL:
-					targetURL.origin !== 'null' || targetURL.protocol === 'data:' ? targetURL.href : null,
+				navigationURL: targetURL.href,
 				state: null,
 				popState: false,
 				scrollRestoration: HistoryScrollRestorationEnum.auto,
 				method: method || (formData ? 'POST' : 'GET'),
-				formData: formData || null
+				formData: formData || null,
+				inheritOrigin: goToOptions?.inheritOrigin || false
 			});
 		}
 
@@ -300,7 +300,7 @@ export default class BrowserFrameNavigator {
 		if (response.url && response.url !== frame[PropertySymbol.history].currentItem.url) {
 			frame.window[PropertySymbol.location][PropertySymbol.setURL](frame, response.url);
 			frame[PropertySymbol.history].currentItem.url = response.url;
-			frame[PropertySymbol.history].currentItem.sourceURL = response.url;
+			frame[PropertySymbol.history].currentItem.navigationURL = response.url;
 			BrowserFrameCrossOriginIsolation.isolate(frame);
 		}
 
