@@ -12,6 +12,9 @@ import type HTMLOutputElement from '../html-output-element/HTMLOutputElement.js'
 import type HTMLProgressElement from '../html-progress-element/HTMLProgressElement.js';
 import type HTMLSelectElement from '../html-select-element/HTMLSelectElement.js';
 import type HTMLTextAreaElement from '../html-text-area-element/HTMLTextAreaElement.js';
+import type Node from '../node/Node.js';
+import type Element from '../element/Element.js';
+import NodeTypeEnum from '../node/NodeTypeEnum.js';
 
 /**
  * HTML Label Element.
@@ -118,11 +121,67 @@ export default class HTMLLabelElement extends HTMLElement {
 			event instanceof MouseEvent
 		) {
 			const control = this.control;
-			if (control && event.target !== control) {
+			if (
+				control &&
+				event.target !== control &&
+				!this.#isInInteractiveContent(<Node | null>event.target)
+			) {
 				control.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
 			}
 		}
 
 		return returnValue;
+	}
+
+	/**
+	 * Returns "true" if the target is interactive content inside the label, or a descendant of interactive content inside the label.
+	 *
+	 * Label activation does nothing for these targets.
+	 *
+	 * @see https://html.spec.whatwg.org/multipage/forms.html#the-label-element
+	 * @see https://html.spec.whatwg.org/multipage/dom.html#interactive-content
+	 * @param target Event target.
+	 * @returns "true" if the target is in interactive content.
+	 */
+	#isInInteractiveContent(target: Node | null): boolean {
+		let node = target;
+		while (node && node !== this) {
+			if (node[PropertySymbol.nodeType] === NodeTypeEnum.elementNode) {
+				const element = <Element>node;
+				switch (element[PropertySymbol.tagName]) {
+					case 'BUTTON':
+					case 'DETAILS':
+					case 'EMBED':
+					case 'IFRAME':
+					case 'LABEL':
+					case 'SELECT':
+					case 'TEXTAREA':
+						return true;
+					case 'A':
+						if (element.hasAttribute('href')) {
+							return true;
+						}
+						break;
+					case 'AUDIO':
+					case 'VIDEO':
+						if (element.hasAttribute('controls')) {
+							return true;
+						}
+						break;
+					case 'IMG':
+						if (element.hasAttribute('usemap')) {
+							return true;
+						}
+						break;
+					case 'INPUT':
+						if ((<HTMLInputElement>element).type !== 'hidden') {
+							return true;
+						}
+						break;
+				}
+			}
+			node = node[PropertySymbol.parentNode];
+		}
+		return false;
 	}
 }
