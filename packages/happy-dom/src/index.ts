@@ -57,6 +57,7 @@ import Touch from './event/Touch.js';
 import UIEvent from './event/UIEvent.js';
 import AnimationEvent from './event/events/AnimationEvent.js';
 import ClipboardEvent from './event/events/ClipboardEvent.js';
+import CompositionEvent from './event/events/CompositionEvent.js';
 import CookieChangeEvent from './event/events/CookieChangeEvent.js';
 import CustomEvent from './event/events/CustomEvent.js';
 import ErrorEvent from './event/events/ErrorEvent.js';
@@ -227,6 +228,7 @@ import type IUIEventInit from './event/IUIEventInit.js';
 import type { TEventListener } from './event/TEventListener.js';
 import type IAnimationEventInit from './event/events/IAnimationEventInit.js';
 import type IClipboardEventInit from './event/events/IClipboardEventInit.js';
+import type ICompositionEventInit from './event/events/ICompositionEventInit.js';
 import type ICookieChangeEventInit from './event/events/ICookieChangeEventInit.js';
 import type ICustomEventInit from './event/events/ICustomEventInit.js';
 import type IErrorEventInit from './event/events/IErrorEventInit.js';
@@ -256,6 +258,7 @@ export type {
 	ICanvasRenderingContext2D,
 	ICanvasShape,
 	IClipboardEventInit,
+	ICompositionEventInit,
 	ICookieChangeEventInit,
 	IConsole,
 	ICookie,
@@ -306,6 +309,7 @@ export {
 	ClipboardEvent,
 	ClipboardItem,
 	Comment,
+	CompositionEvent,
 	CookieChangeEvent,
 	CookieSameSiteEnum,
 	CookieStore,
