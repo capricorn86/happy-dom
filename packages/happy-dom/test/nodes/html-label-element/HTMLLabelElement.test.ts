@@ -210,6 +210,80 @@ describe('HTMLLabelElement', () => {
 			expect(div.querySelector('input')?.checked).toBe(true);
 		});
 
+		it("Doesn't click the control when clicking other interactive content inside the label.", () => {
+			const div = document.createElement('div');
+			div.innerHTML = `
+                <label>
+                  <input type="checkbox">
+                  <span>Description</span>
+                  <button type="button"><span>Help</span></button>
+                  <a href="#help">More</a>
+                </label>
+            `;
+			document.body.appendChild(div);
+
+			const input = <HTMLInputElement>div.querySelector('input');
+			let inputClickCount = 0;
+
+			input.addEventListener('click', () => inputClickCount++);
+
+			div.querySelector('button')!.click();
+			(<HTMLElement>div.querySelector('button span')).click();
+			div.querySelector('a')!.click();
+
+			expect(inputClickCount).toBe(0);
+			expect(input.checked).toBe(false);
+		});
+
+		it('Clicks the control when clicking non-interactive content inside the label.', () => {
+			const div = document.createElement('div');
+			div.innerHTML = `
+                <label>
+                  <input type="checkbox">
+                  <a>Description</a>
+                  <input type="hidden">
+                </label>
+            `;
+			document.body.appendChild(div);
+
+			const input = <HTMLInputElement>div.querySelector('input[type="checkbox"]');
+
+			(<HTMLElement>div.querySelector('a')).click();
+			expect(input.checked).toBe(true);
+
+			(<HTMLElement>div.querySelector('input[type="hidden"]')).click();
+			expect(input.checked).toBe(false);
+		});
+
+		it('Clicks a button control once when its click handler clicks another input inside the label.', () => {
+			const div = document.createElement('div');
+			div.innerHTML = `
+                <label>
+                  <button type="button" role="checkbox"></button>
+                  <input type="checkbox" aria-hidden="true" tabindex="-1">
+                  <span>Description</span>
+                </label>
+            `;
+			document.body.appendChild(div);
+
+			const button = <HTMLElement>div.querySelector('button');
+			const input = <HTMLInputElement>div.querySelector('input');
+			let buttonClickCount = 0;
+
+			button.addEventListener('click', () => {
+				buttonClickCount++;
+				input.click();
+			});
+
+			button.click();
+			expect(buttonClickCount).toBe(1);
+			expect(input.checked).toBe(true);
+
+			(<HTMLElement>div.querySelector('span')).click();
+			expect(buttonClickCount).toBe(2);
+			expect(input.checked).toBe(false);
+		});
+
 		describe('get labels()', () => {
 			it('Does not duplicate entries on repeated reads.', () => {
 				const input = document.createElement('input');
