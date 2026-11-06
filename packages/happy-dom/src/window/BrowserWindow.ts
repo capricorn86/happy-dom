@@ -30,6 +30,7 @@ import CSSMediaRule from '../css/rules/CSSMediaRule.js';
 import CSSStyleRule from '../css/rules/CSSStyleRule.js';
 import CSSSupportsRule from '../css/rules/CSSSupportsRule.js';
 import CustomElementRegistry from '../custom-element/CustomElementRegistry.js';
+import ElementInternals from '../element-internals/ElementInternals.js';
 import type DOMParser from '../dom-parser/DOMParser.js';
 import DataTransfer from '../event/DataTransfer.js';
 import DataTransferItem from '../event/DataTransferItem.js';
@@ -669,6 +670,7 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	public readonly TimeRanges = TimeRanges;
 	public readonly TextTrackCueList = TextTrackCueList;
 	public readonly ValidityState = ValidityState;
+	public readonly ElementInternals = ElementInternals;
 	public readonly MutationRecord = MutationRecord;
 	public readonly IntersectionObserver = IntersectionObserver;
 	public readonly IntersectionObserverEntry = IntersectionObserverEntry;

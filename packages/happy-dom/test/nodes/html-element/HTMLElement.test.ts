@@ -10,6 +10,7 @@ import type CustomElementRegistry from '../../../src/custom-element/CustomElemen
 import { beforeEach, afterEach, describe, it, expect, vi } from 'vitest';
 import type EventTarget from '../../../src/event/EventTarget.js';
 import Event from '../../../src/event/Event.js';
+import ElementInternals from '../../../src/element-internals/ElementInternals.js';
 
 describe('HTMLElement', () => {
 	let window: Window;
@@ -903,6 +904,72 @@ describe('HTMLElement', () => {
 			expect(() => {
 				parent.appendChild(element);
 			}).not.toThrow();
+		});
+	});
+
+	describe('attachInternals()', () => {
+		it('Throws if the element is not a form-associated custom element.', () => {
+			/* eslint-disable jsdoc/require-jsdoc */
+			class NotFormAssociatedElement extends HTMLElement {}
+			/* eslint-enable jsdoc/require-jsdoc */
+
+			window.customElements.define('not-form-associated-element', NotFormAssociatedElement);
+
+			const instance = <NotFormAssociatedElement>(
+				document.createElement('not-form-associated-element')
+			);
+
+			expect(() => instance.attachInternals()).toThrow(
+				"Failed to execute 'attachInternals' on 'HTMLElement': The target element is not a form-associated custom element."
+			);
+		});
+
+		it('Throws if called a second time on the same element.', () => {
+			/* eslint-disable jsdoc/require-jsdoc */
+			class FormAssociatedElement extends HTMLElement {
+				public static formAssociated = true;
+			}
+			/* eslint-enable jsdoc/require-jsdoc */
+
+			window.customElements.define('form-associated-element', FormAssociatedElement);
+
+			const instance = <FormAssociatedElement>document.createElement('form-associated-element');
+
+			instance.attachInternals();
+
+			expect(() => instance.attachInternals()).toThrow(
+				"Failed to execute 'attachInternals' on 'HTMLElement': ElementInternals for the specified element was already attached."
+			);
+		});
+
+		it('Returns an ElementInternals instance for a form-associated custom element.', () => {
+			/* eslint-disable jsdoc/require-jsdoc */
+			class FormAssociatedElement extends HTMLElement {
+				public static formAssociated = true;
+			}
+			/* eslint-enable jsdoc/require-jsdoc */
+
+			window.customElements.define('form-associated-element-2', FormAssociatedElement);
+
+			const instance = <FormAssociatedElement>document.createElement('form-associated-element-2');
+			const internals = instance.attachInternals();
+
+			expect(internals).toBeInstanceOf(ElementInternals);
+		});
+
+		it('Exposes ElementInternals as a window global.', () => {
+			/* eslint-disable jsdoc/require-jsdoc */
+			class FormAssociatedElement extends HTMLElement {
+				public static formAssociated = true;
+			}
+			/* eslint-enable jsdoc/require-jsdoc */
+
+			window.customElements.define('form-associated-element-3', FormAssociatedElement);
+
+			const instance = <FormAssociatedElement>document.createElement('form-associated-element-3');
+
+			expect(window.ElementInternals).toBe(ElementInternals);
+			expect(instance.attachInternals()).toBeInstanceOf(window.ElementInternals);
 		});
 	});
 });

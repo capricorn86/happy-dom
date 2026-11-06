@@ -71,6 +71,7 @@ export default class CustomElementRegistry {
 		elementClass.prototype[PropertySymbol.tagName] = tagName;
 		elementClass.prototype[PropertySymbol.localName] = name;
 		elementClass.prototype[PropertySymbol.namespaceURI] = NamespaceURI.html;
+		elementClass.prototype[PropertySymbol.formAssociated] = !!elementClass.formAssociated;
 
 		// ObservedAttributes should only be called once by CustomElementRegistry (see #117)
 		const observedAttributes: Set<string> = new Set();
