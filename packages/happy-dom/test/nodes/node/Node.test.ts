@@ -624,6 +624,29 @@ describe('Node', () => {
 			expect(child.isConnected).toBe(true);
 		});
 
+		it('Throws a HierarchyRequestError when appending an ancestor.', () => {
+			let error: unknown;
+			try {
+				document.body.appendChild(document.documentElement);
+			} catch (e) {
+				error = e;
+			}
+			expect(error).toBeInstanceOf(window.DOMException);
+			expect((<DOMException>error).name).toBe(DOMExceptionNameEnum.hierarchyRequestError);
+		});
+
+		it('Throws a HierarchyRequestError when appending a node to itself.', () => {
+			const parent = document.createElement('div');
+			let error: unknown;
+			try {
+				parent.appendChild(parent);
+			} catch (e) {
+				error = e;
+			}
+			expect(error).toBeInstanceOf(window.DOMException);
+			expect((<DOMException>error).name).toBe(DOMExceptionNameEnum.hierarchyRequestError);
+		});
+
 		// See: https://developer.mozilla.org/en-US/docs/Web/API/DocumentFragment
 		it('Append the child nodes instead of the actual node if the type is DocumentFragment.', () => {
 			const template = <HTMLTemplateElement>document.createElement('template');
@@ -651,7 +674,7 @@ describe('Node', () => {
 				expect(error).toEqual(
 					new window.DOMException(
 						"Failed to execute 'appendChild' on 'Node': The new node is a parent of the node to insert to.",
-						DOMExceptionNameEnum.domException
+						DOMExceptionNameEnum.hierarchyRequestError
 					)
 				);
 			}
@@ -747,6 +770,19 @@ describe('Node', () => {
 			Node.prototype.removeChild.call(parent, child);
 
 			expect(parent.childNodes.length).toBe(0);
+		});
+
+		it('Throws a NotFoundError when the node is not a child.', () => {
+			const parent = document.createElement('div');
+			const child = document.createElement('span');
+			let error: unknown;
+			try {
+				parent.removeChild(child);
+			} catch (e) {
+				error = e;
+			}
+			expect(error).toBeInstanceOf(window.DOMException);
+			expect((<DOMException>error).name).toBe(DOMExceptionNameEnum.notFoundError);
 		});
 	});
 
@@ -908,7 +944,7 @@ describe('Node', () => {
 				expect(error).toEqual(
 					new window.DOMException(
 						"Failed to execute 'insertBefore' on 'Node': The new node is a parent of the node to insert to.",
-						DOMExceptionNameEnum.domException
+						DOMExceptionNameEnum.hierarchyRequestError
 					)
 				);
 			}
@@ -942,6 +978,20 @@ describe('Node', () => {
 			parent.insertBefore(span, article);
 
 			expect(span.ownerDocument === document).toBe(true);
+		});
+
+		it('Throws a NotFoundError when the reference node is not a child.', () => {
+			const parent = document.createElement('div');
+			const child = document.createElement('span');
+			const reference = document.createElement('span');
+			let error: unknown;
+			try {
+				parent.insertBefore(child, reference);
+			} catch (e) {
+				error = e;
+			}
+			expect(error).toBeInstanceOf(window.DOMException);
+			expect((<DOMException>error).name).toBe(DOMExceptionNameEnum.notFoundError);
 		});
 	});
 
