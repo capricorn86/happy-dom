@@ -6,6 +6,7 @@ import QuerySelectorNthChildHTML from './data/QuerySelectorNthChildHTML.js';
 import type HTMLInputElement from '../../src/nodes/html-input-element/HTMLInputElement.js';
 import { beforeEach, describe, it, expect } from 'vitest';
 import QuerySelector from '../../src/query-selector/QuerySelector.js';
+import DOMExceptionNameEnum from '../../src/exception/DOMExceptionNameEnum.js';
 
 describe('QuerySelector', () => {
 	let window: Window;
@@ -21,12 +22,14 @@ describe('QuerySelector', () => {
 			const container = document.createElement('div');
 			expect(() => container.querySelectorAll(<string>(<unknown>12))).toThrow(
 				new window.DOMException(
-					`Failed to execute 'querySelectorAll' on 'HTMLDivElement': '12' is not a valid selector.`
+					`Failed to execute 'querySelectorAll' on 'HTMLDivElement': '12' is not a valid selector.`,
+					DOMExceptionNameEnum.syntaxError
 				)
 			);
 			expect(() => container.querySelectorAll(<string>(<unknown>(() => {})))).toThrow(
 				new window.DOMException(
-					`Failed to execute 'querySelectorAll' on 'HTMLDivElement': '() => {}' is not a valid selector.`
+					`Failed to execute 'querySelectorAll' on 'HTMLDivElement': '() => {}' is not a valid selector.`,
+					DOMExceptionNameEnum.syntaxError
 				)
 			);
 			expect(() => container.querySelectorAll(<string>(<unknown>Symbol('test')))).toThrow(
@@ -35,6 +38,21 @@ describe('QuerySelector', () => {
 				)
 			);
 			expect(() => container.querySelectorAll(<string>(<unknown>true))).not.toThrow();
+		});
+
+		it('Throws a SyntaxError for invalid selectors.', () => {
+			const getName = (fn: () => unknown): string => {
+				try {
+					fn();
+					return 'no throw';
+				} catch (e) {
+					return (<DOMException>e).name;
+				}
+			};
+
+			expect(getName(() => document.querySelectorAll(''))).toBe(DOMExceptionNameEnum.syntaxError);
+			expect(getName(() => document.querySelector('['))).toBe(DOMExceptionNameEnum.syntaxError);
+			expect(getName(() => document.body.matches('!!'))).toBe(DOMExceptionNameEnum.syntaxError);
 		});
 
 		it('Converts selector values to string.', () => {
@@ -297,7 +315,8 @@ describe('QuerySelector', () => {
 			// Invalid selector ".before:" should throw (colon without pseudo-class name)
 			expect(() => container.querySelectorAll('.before:')).toThrow(
 				new window.DOMException(
-					`Failed to execute 'querySelectorAll' on 'Element': '.before:' is not a valid selector.`
+					`Failed to execute 'querySelectorAll' on 'Element': '.before:' is not a valid selector.`,
+					DOMExceptionNameEnum.syntaxError
 				)
 			);
 			// Valid selector with escaped colon should match
@@ -1459,12 +1478,14 @@ describe('QuerySelector', () => {
 			const container = document.createElement('div');
 			expect(() => container.querySelectorAll('.test,.test-2,')).toThrow(
 				new window.DOMException(
-					"Failed to execute 'querySelectorAll' on 'Element': '.test,.test-2,' is not a valid selector."
+					"Failed to execute 'querySelectorAll' on 'Element': '.test,.test-2,' is not a valid selector.",
+					DOMExceptionNameEnum.syntaxError
 				)
 			);
 			expect(() => container.querySelectorAll('.test.,,test-2')).toThrow(
 				new window.DOMException(
-					"Failed to execute 'querySelectorAll' on 'Element': '.test.,,test-2' is not a valid selector."
+					"Failed to execute 'querySelectorAll' on 'Element': '.test.,,test-2' is not a valid selector.",
+					DOMExceptionNameEnum.syntaxError
 				)
 			);
 		});
@@ -1663,12 +1684,14 @@ describe('QuerySelector', () => {
 			const container = document.createElement('div');
 			expect(() => container.querySelector(<string>(<unknown>12))).toThrow(
 				new window.DOMException(
-					`Failed to execute 'querySelector' on 'HTMLDivElement': '12' is not a valid selector.`
+					`Failed to execute 'querySelector' on 'HTMLDivElement': '12' is not a valid selector.`,
+					DOMExceptionNameEnum.syntaxError
 				)
 			);
 			expect(() => container.querySelector(<string>(<unknown>(() => {})))).toThrow(
 				new window.DOMException(
-					`Failed to execute 'querySelector' on 'HTMLDivElement': '() => {}' is not a valid selector.`
+					`Failed to execute 'querySelector' on 'HTMLDivElement': '() => {}' is not a valid selector.`,
+					DOMExceptionNameEnum.syntaxError
 				)
 			);
 			expect(() => container.querySelector(<string>(<unknown>Symbol('test')))).toThrow(
@@ -2181,12 +2204,14 @@ describe('QuerySelector', () => {
 			const container = document.createElement('div');
 			expect(() => container.matches(<string>(<unknown>12))).toThrow(
 				new window.DOMException(
-					`Failed to execute 'matches' on 'HTMLDivElement': '12' is not a valid selector.`
+					`Failed to execute 'matches' on 'HTMLDivElement': '12' is not a valid selector.`,
+					DOMExceptionNameEnum.syntaxError
 				)
 			);
 			expect(() => container.matches(<string>(<unknown>(() => {})))).toThrow(
 				new window.DOMException(
-					`Failed to execute 'matches' on 'HTMLDivElement': '() => {}' is not a valid selector.`
+					`Failed to execute 'matches' on 'HTMLDivElement': '() => {}' is not a valid selector.`,
+					DOMExceptionNameEnum.syntaxError
 				)
 			);
 			expect(() => container.matches(<string>(<unknown>Symbol('test')))).toThrow(
@@ -2321,27 +2346,32 @@ describe('QuerySelector', () => {
 			const element = div.children[0];
 			expect(() => element.matches('1')).toThrow(
 				new window.DOMException(
-					`Failed to execute 'matches' on 'HTMLDivElement': '1' is not a valid selector.`
+					`Failed to execute 'matches' on 'HTMLDivElement': '1' is not a valid selector.`,
+					DOMExceptionNameEnum.syntaxError
 				)
 			);
 			expect(() => element.matches(':not')).toThrow(
 				new window.DOMException(
-					`Failed to execute 'matches' on 'HTMLDivElement': ':not' is not a valid selector.`
+					`Failed to execute 'matches' on 'HTMLDivElement': ':not' is not a valid selector.`,
+					DOMExceptionNameEnum.syntaxError
 				)
 			);
 			expect(() => element.matches(':is')).toThrow(
 				new window.DOMException(
-					`Failed to execute 'matches' on 'HTMLDivElement': ':is' is not a valid selector.`
+					`Failed to execute 'matches' on 'HTMLDivElement': ':is' is not a valid selector.`,
+					DOMExceptionNameEnum.syntaxError
 				)
 			);
 			expect(() => element.matches(':where')).toThrow(
 				new window.DOMException(
-					`Failed to execute 'matches' on 'HTMLDivElement': ':where' is not a valid selector.`
+					`Failed to execute 'matches' on 'HTMLDivElement': ':where' is not a valid selector.`,
+					DOMExceptionNameEnum.syntaxError
 				)
 			);
 			expect(() => element.matches('div:not')).toThrow(
 				new window.DOMException(
-					`Failed to execute 'matches' on 'HTMLDivElement': 'div:not' is not a valid selector.`
+					`Failed to execute 'matches' on 'HTMLDivElement': 'div:not' is not a valid selector.`,
+					DOMExceptionNameEnum.syntaxError
 				)
 			);
 		});
