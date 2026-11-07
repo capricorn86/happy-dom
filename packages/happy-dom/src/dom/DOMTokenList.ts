@@ -1,8 +1,11 @@
 import ClassMethodBinder from '../utilities/ClassMethodBinder.js';
 import type Element from '../nodes/element/Element.js';
 import * as PropertySymbol from '../PropertySymbol.js';
+import DOMException from '../exception/DOMException.js';
+import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum.js';
 
 const ATTRIBUTE_SPLIT_REGEXP = /[\t\f\n\r ]+/;
+const ASCII_WHITESPACE_REGEXP = /[\t\f\n\r ]/;
 
 /**
  * DOM Token List.
@@ -19,7 +22,7 @@ export default class DOMTokenList {
 		items: [],
 		attributeValue: ''
 	};
-	private [PropertySymbol.supports]: string[];
+	private [PropertySymbol.supports]: string[] | null;
 	private [PropertySymbol.proxy]?: this;
 
 	/**
@@ -42,7 +45,7 @@ export default class DOMTokenList {
 
 		this[PropertySymbol.ownerElement] = ownerElement;
 		this[PropertySymbol.attributeName] = attributeName;
-		this[PropertySymbol.supports] = supports || [];
+		this[PropertySymbol.supports] = supports ?? null;
 
 		const methodBinder = new ClassMethodBinder(this, [DOMTokenList]);
 
@@ -179,22 +182,87 @@ export default class DOMTokenList {
 	}
 
 	/**
+	 * Validates a token.
+	 *
+	 * @param token Token.
+	 */
+	#validateToken(token: string): void {
+		if (token === '') {
+			const DOMExceptionClass =
+				this[PropertySymbol.ownerElement][PropertySymbol.window]?.DOMException ?? DOMException;
+			throw new DOMExceptionClass(
+				'The token provided must not be empty.',
+				DOMExceptionNameEnum.syntaxError
+			);
+		}
+		if (ASCII_WHITESPACE_REGEXP.test(token)) {
+			const DOMExceptionClass =
+				this[PropertySymbol.ownerElement][PropertySymbol.window]?.DOMException ?? DOMException;
+			throw new DOMExceptionClass(
+				`The token provided ('${token}') contains HTML space characters, which are not valid in tokens.`,
+				DOMExceptionNameEnum.invalidCharacterError
+			);
+		}
+	}
+
+	/**
+	 * Updates the attribute value from the token list.
+	 *
+	 * @param list Token list.
+	 */
+	#updateTokenList(list: string[]): void {
+		if (
+			this[PropertySymbol.ownerElement].getAttribute(this[PropertySymbol.attributeName]) === null &&
+			!list.length
+		) {
+			return;
+		}
+		this[PropertySymbol.ownerElement].setAttribute(
+			this[PropertySymbol.attributeName],
+			list.join(' ')
+		);
+	}
+
+	/**
 	 * Replace Token.
 	 *
 	 * @param token Token.
 	 * @param newToken NewToken.
 	 */
 	public replace(token: string, newToken: string): boolean {
+		token = String(token);
+		newToken = String(newToken);
+
+		if (token === '' || newToken === '') {
+			const DOMExceptionClass =
+				this[PropertySymbol.ownerElement][PropertySymbol.window]?.DOMException ?? DOMException;
+			throw new DOMExceptionClass(
+				'The token provided must not be empty.',
+				DOMExceptionNameEnum.syntaxError
+			);
+		}
+
+		if (ASCII_WHITESPACE_REGEXP.test(token) || ASCII_WHITESPACE_REGEXP.test(newToken)) {
+			const DOMExceptionClass =
+				this[PropertySymbol.ownerElement][PropertySymbol.window]?.DOMException ?? DOMException;
+			throw new DOMExceptionClass(
+				'The token provided contains HTML space characters, which are not valid in tokens.',
+				DOMExceptionNameEnum.invalidCharacterError
+			);
+		}
+
 		const list = this[PropertySymbol.getTokenList]().slice();
 		const index = list.indexOf(token);
 		if (index === -1) {
 			return false;
 		}
-		list[index] = newToken;
-		this[PropertySymbol.ownerElement].setAttribute(
-			this[PropertySymbol.attributeName],
-			list.join(' ')
-		);
+		const newIndex = list.indexOf(newToken);
+		if (newIndex !== -1 && newIndex !== index) {
+			list.splice(index, 1);
+		} else {
+			list[index] = newToken;
+		}
+		this.#updateTokenList(list);
 		return true;
 	}
 
@@ -204,7 +272,10 @@ export default class DOMTokenList {
 	 * @param token Token.
 	 */
 	public supports(token: string): boolean {
-		return this[PropertySymbol.supports].includes(token);
+		if (!this[PropertySymbol.supports]) {
+			throw new TypeError('DOMTokenList has no supported tokens.');
+		}
+		return this[PropertySymbol.supports].includes(String(token).toLowerCase());
 	}
 
 	/**
@@ -253,20 +324,24 @@ export default class DOMTokenList {
 	 * @param tokens Tokens.
 	 */
 	public add(...tokens: string[]): void {
+		const stringTokens: string[] = [];
+		for (const token of tokens) {
+			const stringToken = String(token);
+			this.#validateToken(stringToken);
+			stringTokens.push(stringToken);
+		}
+
 		const list = this[PropertySymbol.getTokenList]().slice();
 		const existingTokens = new Set(list);
 
-		for (const token of tokens) {
+		for (const token of stringTokens) {
 			if (!existingTokens.has(token)) {
 				existingTokens.add(token);
 				list.push(token);
 			}
 		}
 
-		this[PropertySymbol.ownerElement].setAttribute(
-			this[PropertySymbol.attributeName],
-			list.join(' ')
-		);
+		this.#updateTokenList(list);
 	}
 
 	/**
@@ -275,14 +350,18 @@ export default class DOMTokenList {
 	 * @param tokens Tokens.
 	 */
 	public remove(...tokens: string[]): void {
+		const stringTokens: string[] = [];
+		for (const token of tokens) {
+			const stringToken = String(token);
+			this.#validateToken(stringToken);
+			stringTokens.push(stringToken);
+		}
+
 		const list = this[PropertySymbol.getTokenList]();
-		const tokensToRemove = new Set(tokens);
+		const tokensToRemove = new Set(stringTokens);
 		const newList = list.filter((item) => !tokensToRemove.has(item));
 
-		this[PropertySymbol.ownerElement].setAttribute(
-			this[PropertySymbol.attributeName],
-			newList.join(' ')
-		);
+		this.#updateTokenList(newList);
 	}
 
 	/**
@@ -292,7 +371,7 @@ export default class DOMTokenList {
 	 * @returns TRUE if it contains.
 	 */
 	public contains(className: string): boolean {
-		return this[PropertySymbol.getTokenList]().includes(className);
+		return this[PropertySymbol.getTokenList]().includes(String(className));
 	}
 
 	/**
@@ -303,6 +382,9 @@ export default class DOMTokenList {
 	 * @returns A boolean value, `true` or `false`, indicating whether class name is in the list after the call or not.
 	 */
 	public toggle(token: string, force?: boolean): boolean {
+		token = String(token);
+		this.#validateToken(token);
+
 		let shouldAdd: boolean;
 
 		if (force !== undefined) {
