@@ -4,6 +4,7 @@ import type Element from '../../src/nodes/element/Element.js';
 import { beforeEach, describe, it, expect } from 'vitest';
 import DOMTokenList from '../../src/dom/DOMTokenList.js';
 import * as PropertySymbol from '../../src/PropertySymbol.js';
+import DOMExceptionNameEnum from '../../src/exception/DOMExceptionNameEnum.js';
 
 describe('DOMTokenList', () => {
 	let window: Window;
@@ -247,6 +248,64 @@ describe('DOMTokenList', () => {
 			expect(domTokenList.supports('stylesheet')).toBe(true);
 			expect(domTokenList.supports('modulepreload')).toBe(true);
 			expect(domTokenList.supports('unsupported')).toBe(false);
+		});
+	});
+
+	describe('token validation and stringification (issue #2588)', () => {
+		it('Throws SyntaxError on empty token in add(), remove(), toggle(), replace().', () => {
+			expect(() => classList.add('')).toThrowError(window.DOMException);
+			expect(() => {
+				try {
+					classList.add('');
+				} catch (e: any) {
+					expect(e.name).toBe(DOMExceptionNameEnum.syntaxError);
+					throw e;
+				}
+			}).toThrow();
+
+			expect(() => classList.remove('')).toThrowError(window.DOMException);
+			expect(() => classList.toggle('')).toThrowError(window.DOMException);
+			expect(() => classList.replace('', 'a')).toThrowError(window.DOMException);
+			expect(() => classList.replace('a', '')).toThrowError(window.DOMException);
+		});
+
+		it('Throws InvalidCharacterError on tokens containing ASCII whitespace.', () => {
+			expect(() => classList.add('a b')).toThrowError(window.DOMException);
+			expect(() => {
+				try {
+					classList.add('a b');
+				} catch (e: any) {
+					expect(e.name).toBe(DOMExceptionNameEnum.invalidCharacterError);
+					throw e;
+				}
+			}).toThrow();
+
+			expect(() => classList.remove('a	b')).toThrowError(window.DOMException);
+			expect(() => classList.toggle('aa ')).toThrowError(window.DOMException);
+			expect(() => classList.replace('a', 'b c')).toThrowError(window.DOMException);
+		});
+
+		it('Stringifies token arguments across methods.', () => {
+			classList.add(<any>undefined);
+			expect(element.getAttribute('class')).toBe('undefined');
+
+			element.setAttribute('class', 'null undefined');
+			expect(classList.contains(<any>null)).toBe(true);
+			expect(classList.contains(<any>undefined)).toBe(true);
+
+			classList.remove(<any>undefined);
+			expect(element.getAttribute('class')).toBe('null');
+		});
+
+		it('remove() does not create class="" when element has no class attribute.', () => {
+			const div = document.createElement('div');
+			expect(div.getAttribute('class')).toBe(null);
+			div.classList.remove('a');
+			expect(div.getAttribute('class')).toBe(null);
+		});
+
+		it('supports() throws TypeError when no supported tokens defined for attribute.', () => {
+			expect(() => classList.supports('a')).toThrowError(TypeError);
 		});
 	});
 
