@@ -5,6 +5,7 @@ import type Element from '../nodes/element/Element.js';
 import type DocumentFragment from '../nodes/document-fragment/DocumentFragment.js';
 import type BrowserWindow from '../window/BrowserWindow.js';
 import type DOMException from '../exception/DOMException.js';
+import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum.js';
 import NodeTypeEnum from '../nodes/node/NodeTypeEnum.js';
 import * as PropertySymbol from '../PropertySymbol.js';
 import type { TGlobalMatchFunction } from './TGlobalMatchFunction.js';
@@ -160,7 +161,8 @@ export default class SelectorParser {
 	private getInvalidSelectorError(selector: string): DOMException {
 		const name = this.scope.nodeType === NodeTypeEnum.documentNode ? 'Document' : 'Element';
 		return new this.window.DOMException(
-			`Failed to execute 'querySelectorAll' on '${name}': '${selector}' is not a valid selector.`
+			`Failed to execute 'querySelectorAll' on '${name}': '${selector}' is not a valid selector.`,
+			DOMExceptionNameEnum.syntaxError
 		);
 	}
 

@@ -9,6 +9,7 @@ import type DocumentFragment from '../nodes/document-fragment/DocumentFragment.j
 import NodeTypeEnum from '../nodes/node/NodeTypeEnum.js';
 import type ShadowRoot from '../nodes/shadow-root/ShadowRoot.js';
 import type { TGlobalMatchFunction } from './TGlobalMatchFunction.js';
+import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum.js';
 
 /**
  * Selector item.
@@ -174,7 +175,8 @@ export default class SelectorItem {
 						throw new element[PropertySymbol.window].DOMException(
 							`Failed to execute 'matches' on '${
 								element.constructor.name
-							}': '${this.getSelectorString()}' is not a valid selector.`
+							}': '${this.getSelectorString()}' is not a valid selector.`,
+							DOMExceptionNameEnum.syntaxError
 						);
 					}
 					break;
