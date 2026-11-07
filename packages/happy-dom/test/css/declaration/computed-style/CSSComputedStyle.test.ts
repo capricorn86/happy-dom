@@ -133,5 +133,31 @@ describe('CSSComputedStyle', () => {
 
 			expect(propertyManager.get('width')).toBe(null);
 		});
+
+		it('Resolves rem against root element font size when ancestor computed style is cached (#2586).', () => {
+			document.documentElement.style.fontSize = '10px';
+			// Triggers caching on document.documentElement (HTML)
+			expect(window.getComputedStyle(document.documentElement).fontSize).toBe('10px');
+
+			document.body.appendChild(element);
+			element.style.padding = '0.8rem';
+
+			const computedStyle = window.getComputedStyle(element);
+			expect(computedStyle.padding).toBe('8px');
+		});
+
+		it('Resolves em against parent element font size when ancestor computed style is cached (#2586).', () => {
+			const parent = document.createElement('div');
+			parent.style.fontSize = '20px';
+			document.body.appendChild(parent);
+			// Triggers caching on parent
+			expect(window.getComputedStyle(parent).fontSize).toBe('20px');
+
+			parent.appendChild(element);
+			element.style.padding = '1.5em';
+
+			const computedStyle = window.getComputedStyle(element);
+			expect(computedStyle.padding).toBe('30px');
+		});
 	});
 });
