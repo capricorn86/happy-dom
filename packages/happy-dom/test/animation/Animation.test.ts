@@ -113,6 +113,24 @@ describe('Animation', () => {
 			expect(listener).toHaveBeenCalledOnce();
 			await expect(finished).rejects.toMatchObject({ name: 'AbortError' });
 		});
+
+		it('Does not cause an unhandled promise rejection when cancel() is called without awaiting finished.', async () => {
+			let unhandledRejection: unknown = null;
+			const onUnhandledRejection = (reason: unknown): void => {
+				unhandledRejection = reason;
+			};
+			process.on('unhandledRejection', onUnhandledRejection);
+
+			try {
+				animation.play();
+				animation.cancel();
+
+				await new Promise((resolve) => setTimeout(resolve, 10));
+				expect(unhandledRejection).toBe(null);
+			} finally {
+				process.off('unhandledRejection', onUnhandledRejection);
+			}
+		});
 	});
 
 	describe('reverse()', () => {

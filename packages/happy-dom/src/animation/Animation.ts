@@ -192,6 +192,7 @@ export default class Animation extends EventTarget {
 		this.#playState = 'idle';
 		this.#currentTime = null;
 		this.startTime = null;
+		this.finished.catch(() => {});
 		this.#rejectFinished?.(
 			new this[PropertySymbol.window].DOMException(
 				'The animation was canceled.',
