@@ -3,6 +3,7 @@ import * as PropertySymbol from '../PropertySymbol.js';
 import type SelectorItem from './SelectorItem.js';
 import NodeList from '../nodes/node/NodeList.js';
 import NodeTypeEnum from '../nodes/node/NodeTypeEnum.js';
+import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum.js';
 import SelectorCombinatorEnum from './SelectorCombinatorEnum.js';
 import type Document from '../nodes/document/Document.js';
 import type DocumentFragment from '../nodes/document-fragment/DocumentFragment.js';
@@ -85,13 +86,15 @@ export default class QuerySelector {
 
 		if (<string>selector === '') {
 			throw new window.DOMException(
-				`Failed to execute 'querySelectorAll' on '${node.constructor.name}': The provided selector is empty.`
+				`Failed to execute 'querySelectorAll' on '${node.constructor.name}': The provided selector is empty.`,
+				DOMExceptionNameEnum.syntaxError
 			);
 		}
 
 		if (typeof selector === 'function') {
 			throw new window.DOMException(
-				`Failed to execute 'querySelectorAll' on '${node.constructor.name}': '${selector}' is not a valid selector.`
+				`Failed to execute 'querySelectorAll' on '${node.constructor.name}': '${selector}' is not a valid selector.`,
+				DOMExceptionNameEnum.syntaxError
 			);
 		}
 
@@ -105,7 +108,8 @@ export default class QuerySelector {
 
 		if (INVALID_SELECTOR_REGEXP.test(selector)) {
 			throw new window.DOMException(
-				`Failed to execute 'querySelectorAll' on '${node.constructor.name}': '${selector}' is not a valid selector.`
+				`Failed to execute 'querySelectorAll' on '${node.constructor.name}': '${selector}' is not a valid selector.`,
+				DOMExceptionNameEnum.syntaxError
 			);
 		}
 
@@ -224,13 +228,15 @@ export default class QuerySelector {
 
 		if (selector === '') {
 			throw new window.DOMException(
-				`Failed to execute 'querySelector' on '${node.constructor.name}': The provided selector is empty.`
+				`Failed to execute 'querySelector' on '${node.constructor.name}': The provided selector is empty.`,
+				DOMExceptionNameEnum.syntaxError
 			);
 		}
 
 		if (typeof selector === 'function') {
 			throw new window.DOMException(
-				`Failed to execute 'querySelector' on '${node.constructor.name}': '${selector}' is not a valid selector.`
+				`Failed to execute 'querySelector' on '${node.constructor.name}': '${selector}' is not a valid selector.`,
+				DOMExceptionNameEnum.syntaxError
 			);
 		}
 
@@ -244,7 +250,8 @@ export default class QuerySelector {
 
 		if (INVALID_SELECTOR_REGEXP.test(selector)) {
 			throw new window.DOMException(
-				`Failed to execute 'querySelector' on '${node.constructor.name}': '${selector}' is not a valid selector.`
+				`Failed to execute 'querySelector' on '${node.constructor.name}': '${selector}' is not a valid selector.`,
+				DOMExceptionNameEnum.syntaxError
 			);
 		}
 
@@ -342,7 +349,8 @@ export default class QuerySelector {
 				return null;
 			}
 			throw new window.DOMException(
-				`Failed to execute 'matches' on '${element.constructor.name}': The provided selector is empty.`
+				`Failed to execute 'matches' on '${element.constructor.name}': The provided selector is empty.`,
+				DOMExceptionNameEnum.syntaxError
 			);
 		}
 
@@ -351,7 +359,8 @@ export default class QuerySelector {
 				return null;
 			}
 			throw new window.DOMException(
-				`Failed to execute 'matches' on '${element.constructor.name}': '${selector}' is not a valid selector.`
+				`Failed to execute 'matches' on '${element.constructor.name}': '${selector}' is not a valid selector.`,
+				DOMExceptionNameEnum.syntaxError
 			);
 		}
 
@@ -369,7 +378,8 @@ export default class QuerySelector {
 				return null;
 			}
 			throw new window.DOMException(
-				`Failed to execute 'matches' on '${element.constructor.name}': '${selector}' is not a valid selector.`
+				`Failed to execute 'matches' on '${element.constructor.name}': '${selector}' is not a valid selector.`,
+				DOMExceptionNameEnum.syntaxError
 			);
 		}
 
