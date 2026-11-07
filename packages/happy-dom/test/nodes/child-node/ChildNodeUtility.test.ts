@@ -68,6 +68,24 @@ describe('ChildNodeUtility', () => {
 				'<span class="child1"></span><span class="child2"></span><span class="child5"></span><span class="child6"></span><span class="child7"></span>'
 			);
 		});
+
+		it('Keeps the node when it is one of the replacement nodes.', () => {
+			const parent = document.createElement('div');
+			const [a, b, c] = ['a', 'b', 'c'].map((name) =>
+				parent.appendChild(document.createElement(name))
+			);
+
+			ChildNodeUtility.replaceWith(a, b, c, a);
+			expect(parent.innerHTML).toBe('<b></b><c></c><a></a>');
+		});
+
+		it('Keeps the node when it is the only replacement node.', () => {
+			const parent = document.createElement('div');
+			const [a, b] = ['a', 'b'].map((name) => parent.appendChild(document.createElement(name)));
+
+			ChildNodeUtility.replaceWith(a, a);
+			expect(parent.innerHTML).toBe('<a></a><b></b>');
+		});
 	});
 
 	describe('before()', () => {
@@ -181,6 +199,26 @@ describe('ChildNodeUtility', () => {
 			).toBe(
 				'<span class="child1"></span><span class="child2"></span><span class="child3"></span><span class="child5"></span><span class="child6"></span><span class="child7"></span>'
 			);
+		});
+
+		it('Keeps the order when the arguments include the next sibling.', () => {
+			const parent = document.createElement('div');
+			const [t, x, y, z] = ['test', 'x', 'y', 'z'].map((name) =>
+				parent.appendChild(document.createElement(name))
+			);
+
+			ChildNodeUtility.after(t, x, y, z);
+			expect(parent.innerHTML).toBe('<test></test><x></x><y></y><z></z>');
+		});
+
+		it('Inserts after the viable next sibling when the arguments include a following sibling.', () => {
+			const parent = document.createElement('div');
+			const [t, x, y] = ['test', 'x', 'y'].map((name) =>
+				parent.appendChild(document.createElement(name))
+			);
+
+			ChildNodeUtility.after(t, y);
+			expect(parent.innerHTML).toBe('<test></test><y></y><x></x>');
 		});
 	});
 });
