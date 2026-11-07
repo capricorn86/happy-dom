@@ -516,14 +516,15 @@ export default class Node extends EventTarget {
 		if (!disableValidations) {
 			if (node === self) {
 				throw new this[PropertySymbol.window].DOMException(
-					"Failed to execute 'appendChild' on 'Node': Not possible to append a node as a child of itself."
+					"Failed to execute 'appendChild' on 'Node': Not possible to append a node as a child of itself.",
+					DOMExceptionNameEnum.hierarchyRequestError
 				);
 			}
 
 			if (NodeUtility.isInclusiveAncestor(node, self, true)) {
 				throw new this[PropertySymbol.window].DOMException(
 					"Failed to execute 'appendChild' on 'Node': The new node is a parent of the node to insert to.",
-					DOMExceptionNameEnum.domException
+					DOMExceptionNameEnum.hierarchyRequestError
 				);
 			}
 		}
@@ -588,7 +589,8 @@ export default class Node extends EventTarget {
 
 		if (index === -1) {
 			throw new this[PropertySymbol.window].DOMException(
-				`Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of this node.`
+				`Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of this node.`,
+				DOMExceptionNameEnum.notFoundError
 			);
 		}
 
@@ -668,14 +670,15 @@ export default class Node extends EventTarget {
 		if (!disableValidations) {
 			if (newNode === self) {
 				throw new this[PropertySymbol.window].DOMException(
-					"Failed to execute 'insertBefore' on 'Node': Not possible to insert a node as a child of itself."
+					"Failed to execute 'insertBefore' on 'Node': Not possible to insert a node as a child of itself.",
+					DOMExceptionNameEnum.hierarchyRequestError
 				);
 			}
 
 			if (NodeUtility.isInclusiveAncestor(newNode, self, true)) {
 				throw new this[PropertySymbol.window].DOMException(
 					"Failed to execute 'insertBefore' on 'Node': The new node is a parent of the node to insert to.",
-					DOMExceptionNameEnum.domException
+					DOMExceptionNameEnum.hierarchyRequestError
 				);
 			}
 		}
@@ -702,7 +705,8 @@ export default class Node extends EventTarget {
 		// We need to check if the referenceNode is a child of this node before removing it from its parent, as the parent may be the same node and the index would be wrong.
 		if (!nodeArray.includes(referenceNode)) {
 			throw new this[PropertySymbol.window].DOMException(
-				"Failed to execute 'insertBefore' on 'Node': The node before which the new node is to be inserted is not a child of this node."
+				"Failed to execute 'insertBefore' on 'Node': The node before which the new node is to be inserted is not a child of this node.",
+				DOMExceptionNameEnum.notFoundError
 			);
 		}
 
