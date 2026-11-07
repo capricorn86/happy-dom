@@ -31,18 +31,34 @@ export default class ChildNodeUtility {
 			return;
 		}
 
+		// The viable next sibling is the first following sibling that is not one of the nodes to insert.
+		// See: https://dom.spec.whatwg.org/#dom-childnode-replacewith
+		const nodeSet = new Set(nodes.filter((node) => node instanceof Node));
+		let viableNextSibling = childNode.nextSibling;
+		while (viableNextSibling && nodeSet.has(viableNextSibling)) {
+			viableNextSibling = viableNextSibling.nextSibling;
+		}
+
+		const fragment = parent[PropertySymbol.ownerDocument].createDocumentFragment();
+
 		for (const node of nodes) {
 			if (node instanceof Node) {
-				parent.insertBefore(node, childNode);
+				fragment.appendChild(node);
 			} else {
-				parent.insertBefore(
-					parent[PropertySymbol.ownerDocument].createTextNode(String(node)),
-					childNode
-				);
+				fragment.appendChild(parent[PropertySymbol.ownerDocument].createTextNode(String(node)));
 			}
 		}
 
-		parent.removeChild(childNode);
+		// If the node itself was one of the nodes, it has been moved into the fragment and should not be removed from the parent.
+		if (childNode[PropertySymbol.parentNode] === parent) {
+			parent.removeChild(childNode);
+		}
+
+		if (viableNextSibling) {
+			parent.insertBefore(fragment, viableNextSibling);
+		} else {
+			parent.appendChild(fragment);
+		}
 	}
 
 	/**
@@ -83,18 +99,28 @@ export default class ChildNodeUtility {
 			return;
 		}
 
-		const nextSibling = childNode.nextSibling;
+		// The viable next sibling is the first following sibling that is not one of the nodes to insert.
+		// See: https://dom.spec.whatwg.org/#dom-childnode-after
+		const nodeSet = new Set(nodes.filter((node) => node instanceof Node));
+		let viableNextSibling = childNode.nextSibling;
+		while (viableNextSibling && nodeSet.has(viableNextSibling)) {
+			viableNextSibling = viableNextSibling.nextSibling;
+		}
+
+		const fragment = parent[PropertySymbol.ownerDocument].createDocumentFragment();
 
 		for (const node of nodes) {
-			const insertedNode =
+			const nodeToInsert =
 				node instanceof Node
 					? node
 					: parent[PropertySymbol.ownerDocument].createTextNode(String(node));
-			if (!nextSibling) {
-				parent.appendChild(insertedNode);
-			} else {
-				parent.insertBefore(insertedNode, nextSibling);
-			}
+			fragment.appendChild(nodeToInsert);
+		}
+
+		if (viableNextSibling) {
+			parent.insertBefore(fragment, viableNextSibling);
+		} else {
+			parent.appendChild(fragment);
 		}
 	}
 }
