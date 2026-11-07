@@ -191,6 +191,16 @@ export default class CSSComputedStyle {
 					}
 				}
 				Object.assign(cssVariables, parentElement.propertyManager.getVariables());
+				const cachedFontSize = parseFloat(
+					parentElement.propertyManager.get('font-size')?.value ?? ''
+				);
+				if (!isNaN(cachedFontSize)) {
+					if ((<Element>parentElement.element)[PropertySymbol.tagName] === 'HTML') {
+						rootFontSize = cachedFontSize;
+					} else {
+						parentFontSize = cachedFontSize;
+					}
+				}
 				propertyManager = inheritedPropertyManager.clone();
 			} else {
 				parentElement.cssTexts.sort((a, b) => a.priorityWeight - b.priorityWeight);
