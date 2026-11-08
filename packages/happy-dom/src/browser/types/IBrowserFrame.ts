@@ -31,7 +31,6 @@ export default interface IBrowserFrame {
 	[PropertySymbol.contentWindow]: BrowserWindow | CrossOriginBrowserWindow | null;
 	[PropertySymbol.opener]: IBrowserFrameOpener | null;
 	[PropertySymbol.popup]: boolean;
-	[PropertySymbol.id]: number;
 
 	/**
 	 * Returns a promise that is resolved when all resources has been loaded, fetch has completed, and all async tasks such as timers are complete.

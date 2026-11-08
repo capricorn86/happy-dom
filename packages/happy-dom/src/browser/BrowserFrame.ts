@@ -15,7 +15,6 @@ import type Document from '../nodes/document/Document.js';
 import HistoryItemList from '../history/HistoryItemList.js';
 import BrowserFrameCrossOriginIsolation from './utilities/BrowserFrameCrossOriginIsolation.js';
 import type IBrowserFrameOpener from './types/IBrowserFrameOpener.js';
-import BrowserFrameId from './utilities/BrowserFrameId.js';
 
 /**
  * Browser frame.
@@ -33,7 +32,6 @@ export default class BrowserFrame implements IBrowserFrame {
 	public [PropertySymbol.opener]: IBrowserFrameOpener | null = null;
 	public [PropertySymbol.popup]: boolean = false;
 	public [PropertySymbol.history] = new HistoryItemList();
-	public [PropertySymbol.id]: number = BrowserFrameId.getUniqueID();
 
 	/**
 	 * Constructor.

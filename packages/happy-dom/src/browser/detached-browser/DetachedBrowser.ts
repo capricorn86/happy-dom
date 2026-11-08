@@ -11,7 +11,6 @@ import * as PropertySymbol from '../../PropertySymbol.js';
 import BrowserErrorCaptureEnum from '../enums/BrowserErrorCaptureEnum.js';
 import BrowserExceptionObserver from '../utilities/BrowserExceptionObserver.js';
 import type BrowserContext from '../BrowserContext.js';
-import BrowserFrameId from '../utilities/BrowserFrameId.js';
 
 /**
  * Detached browser used when constructing a Window instance without a browser.
@@ -25,7 +24,6 @@ export default class DetachedBrowser implements IBrowser {
 		options?: { url?: string; width?: number; height?: number }
 	) => BrowserWindow;
 	public [PropertySymbol.exceptionObserver]: BrowserExceptionObserver | null = null;
-	public [PropertySymbol.id]: number = BrowserFrameId.getUniqueID();
 
 	/**
 	 * Constructor.

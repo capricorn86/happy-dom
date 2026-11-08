@@ -57,9 +57,10 @@ export default class BrowserFrameURL {
 		const navigationURL = new URL(frame.navigationURL);
 
 		// Data URLs are treated as unique opaque origins by modern browsers, rather than inheriting the origin of the settings object responsible for the navigation.
+		// A window ID distinguishes each data document while allowing inherited about:blank frames to share its origin.
 		// @see https://developer.mozilla.org/en-US/docs/Web/URI/Reference/Schemes/data
 		if (navigationURL.protocol === 'data:') {
-			return `data:${frame[PropertySymbol.id]}`;
+			return `data:${frame.window[PropertySymbol.internalId]}`;
 		}
 
 		if (
