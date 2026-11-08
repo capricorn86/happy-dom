@@ -1,6 +1,8 @@
 import EventTarget from '../../event/EventTarget.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
 import type Document from '../document/Document.js';
+import type DocumentType from '../document-type/DocumentType.js';
+import type ProcessingInstruction from '../processing-instruction/ProcessingInstruction.js';
 import type Element from '../element/Element.js';
 import NodeTypeEnum from './NodeTypeEnum.js';
 import NodeDocumentPositionEnum from './NodeDocumentPositionEnum.js';
@@ -252,10 +254,36 @@ export default class Node extends EventTarget {
 	/**
 	 * Node name.
 	 *
+	 * Returns the name of the node based on its type, so that this getter also works when
+	 * invoked directly on a subclass instance (e.g. via
+	 * `Object.getOwnPropertyDescriptor(Node.prototype, 'nodeName').get.call(element)`), as
+	 * security libraries such as DOMPurify do to avoid clobbered properties.
+	 *
 	 * @returns Node name.
 	 */
 	public get nodeName(): string {
-		return '';
+		switch (this[PropertySymbol.nodeType]) {
+			case NodeTypeEnum.elementNode:
+				return (<Element>(<unknown>this))[PropertySymbol.tagName]!;
+			case NodeTypeEnum.attributeNode:
+				return (<Attr>(<unknown>this)).name;
+			case NodeTypeEnum.textNode:
+				return '#text';
+			case NodeTypeEnum.cdataSectionNode:
+				return '#cdata-section';
+			case NodeTypeEnum.processingInstructionNode:
+				return (<ProcessingInstruction>(<unknown>this)).target;
+			case NodeTypeEnum.commentNode:
+				return '#comment';
+			case NodeTypeEnum.documentNode:
+				return '#document';
+			case NodeTypeEnum.documentTypeNode:
+				return (<DocumentType>(<unknown>this)).name;
+			case NodeTypeEnum.documentFragmentNode:
+				return '#document-fragment';
+			default:
+				return '';
+		}
 	}
 
 	/**
