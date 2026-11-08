@@ -40,41 +40,45 @@ export default class BrowserFrameURL {
 			return true;
 		}
 
-		const parentURL = this.getInheritedFrameURL(parentFrame);
-		const childURL = this.getInheritedFrameURL(childFrame);
-		return parentURL === null || childURL === null || parentURL.origin === childURL.origin;
+		const parentOrigin = this.getInheritedOrigin(parentFrame);
+		const childOrigin = this.getInheritedOrigin(childFrame);
+
+		return parentOrigin !== null && childOrigin !== null && parentOrigin === childOrigin;
 	}
 
 	/**
-	 * Returns the frame URL or the inherited frame URL if the frame has no source URL.
+	 * Returns the frame origin or an origin inherited from it's parent or opener.
 	 *
 	 * @see https://developer.mozilla.org/en-US/docs/Web/Security/Defenses/Same-origin_policy#inherited_origins
 	 * @param frame Frame.
-	 * @returns Frame URL or inherited frame URL, or null if opaque origin.
+	 * @returns Frame origin, or null for data origins.
 	 */
-	private static getInheritedFrameURL(frame: IBrowserFrame): URL | null {
+	private static getInheritedOrigin(frame: IBrowserFrame): string | null {
 		const navigationURL = new URL(frame.navigationURL);
-
-		if (!frame[PropertySymbol.history].currentItem.inheritOrigin) {
-			return navigationURL;
-		}
 
 		// Data URLs are treated as unique opaque origins by modern browsers, rather than inheriting the origin of the settings object responsible for the navigation.
 		// @see https://developer.mozilla.org/en-US/docs/Web/URI/Reference/Schemes/data
-		if (navigationURL.origin !== 'null' || navigationURL.protocol === 'data:') {
-			return navigationURL;
+		if (navigationURL.protocol === 'data:') {
+			return `data:${frame[PropertySymbol.id]}`;
+		}
+
+		if (
+			!frame[PropertySymbol.history].currentItem.inheritOrigin ||
+			navigationURL.origin !== 'null'
+		) {
+			return navigationURL.origin;
 		}
 
 		// Popup frame
 		if (frame[PropertySymbol.opener]?.frame) {
-			return this.getInheritedFrameURL(frame[PropertySymbol.opener].frame);
+			return this.getInheritedOrigin(frame[PropertySymbol.opener].frame);
 		}
 
 		// Child frame (e.g. iframe)
 		if (frame.parentFrame) {
-			return this.getInheritedFrameURL(frame.parentFrame);
+			return this.getInheritedOrigin(frame.parentFrame);
 		}
 
-		return null;
+		return navigationURL.origin;
 	}
 }

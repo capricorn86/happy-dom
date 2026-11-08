@@ -496,6 +496,7 @@ describe('HTMLIFrameElement', () => {
 			dataFrame.window.history.replaceState(null, '', 'about:blank');
 
 			const nestedIframe = <HTMLIFrameElement>dataFrame.window.document.createElement('iframe');
+
 			nestedIframe.src = 'about:blank';
 			dataFrame.window.document.body.appendChild(nestedIframe);
 
@@ -601,68 +602,66 @@ describe('HTMLIFrameElement', () => {
 		});
 
 		it('Returns instance of CrossOriginBrowserWindow for URL with different origin.', async () => {
-			await new Promise((resolve) => {
-				const browser = new Browser({ settings: { enableIframePageLoading: true } });
-				const page = browser.newPage();
-				const window = page.mainFrame.window;
-				const document = window.document;
-				const element = <HTMLIFrameElement>document.createElement('iframe');
-				const iframeOrigin = 'https://other.origin.com';
-				const iframeSrc = iframeOrigin + '/iframe.html';
-				const documentOrigin = 'https://localhost:8080';
-				let fetchedURL: string | null = null;
+			const browser = new Browser({ settings: { enableIframePageLoading: true }, console });
+			const page = browser.newPage();
+			const window = page.mainFrame.window;
+			const document = window.document;
+			const element = <HTMLIFrameElement>document.createElement('iframe');
+			const iframeOrigin = 'https://other.origin.com';
+			const iframeSrc = iframeOrigin + '/iframe.html';
+			const documentOrigin = 'https://localhost:8080';
+			let fetchedURL: string | null = null;
 
-				page.mainFrame.url = documentOrigin;
+			page.mainFrame.url = documentOrigin;
 
-				vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (
-					this: Fetch
-				): Promise<Response> {
-					fetchedURL = <string>(<any>this).request.url;
-					return new Promise((resolve) => {
-						setTimeout(() => {
-							resolve(<Response>(<unknown>{
-								text: () => Promise.resolve('<html><head></head><body>Test</body></html>'),
-								ok: true,
-								headers: new Headers()
-							}));
-						}, 1);
-					});
-				});
-
-				document.body.appendChild(element);
-				element.src = iframeSrc;
-				element.addEventListener('load', () => {
-					const message = 'test';
-					let triggeredEvent: MessageEvent | null = null;
-					expect(fetchedURL).toBe(iframeSrc);
-					expect(element.contentWindow instanceof CrossOriginBrowserWindow).toBe(true);
-					expect(() => element.contentWindow?.location.href).toThrow(
-						new DOMException(
-							`Blocked a frame with origin "${documentOrigin}" from accessing a cross-origin frame.`,
-							DOMExceptionNameEnum.securityError
-						)
-					);
-					expect(element.contentWindow?.self === element.contentWindow).toBe(true);
-					expect(element.contentWindow?.window === element.contentWindow).toBe(true);
-					expect(element.contentWindow?.parent === window).toBe(true);
-					expect(element.contentWindow?.top === window).toBe(true);
-					page.mainFrame.childFrames[0].window.addEventListener(
-						'message',
-						(event) => (triggeredEvent = <MessageEvent>event)
-					);
-					element.contentWindow?.postMessage(message, iframeOrigin);
-					expect(triggeredEvent).toBe(null);
-
+			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (
+				this: Fetch
+			): Promise<Response> {
+				fetchedURL = <string>(<any>this).request.url;
+				return new Promise((resolve) => {
 					setTimeout(() => {
-						expect(element.contentDocument).toBe(null);
-						expect((<MessageEvent>triggeredEvent).data).toBe(message);
-						expect((<MessageEvent>triggeredEvent).origin).toBe(documentOrigin);
-						expect((<MessageEvent>triggeredEvent).source === window).toBe(true);
-						expect((<MessageEvent>triggeredEvent).lastEventId).toBe('');
-						resolve(null);
-					}, 10);
+						resolve(<Response>(<unknown>{
+							text: () => Promise.resolve('<html><head></head><body>Test</body></html>'),
+							ok: true,
+							headers: new Headers()
+						}));
+					}, 1);
 				});
 			});
+
+			document.body.appendChild(element);
+			element.src = iframeSrc;
+			await new Promise((resolve) => element.addEventListener('load', resolve));
+
+			const message = 'test';
+			let triggeredEvent: MessageEvent | null = null;
+			expect(fetchedURL).toBe(iframeSrc);
+			expect(element.contentWindow instanceof CrossOriginBrowserWindow).toBe(true);
+
+			expect(() => element.contentWindow?.location.href).toThrow(
+				new DOMException(
+					`Blocked a frame with origin "${documentOrigin}/" from accessing a cross-origin frame.`,
+					DOMExceptionNameEnum.securityError
+				)
+			);
+			expect(element.contentWindow?.self === element.contentWindow).toBe(true);
+			expect(element.contentWindow?.window === element.contentWindow).toBe(true);
+			expect(element.contentWindow?.parent === window).toBe(true);
+			expect(element.contentWindow?.top === window).toBe(true);
+			page.mainFrame.childFrames[0].window.addEventListener(
+				'message',
+				(event) => (triggeredEvent = <MessageEvent>event)
+			);
+			element.contentWindow?.postMessage(message, iframeOrigin);
+			expect(triggeredEvent).toBe(null);
+
+			await new Promise((resolve) => setTimeout(resolve, 10));
+
+			expect(element.contentDocument).toBe(null);
+			expect((<MessageEvent>triggeredEvent!).data).toBe(message);
+			expect((<MessageEvent>triggeredEvent!).origin).toBe(documentOrigin);
+			expect((<MessageEvent>triggeredEvent!).source === window).toBe(true);
+			expect((<MessageEvent>triggeredEvent!).lastEventId).toBe('');
 		});
 
 		it('Keeps the iframe isolated when "src" is changed to a "javascript:" URL and returns the same CrossOriginBrowserWindow.', async () => {

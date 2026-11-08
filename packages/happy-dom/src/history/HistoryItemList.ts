@@ -14,7 +14,7 @@ export default class HistoryItemList {
 		scrollRestoration: HistoryScrollRestorationEnum.auto,
 		method: 'GET',
 		formData: null,
-		inheritOrigin: false
+		inheritOrigin: true
 	};
 	public readonly items: IHistoryItem[] = [this.currentItem];
 
@@ -70,7 +70,7 @@ export default class HistoryItemList {
 			scrollRestoration: HistoryScrollRestorationEnum.auto,
 			method: 'GET',
 			formData: null,
-			inheritOrigin: this.items[0]?.inheritOrigin ?? false
+			inheritOrigin: true
 		};
 		this.items.push(this.currentItem);
 	}

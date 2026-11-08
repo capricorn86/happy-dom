@@ -7,6 +7,16 @@ import BrowserFrameCrossOriginIsolation from './BrowserFrameCrossOriginIsolation
  * Browser frame factory.
  */
 export default class BrowserFrameFactory {
+	public static frameID = 1;
+
+	/**
+	 * Returns a unique frame ID.
+	 *
+	 * @returns Unique frame ID.
+	 */
+	public static getUniqueFrameID(): number {
+		return this.frameID++;
+	}
 	/**
 	 * Creates a new frame.
 	 *

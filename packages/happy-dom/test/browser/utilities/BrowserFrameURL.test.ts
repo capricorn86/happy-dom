@@ -68,8 +68,7 @@ describe('BrowserFrameURL', () => {
 			const popupPage = browser.newPage();
 			const popupFrame = popupPage.mainFrame;
 
-			popupFrame[PropertySymbol.popupOpenerFrame] = page.mainFrame;
-			popupFrame[PropertySymbol.popupOpenerWindow] = page.mainFrame.window;
+			popupFrame[PropertySymbol.opener] = { frame: page.mainFrame, window: page.mainFrame.window };
 
 			page.mainFrame.openedPages.push(popupPage);
 
