@@ -133,5 +133,32 @@ describe('CSSComputedStyle', () => {
 
 			expect(propertyManager.get('width')).toBe(null);
 		});
+
+		it('Updates the style when an attribute of an ancestor above the parent changes.', () => {
+			document.head.innerHTML = `
+				<style>
+					.tabs:not([data-stage='full']) .help { visibility: hidden; }
+					[data-stage='full'] .help { color: rgb(0, 128, 0); }
+				</style>
+			`;
+			document.body.innerHTML =
+				'<div class="tabs"><div><button class="help">Help</button></div></div>';
+
+			const tabs = <HTMLElement>document.querySelector('.tabs');
+			const help = <HTMLElement>document.querySelector('.help');
+
+			expect(window.getComputedStyle(help).visibility).toBe('hidden');
+
+			tabs.setAttribute('data-stage', 'full');
+
+			// The hiding rule no longer matches, so the button is no longer hidden
+			// (no rule sets "visibility" now, so happy-dom reports it as empty).
+			expect(window.getComputedStyle(help).visibility).not.toBe('hidden');
+			expect(window.getComputedStyle(help).color).toBe('rgb(0, 128, 0)');
+
+			tabs.removeAttribute('data-stage');
+
+			expect(window.getComputedStyle(help).visibility).toBe('hidden');
+		});
 	});
 });
