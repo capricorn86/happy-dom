@@ -431,7 +431,7 @@ export default class SelectorItem {
 				return priorityWeightForHas ? { priorityWeight: priorityWeightForHas } : null;
 			case 'focus':
 			case 'focus-visible':
-				return element[PropertySymbol.ownerDocument].activeElement === element
+				return element[PropertySymbol.ownerDocument][PropertySymbol.activeElement] === element
 					? { priorityWeight: 10 }
 					: null;
 			case 'scope':
