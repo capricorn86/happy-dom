@@ -478,7 +478,7 @@ describe('HTMLIFrameElement', () => {
 			await browser.close();
 		});
 
-		it('Does not give a nested "about:blank" iframe the origin of the top window when a "data:" iframe changes its URL to "about:blank" with history.replaceState().', async () => {
+		it('Preserves opaque-origin isolation for nested "about:blank" iframes after history.replaceState().', async () => {
 			const browser = new Browser({ settings: { enableIframePageLoading: true } });
 			const page = browser.newPage();
 			vi.spyOn(Fetch.prototype, 'send').mockImplementation(() =>
@@ -493,7 +493,15 @@ describe('HTMLIFrameElement', () => {
 
 			const dataFrame = page.mainFrame.childFrames[0];
 
-			dataFrame.window.history.replaceState(null, '', 'about:blank');
+			expect(() => dataFrame.window.history.replaceState(null, '', 'about:blank')).toThrowError(
+				expect.objectContaining({
+					name: 'SecurityError',
+					constructor: dataFrame.window.DOMException
+				})
+			);
+			expect(dataFrame.window.location.href).toBe('data:text/html,<body></body>');
+
+			dataFrame.window.history.replaceState(null, '', 'data:text/html,<body></body>#hash');
 
 			const nestedIframe = <HTMLIFrameElement>dataFrame.window.document.createElement('iframe');
 
