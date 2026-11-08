@@ -3270,6 +3270,26 @@ describe('CSSStyleDeclaration', () => {
 			expect(declaration.getPropertyValue('text-transform')).toBe('uppercase');
 			expect(declaration.getPropertyPriority('text-transform')).toBe('important');
 		});
+
+		it('Parses the style attribute once and parses it again only when it changes.', () => {
+			const declaration = new CSSStyleDeclaration(PropertySymbol.illegalConstructor, window, {
+				element
+			});
+
+			element.setAttribute('style', 'color: red; font-size: 12px;');
+
+			expect(declaration.getPropertyValue('color')).toBe('red');
+			const propertyManager = declaration[PropertySymbol.cache].propertyManager;
+			expect(declaration.getPropertyValue('font-size')).toBe('12px');
+			expect(declaration.length).toBe(2);
+			expect(declaration[PropertySymbol.cache].propertyManager).toBe(propertyManager);
+
+			element.setAttribute('style', 'color: blue;');
+
+			expect(declaration.getPropertyValue('color')).toBe('blue');
+			expect(declaration.getPropertyValue('font-size')).toBe('');
+			expect(declaration[PropertySymbol.cache].propertyManager).not.toBe(propertyManager);
+		});
 	});
 
 	describe('getPropertyPriority()', () => {
