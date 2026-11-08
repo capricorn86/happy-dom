@@ -986,6 +986,27 @@ describe('HTMLParser', () => {
 			expect(new HTMLSerializer().serializeToString(result)).toBe(`<span>1 &gt; 0</span>`);
 		});
 
+		it('Parses "<" followed by a digit as text instead of a tag.', () => {
+			const container = document.createElement('div');
+			container.innerHTML = '<p>text <3 more</p>';
+
+			const p = <HTMLElement>container.childNodes[0];
+
+			expect(p.childNodes.length).toBe(1);
+			expect(p.childNodes[0].nodeType).toBe(NodeTypeEnum.textNode);
+			expect(p.childNodes[0].textContent).toBe('text <3 more');
+		});
+
+		it('Parses "<" followed by a non-letter as text, but still parses tags starting with a letter followed by a digit.', () => {
+			const result = new HTMLParser(window).parse(
+				'<div><3 and <9lives are text</div><h1>Heading</h1>'
+			);
+
+			expect(new HTMLSerializer().serializeToString(result)).toBe(
+				'<div>&lt;3 and &lt;9lives are text</div><h1>Heading</h1>'
+			);
+		});
+
 		it('Parses malformed attributes.', () => {
 			const result = new HTMLParser(window).parse(
 				`
