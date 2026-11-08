@@ -348,6 +348,7 @@ export default class CSSStyleDeclaration {
 
 		if (cache.attributeValue !== attributeValue) {
 			cache.propertyManager = new CSSPropertyManager({ cssText: attributeValue });
+			cache.attributeValue = attributeValue;
 		}
 
 		return <CSSPropertyManager>cache.propertyManager;
