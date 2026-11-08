@@ -5,7 +5,6 @@ import type Element from '../element/Element.js';
 import Node from '../node/Node.js';
 import NamespaceURI from '../../config/NamespaceURI.js';
 import HTMLCollection from '../element/HTMLCollection.js';
-import QuerySelector from '../../query-selector/QuerySelector.js';
 import type ICachedResult from '../node/ICachedResult.js';
 
 /**
@@ -83,13 +82,33 @@ export default class ParentNodeUtility {
 		parentNode: Element | DocumentFragment | Document,
 		className: string
 	): HTMLCollection<Element> {
-		return new HTMLCollection(
-			PropertySymbol.illegalConstructor,
-			() =>
-				QuerySelector.querySelectorAll(parentNode, `.${className.replace(/\s+/gm, '.')}`)[
-					PropertySymbol.items
-				]
-		);
+		// Per the DOM spec, the argument is split on ASCII whitespace and each
+		// token is compared as a plain class name (no CSS selector involved).
+		const tokens = String(className)
+			.split(/[\t\n\f\r ]+/)
+			.filter((token) => token !== '');
+
+		const find = (parent: Element | DocumentFragment | Document): Element[] => {
+			if (tokens.length === 0) {
+				return [];
+			}
+
+			const elements: Element[] = [];
+
+			for (const element of (<DocumentFragment>parent)[PropertySymbol.elementArray]) {
+				if (tokens.every((token) => element.classList.contains(token))) {
+					elements.push(<Element>element);
+				}
+
+				for (const foundElement of find(<Element>element)) {
+					elements.push(foundElement);
+				}
+			}
+
+			return elements;
+		};
+
+		return new HTMLCollection<Element>(PropertySymbol.illegalConstructor, () => find(parentNode));
 	}
 
 	/**

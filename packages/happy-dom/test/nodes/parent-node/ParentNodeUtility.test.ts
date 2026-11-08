@@ -191,6 +191,38 @@ describe('ParentNodeUtility', () => {
 			expect(div.getElementsByClassName(unicodeClassName)[0]).toBe(element);
 			expect(document.getElementsByClassName(unicodeClassName)[0]).toBe(element);
 		});
+
+		it('Matches class names that are not valid CSS identifiers.', () => {
+			document.body.innerHTML = `
+				<div id="t" class="md:flex w-1/2 1x"></div>
+				<p id="decoy" class="a b"></p>
+				<span id="dot" class="a.b"></span>
+			`;
+
+			expect([...document.getElementsByClassName('md:flex')].map((e) => e.id)).toEqual(['t']);
+			expect([...document.getElementsByClassName('w-1/2')].map((e) => e.id)).toEqual(['t']);
+			expect([...document.getElementsByClassName('1x')].map((e) => e.id)).toEqual(['t']);
+		});
+
+		it('Compares "a.b" as a single class name, not as two classes.', () => {
+			document.body.innerHTML = `
+				<div id="t" class="md:flex w-1/2 1x"></div>
+				<p id="decoy" class="a b"></p>
+				<span id="dot" class="a.b"></span>
+			`;
+
+			expect([...document.getElementsByClassName('a.b')].map((e) => e.id)).toEqual(['dot']);
+			expect([...document.getElementsByClassName('a b')].map((e) => e.id)).toEqual(['decoy']);
+		});
+
+		it('Returns an empty collection for an empty class name.', () => {
+			document.body.innerHTML = '<div id="t" class="md:flex"></div>';
+
+			const elements = document.getElementsByClassName('');
+
+			expect(elements instanceof HTMLCollection).toBe(true);
+			expect(elements.length).toBe(0);
+		});
 	});
 
 	describe('getElementsByTagName()', () => {
