@@ -154,6 +154,23 @@ describe('Node', () => {
 		it('Returns emptry string.', () => {
 			expect(NodeFactory.createNode(document, Node).nodeName).toBe('');
 		});
+
+		it('Returns the correct name when the Node.prototype getter is invoked on a subclass instance.', () => {
+			const nodeNameGetter = Object.getOwnPropertyDescriptor(Node.prototype, 'nodeName')!.get!;
+
+			expect(nodeNameGetter.call(document.createElement('p'))).toBe('P');
+			expect(nodeNameGetter.call(document.createTextNode('text'))).toBe('#text');
+			expect(nodeNameGetter.call(document.createComment('comment'))).toBe('#comment');
+			expect(nodeNameGetter.call(document)).toBe('#document');
+			expect(nodeNameGetter.call(document.createDocumentFragment())).toBe('#document-fragment');
+			expect(nodeNameGetter.call(document.implementation.createDocumentType('html', '', ''))).toBe(
+				'html'
+			);
+			expect(nodeNameGetter.call(document.createAttribute('id'))).toBe('id');
+			expect(nodeNameGetter.call(document.createProcessingInstruction('target', 'data'))).toBe(
+				'target'
+			);
+		});
 	});
 
 	describe('get previousSibling()', () => {
