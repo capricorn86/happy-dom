@@ -416,6 +416,19 @@ describe('BrowserPage', () => {
 			expect(usedURL).toBe('http://localhost:3000');
 			expect(usedOptions).toEqual({ timeout: 10000 });
 		});
+
+		it('Sets parent and top to the new window itself for the main frame after navigation.', async () => {
+			const browser = new Browser();
+			const page = browser.newPage();
+			const previousWindow = page.mainFrame.window;
+
+			await page.goto('about:blank');
+
+			const w = page.mainFrame.window;
+			expect(w.parent).toBe(w);
+			expect(w.top).toBe(w);
+			expect(previousWindow.closed).toBe(true);
+		});
 	});
 
 	describe('goBack()', () => {
