@@ -2498,5 +2498,76 @@ describe('QuerySelector', () => {
 			expect(shadowSpan?.matches(':host .shadow-span')).toBe(true);
 			expect(shadowSpan?.matches(':host([my-attr=value]) .shadow-span')).toBe(true);
 		});
+
+		it('Updates the cached result when an attribute of an ancestor above the parent changes.', () => {
+			document.body.innerHTML = '<section><header><div><span></span></div></header></section>';
+
+			const section = <HTMLElement>document.querySelector('section');
+			const header = <HTMLElement>document.querySelector('header');
+			const span = <HTMLElement>document.querySelector('span');
+
+			expect(span.matches('[data-stage] span')).toBe(false);
+			expect(span.matches('[data-stage="lean"] span')).toBe(false);
+
+			// Attribute set on the grandparent.
+			header.setAttribute('data-stage', 'lean');
+
+			expect(span.matches('[data-stage] span')).toBe(true);
+			expect(span.matches('[data-stage="lean"] span')).toBe(true);
+
+			header.setAttribute('data-stage', 'full');
+
+			expect(span.matches('[data-stage] span')).toBe(true);
+			expect(span.matches('[data-stage="lean"] span')).toBe(false);
+
+			header.removeAttribute('data-stage');
+
+			expect(span.matches('[data-stage] span')).toBe(false);
+			expect(span.matches('[data-stage="lean"] span')).toBe(false);
+
+			// Attribute set on the great-grandparent.
+			section.setAttribute('data-stage', 'lean');
+
+			expect(span.matches('[data-stage] span')).toBe(true);
+			expect(span.matches('[data-stage="lean"] span')).toBe(true);
+
+			section.removeAttribute('data-stage');
+
+			expect(span.matches('[data-stage] span')).toBe(false);
+			expect(span.matches('[data-stage="lean"] span')).toBe(false);
+		});
+
+		it('Updates the cached result for mixed child and descendant combinators when an attribute of an ancestor above the parent changes.', () => {
+			document.body.innerHTML = '<section><header><div><span></span></div></header></section>';
+
+			const section = <HTMLElement>document.querySelector('section');
+			const header = <HTMLElement>document.querySelector('header');
+			const span = <HTMLElement>document.querySelector('span');
+
+			expect(span.matches('section > [data-stage] span')).toBe(false);
+			expect(span.matches('[data-stage] div > span')).toBe(false);
+
+			// Attribute set on the grandparent.
+			header.setAttribute('data-stage', '');
+
+			expect(span.matches('section > [data-stage] span')).toBe(true);
+			expect(span.matches('[data-stage] div > span')).toBe(true);
+
+			header.removeAttribute('data-stage');
+
+			expect(span.matches('section > [data-stage] span')).toBe(false);
+			expect(span.matches('[data-stage] div > span')).toBe(false);
+
+			// Attribute set on the great-grandparent.
+			section.setAttribute('data-stage', '');
+
+			expect(span.matches('section > [data-stage] span')).toBe(false);
+			expect(span.matches('[data-stage] div > span')).toBe(true);
+
+			section.removeAttribute('data-stage');
+
+			expect(span.matches('section > [data-stage] span')).toBe(false);
+			expect(span.matches('[data-stage] div > span')).toBe(false);
+		});
 	});
 });
