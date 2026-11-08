@@ -164,7 +164,10 @@ export default class BrowserFrameNavigator {
 		(<BrowserWindow>frame.window) = new windowClass(frame, { url: targetURL.href, width, height });
 		(<number>frame.window.devicePixelRatio) = devicePixelRatio;
 
-		if (BrowserFrameURL.hasOpaqueOrigin(targetURL)) {
+		if (frame === frame.page.mainFrame) {
+			frame.window[PropertySymbol.parent] = frame.window;
+			frame.window[PropertySymbol.top] = frame.window;
+		} else if (BrowserFrameURL.hasOpaqueOrigin(targetURL)) {
 			const opaqueOriginParentWindow = new CrossOriginBrowserWindow(parentWindow);
 			const opaqueOriginTopWindow =
 				parentWindow === topWindow
