@@ -671,7 +671,7 @@ export default class SyncFetch {
 
 				const headers = new this.#window.Headers(this.request.headers);
 				// Fetch requires stripping Authorization on cross-origin redirects in every credentials mode.
-				if (FetchCORSUtility.isCORS(this.#browserFrame.navigationURL, locationURL)) {
+				if (FetchCORSUtility.isCORS(this.request.url, locationURL)) {
 					headers.delete('authorization');
 				}
 				const requestInit: IRequestInit = {
