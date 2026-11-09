@@ -135,14 +135,11 @@ export default class History {
 		const location = this.#window[PropertySymbol.location];
 		const newURL = this.#getURL(url, 'pushState');
 
-		history.currentItem.popState = true;
-
 		history.push({
 			title: this.#window.document.title,
 			url: newURL.href,
-			navigationURL: history.currentItem.navigationURL,
+			navigationURL: null,
 			state,
-			popState: true,
 			scrollRestoration: history.currentItem.scrollRestoration,
 			method: history.currentItem.method || 'GET',
 			formData: history.currentItem.formData || null,
@@ -184,7 +181,6 @@ export default class History {
 			url: newURL.href,
 			navigationURL: history.currentItem.navigationURL,
 			state,
-			popState: history.currentItem.popState,
 			scrollRestoration: history.currentItem.scrollRestoration,
 			method: history.currentItem.method,
 			formData: history.currentItem.formData,

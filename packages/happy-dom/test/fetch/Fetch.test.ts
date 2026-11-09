@@ -101,6 +101,21 @@ describe('Fetch', () => {
 	});
 
 	describe('send()', () => {
+		it('Excludes the fragment from a data URL response body.', async () => {
+			const window = new Window({ url: 'https://example.com/' });
+			const response = await window.fetch('data:text/plain,Hello%23World#fragment');
+
+			expect(await response.text()).toBe('Hello#World');
+			expect(response.headers.get('Content-Type')).toBe('text/plain');
+		});
+
+		it('Excludes the fragment before decoding a base64 data URL.', async () => {
+			const window = new Window({ url: 'https://example.com/' });
+			const response = await window.fetch('data:text/plain;base64,SGVsbG8=#fragment');
+
+			expect(await response.text()).toBe('Hello');
+		});
+
 		it('Rejects attacker response cookies scoped to the victim before a subsequent fetch.', async () => {
 			const browser = new Browser();
 			const page = await browser.newPage();
@@ -165,7 +180,7 @@ describe('Fetch', () => {
 			try {
 				await window.fetch(url);
 			} catch (e) {
-				error = e;
+				error = <Error>e;
 			}
 
 			expect(error).toEqual(
@@ -184,7 +199,7 @@ describe('Fetch', () => {
 			try {
 				await window.fetch(url);
 			} catch (e) {
-				error = e;
+				error = <Error>e;
 			}
 
 			expect(error).toEqual(
@@ -203,7 +218,7 @@ describe('Fetch', () => {
 			try {
 				await window.fetch(url);
 			} catch (e) {
-				error = e;
+				error = <Error>e;
 			}
 
 			expect(error).toEqual(
@@ -258,7 +273,7 @@ describe('Fetch', () => {
 			expect(response.body instanceof ReadableStream).toBe(true);
 			expect(response.headers instanceof Headers).toBe(true);
 
-			const headers = {};
+			const headers: Record<string, string> = {};
 			for (const [key, value] of response.headers) {
 				headers[key] = value;
 			}
@@ -323,7 +338,7 @@ describe('Fetch', () => {
 			expect(response.body instanceof ReadableStream).toBe(true);
 			expect(response.headers instanceof Headers).toBe(true);
 
-			const headers = {};
+			const headers: Record<string, string> = {};
 			for (const [key, value] of response.headers) {
 				headers[key] = value;
 			}
@@ -389,7 +404,7 @@ describe('Fetch', () => {
 			expect(response.body instanceof ReadableStream).toBe(true);
 			expect(response.headers instanceof Headers).toBe(true);
 
-			const headers = {};
+			const headers: Record<string, string> = {};
 			for (const [key, value] of response.headers) {
 				headers[key] = value;
 			}
@@ -695,7 +710,10 @@ describe('Fetch', () => {
 					let writtenBodyData = '';
 
 					mockModule('https', {
-						request: (url, options) => {
+						request: (
+							url: string,
+							options: { method: string; headers: { [k: string]: string } }
+						) => {
 							requestArgs.push({ url, options });
 
 							const request = <HTTP.ClientRequest>new Stream.Writable();
@@ -946,7 +964,7 @@ describe('Fetch', () => {
 			try {
 				await window.fetch(url1, { method: 'GET' });
 			} catch (e) {
-				error = e;
+				error = <Error>e;
 			}
 
 			expect(error).toEqual(
@@ -1046,7 +1064,7 @@ describe('Fetch', () => {
 			try {
 				await window.fetch(url, { method: 'GET', redirect: 'error' });
 			} catch (e) {
-				error = e;
+				error = <Error>e;
 			}
 
 			expect(error).toEqual(
@@ -1073,7 +1091,7 @@ describe('Fetch', () => {
 			try {
 				await window.fetch(url, { method: 'GET' });
 			} catch (e) {
-				error = e;
+				error = <Error>e;
 			}
 
 			expect(error).toEqual(
@@ -1254,7 +1272,7 @@ describe('Fetch', () => {
 			try {
 				await window.fetch(url);
 			} catch (e) {
-				error = e;
+				error = <Error>e;
 			}
 
 			expect(error).toEqual(
@@ -1673,7 +1691,7 @@ describe('Fetch', () => {
 			try {
 				await window.fetch(url);
 			} catch (e) {
-				error = e;
+				error = <Error>e;
 			}
 
 			expect(error).toEqual(
@@ -1823,7 +1841,7 @@ describe('Fetch', () => {
 			try {
 				await response.text();
 			} catch (e) {
-				error = e;
+				error = <Error>e;
 			}
 
 			expect(error).toEqual(
@@ -1880,7 +1898,7 @@ describe('Fetch', () => {
 			try {
 				await response.text();
 			} catch (e) {
-				error = e;
+				error = <Error>e;
 			}
 
 			expect(error).toEqual(
@@ -1898,7 +1916,7 @@ describe('Fetch', () => {
 			const chunks = ['chunk1'];
 
 			mockModule('https', {
-				request: (requestURL) => {
+				request: (requestURL: string) => {
 					let requestCloseListener: (() => void) | null = null;
 					let socketCloseListener: (() => void) | null = null;
 					let socketDataListener: ((chunk: Buffer) => void) | null = null;
@@ -2313,7 +2331,7 @@ describe('Fetch', () => {
 			try {
 				await response.text();
 			} catch (e) {
-				error = e;
+				error = <Error>e;
 			}
 
 			expect(error).toEqual(
@@ -2350,7 +2368,7 @@ describe('Fetch', () => {
 			try {
 				await window.fetch(url, { method: 'GET', signal: abortSignal });
 			} catch (e) {
-				error = e;
+				error = <Error>e;
 			}
 
 			expect(error).toEqual(
@@ -2379,7 +2397,7 @@ describe('Fetch', () => {
 			try {
 				await window.fetch('https://localhost:8080/test/', { signal });
 			} catch (e) {
-				error = e;
+				error = <Error>e;
 			}
 
 			expect(error).toBeInstanceOf(window.DOMException);
@@ -2399,7 +2417,7 @@ describe('Fetch', () => {
 			try {
 				await window.fetch('https://example.com', { signal: abortSignal });
 			} catch (e) {
-				error = e;
+				error = <Error>e;
 			}
 
 			expect(error).toBe(1);
@@ -2420,7 +2438,7 @@ describe('Fetch', () => {
 			try {
 				await window.fetch('https://localhost:8080/test/', { signal: abortSignal });
 			} catch (e) {
-				error = e;
+				error = <Error>e;
 			}
 
 			expect(error).toBe(1);
@@ -2433,7 +2451,7 @@ describe('Fetch', () => {
 			const url3 = 'https://localhost:8080/target/';
 
 			mockModule('https', {
-				request: (requestURL) => {
+				request: (requestURL: string) => {
 					return {
 						end: () => {},
 						on: (event: string, callback: (response: HTTP.IncomingMessage) => void) => {
@@ -2473,7 +2491,7 @@ describe('Fetch', () => {
 			try {
 				await window.fetch(url1, { method: 'GET', signal: abortSignal });
 			} catch (e) {
-				error = e;
+				error = <Error>e;
 			}
 
 			expect(error).toEqual(
@@ -2564,7 +2582,7 @@ describe('Fetch', () => {
 			try {
 				await window.fetch(url, { method: 'GET', signal: abortSignal });
 			} catch (e) {
-				error = e;
+				error = <Error>e;
 			}
 			expect(error).toEqual(
 				new window.DOMException('signal is aborted without reason', DOMExceptionNameEnum.abortError)
@@ -2611,7 +2629,7 @@ describe('Fetch', () => {
 			try {
 				await response.text();
 			} catch (e) {
-				error = e;
+				error = <Error>e;
 			}
 
 			expect(error).toEqual(
@@ -2677,7 +2695,7 @@ describe('Fetch', () => {
 			try {
 				await response.text();
 			} catch (e) {
-				error = e;
+				error = <Error>e;
 			}
 
 			expect(error).toEqual(
@@ -2750,7 +2768,7 @@ describe('Fetch', () => {
 			try {
 				await window.fetch(url, { method: 'POST', body, signal: abortSignal });
 			} catch (e) {
-				error = e;
+				error = <Error>e;
 			}
 
 			expect(error).toEqual(
@@ -2806,7 +2824,7 @@ describe('Fetch', () => {
 			} | null = null;
 
 			mockModule('https', {
-				request: (url, options) => {
+				request: (url: string, options: { method: string; headers: { [k: string]: string } }) => {
 					requestArgs = { url, options };
 
 					const request = <HTTP.ClientRequest>new Stream.Writable();
@@ -2882,7 +2900,7 @@ describe('Fetch', () => {
 			} | null = null;
 
 			mockModule('https', {
-				request: (url, options) => {
+				request: (url: string, options: { method: string; headers: { [k: string]: string } }) => {
 					requestArgs = { url, options };
 
 					const request = <HTTP.ClientRequest>new Stream.Writable();
@@ -2958,7 +2976,7 @@ describe('Fetch', () => {
 			} | null = null;
 
 			mockModule('https', {
-				request: (url, options) => {
+				request: (url: string, options: { method: string; headers: { [k: string]: string } }) => {
 					requestArgs = { url, options };
 
 					const request = <HTTP.ClientRequest>new Stream.Writable();
@@ -3032,7 +3050,7 @@ describe('Fetch', () => {
 			} | null = null;
 
 			mockModule('https', {
-				request: (url, options) => {
+				request: (url: string, options: { method: string; headers: { [k: string]: string } }) => {
 					requestArgs = { url, options };
 
 					const request = <HTTP.ClientRequest>new Stream.Writable();
@@ -3106,7 +3124,7 @@ describe('Fetch', () => {
 			} | null = null;
 
 			mockModule('https', {
-				request: (url, options) => {
+				request: (url: string, options: { method: string; headers: { [k: string]: string } }) => {
 					requestArgs = { url, options };
 
 					const request = <HTTP.ClientRequest>new Stream.Writable();
@@ -3180,7 +3198,7 @@ describe('Fetch', () => {
 			} | null = null;
 
 			mockModule('https', {
-				request: (url, options) => {
+				request: (url: string, options: { method: string; headers: { [k: string]: string } }) => {
 					requestArgs = { url, options };
 
 					const request = <HTTP.ClientRequest>new Stream.Writable();
@@ -3254,7 +3272,7 @@ describe('Fetch', () => {
 			} | null = null;
 
 			mockModule('https', {
-				request: (url, options) => {
+				request: (url: string, options: { method: string; headers: { [k: string]: string } }) => {
 					requestArgs = { url, options };
 
 					const request = <HTTP.ClientRequest>new Stream.Writable();
@@ -3328,7 +3346,7 @@ describe('Fetch', () => {
 			} | null = null;
 
 			mockModule('https', {
-				request: (url, options) => {
+				request: (url: string, options: { method: string; headers: { [k: string]: string } }) => {
 					requestArgs = { url, options };
 
 					const request = <HTTP.ClientRequest>new Stream.Writable();
@@ -3405,7 +3423,7 @@ describe('Fetch', () => {
 			} | null = null;
 
 			mockModule('https', {
-				request: (url, options) => {
+				request: (url: string, options: { method: string; headers: { [k: string]: string } }) => {
 					requestArgs = { url, options };
 
 					const request = <HTTP.ClientRequest>new Stream.Writable();
@@ -3531,7 +3549,7 @@ describe('Fetch', () => {
 					})
 				});
 			} catch (e) {
-				error = e;
+				error = <Error>e;
 			}
 
 			expect(error).toEqual(
@@ -3559,7 +3577,7 @@ describe('Fetch', () => {
 			} | null = null;
 
 			mockModule('https', {
-				request: (url, options) => {
+				request: (url: string, options: { method: string; headers: { [k: string]: string } }) => {
 					requestArgs = { url, options };
 
 					const request = <HTTP.ClientRequest>new Stream.Writable();
@@ -3640,7 +3658,7 @@ describe('Fetch', () => {
 			} | null = null;
 
 			mockModule('https', {
-				request: (url, options) => {
+				request: (url: string, options: { method: string; headers: { [k: string]: string } }) => {
 					requestArgs = { url, options };
 
 					const request = <HTTP.ClientRequest>new Stream.Writable();
@@ -3818,12 +3836,12 @@ describe('Fetch', () => {
 			const response2 = await window.fetch(url);
 			const text2 = await response2.text();
 
-			const headers1 = {};
+			const headers1: { [k: string]: string } = {};
 			for (const [key, value] of response1.headers) {
 				headers1[key] = value;
 			}
 
-			const headers2 = {};
+			const headers2: { [k: string]: string } = {};
 			for (const [key, value] of response2.headers) {
 				headers2[key] = value;
 			}
@@ -3861,7 +3879,7 @@ describe('Fetch', () => {
 			}> = [];
 
 			mockModule('https', {
-				request: (url, options) => {
+				request: (url: string, options: { method: string; headers: { [k: string]: string } }) => {
 					requestArgs.push({ url, options });
 
 					return {
@@ -3924,12 +3942,12 @@ describe('Fetch', () => {
 			const response2 = await window.fetch(url);
 			const text2 = await response2.text();
 
-			const headers1 = {};
+			const headers1: { [k: string]: string } = {};
 			for (const [key, value] of response1.headers) {
 				headers1[key] = value;
 			}
 
-			const headers2 = {};
+			const headers2: { [k: string]: string } = {};
 			for (const [key, value] of response2.headers) {
 				headers2[key] = value;
 			}
@@ -4012,7 +4030,7 @@ describe('Fetch', () => {
 			}> = [];
 
 			mockModule('https', {
-				request: (url, options) => {
+				request: (url: string, options: { method: string; headers: { [k: string]: string } }) => {
 					requestArgs.push({ url, options });
 
 					return {
@@ -4086,17 +4104,17 @@ describe('Fetch', () => {
 			const response3 = await window.fetch(url);
 			const text3 = await response3.text();
 
-			const headers1 = {};
+			const headers1: { [k: string]: string } = {};
 			for (const [key, value] of response1.headers) {
 				headers1[key] = value;
 			}
 
-			const headers2 = {};
+			const headers2: { [k: string]: string } = {};
 			for (const [key, value] of response2.headers) {
 				headers2[key] = value;
 			}
 
-			const headers3 = {};
+			const headers3: { [k: string]: string } = {};
 			for (const [key, value] of response3.headers) {
 				headers3[key] = value;
 			}
@@ -4188,7 +4206,7 @@ describe('Fetch', () => {
 			}> = [];
 
 			mockModule('https', {
-				request: (url, options) => {
+				request: (url: string, options: { method: string; headers: { [k: string]: string } }) => {
 					requestArgs.push({ url, options });
 
 					return {
@@ -4256,12 +4274,12 @@ describe('Fetch', () => {
 			});
 			const text2 = await response2.text();
 
-			const headers1 = {};
+			const headers1: { [k: string]: string } = {};
 			for (const [key, value] of response1.headers) {
 				headers1[key] = value;
 			}
 
-			const headers2 = {};
+			const headers2: { [k: string]: string } = {};
 			for (const [key, value] of response2.headers) {
 				headers2[key] = value;
 			}
@@ -4348,7 +4366,7 @@ describe('Fetch', () => {
 			}> = [];
 
 			mockModule('https', {
-				request: (url, options) => {
+				request: (url: string, options: { method: string; headers: { [k: string]: string } }) => {
 					requestArgs.push({ url, options });
 
 					return {
@@ -4423,12 +4441,12 @@ describe('Fetch', () => {
 			const response2 = await window.fetch(url);
 			const text2 = await response2.text();
 
-			const headers1 = {};
+			const headers1: { [k: string]: string } = {};
 			for (const [key, value] of response1.headers) {
 				headers1[key] = value;
 			}
 
-			const headers2 = {};
+			const headers2: { [k: string]: string } = {};
 			for (const [key, value] of response2.headers) {
 				headers2[key] = value;
 			}
@@ -4513,7 +4531,7 @@ describe('Fetch', () => {
 			}> = [];
 
 			mockModule('https', {
-				request: (url, options) => {
+				request: (url: string, options: { method: string; headers: { [k: string]: string } }) => {
 					requestArgs.push({ url, options });
 
 					return {
@@ -4604,22 +4622,22 @@ describe('Fetch', () => {
 			});
 			const cachedText2 = await cachedResponse2.text();
 
-			const headers1 = {};
+			const headers1: { [k: string]: string } = {};
 			for (const [key, value] of response1.headers) {
 				headers1[key] = value;
 			}
 
-			const headers2 = {};
+			const headers2: { [k: string]: string } = {};
 			for (const [key, value] of response2.headers) {
 				headers2[key] = value;
 			}
 
-			const cachedHeaders1 = {};
+			const cachedHeaders1: { [k: string]: string } = {};
 			for (const [key, value] of cachedResponse1.headers) {
 				cachedHeaders1[key] = value;
 			}
 
-			const cachedHeaders2 = {};
+			const cachedHeaders2: { [k: string]: string } = {};
 			for (const [key, value] of cachedResponse2.headers) {
 				cachedHeaders2[key] = value;
 			}

@@ -119,7 +119,7 @@ export default class DetachedBrowserFrame implements IBrowserFrame {
 	 * @returns URL.
 	 */
 	public get navigationURL(): string {
-		return this[PropertySymbol.history].currentItem.navigationURL;
+		return this[PropertySymbol.history].getNavigationURL();
 	}
 
 	/**

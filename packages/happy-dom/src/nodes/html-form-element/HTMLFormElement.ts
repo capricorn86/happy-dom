@@ -631,7 +631,10 @@ export default class HTMLFormElement extends HTMLElement {
 			case '_blank':
 				const newPage = browserFrame.page.context.newPage();
 				targetFrame = newPage.mainFrame;
-				targetFrame[PropertySymbol.popupOpenerFrame] = browserFrame;
+				targetFrame[PropertySymbol.opener] = {
+					frame: browserFrame,
+					window: null
+				};
 				break;
 		}
 

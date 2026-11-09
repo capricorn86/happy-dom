@@ -1512,6 +1512,135 @@ Task #1
 		});
 	});
 
+	describe('History document isolation', () => {
+		const firstURL = 'data:text/html,<body>First</body>';
+		const secondURL = 'data:text/html,<body>Second</body>';
+
+		const createHistory = async (
+			nextURL = secondURL
+		): Promise<{
+			browser: Browser;
+			frame: IBrowserFrame;
+		}> => {
+			const browser = new Browser();
+			const page = browser.newPage();
+			page.mainFrame.url = 'https://parent.example/';
+			const frame = BrowserFrameFactory.createChildFrame(page.mainFrame);
+			await frame.goto(firstURL, { referrer: page.mainFrame.url });
+			frame.window.history.pushState({ page: 'first' }, '', firstURL + '#state');
+			await frame.goto(nextURL, { referrer: page.mainFrame.url });
+			frame.window.history.pushState({ page: 'second' }, '', nextURL + '#state');
+			return { browser, frame };
+		};
+
+		it('Loads the previous data document when going back across a document boundary.', async () => {
+			const { browser, frame } = await createHistory();
+			await frame.goBack();
+			const previousWindow = frame.window;
+
+			await frame.goBack();
+
+			expect(frame.window === previousWindow).toBe(false);
+			expect(frame.url).toBe(firstURL + '#state');
+			expect(frame.document.body.textContent).toBe('First');
+			expect(frame.window.history.state).toEqual({ page: 'first' });
+			expect(frame.window.parent).toBeInstanceOf(CrossOriginBrowserWindow);
+			expect(frame.window.top).toBeInstanceOf(CrossOriginBrowserWindow);
+			await browser.close();
+		});
+
+		it('Loads the next data document when going forward across a document boundary.', async () => {
+			const { browser, frame } = await createHistory();
+			await frame.goBack();
+			await frame.goBack();
+			const previousWindow = frame.window;
+
+			await frame.goForward();
+
+			expect(frame.window === previousWindow).toBe(false);
+			expect(frame.url).toBe(secondURL);
+			expect(frame.document.body.textContent).toBe('Second');
+			expect(frame.window.parent).toBeInstanceOf(CrossOriginBrowserWindow);
+			await browser.close();
+		});
+
+		it('Loads the target data document when going multiple steps back.', async () => {
+			const { browser, frame } = await createHistory();
+			const previousWindow = frame.window;
+
+			await frame.goSteps(-2);
+
+			expect(frame.window === previousWindow).toBe(false);
+			expect(frame.url).toBe(firstURL + '#state');
+			expect(frame.document.body.textContent).toBe('First');
+			await browser.close();
+		});
+
+		it('Loads the target data document when going multiple steps forward.', async () => {
+			const { browser, frame } = await createHistory();
+			await frame.goSteps(-2);
+			const previousWindow = frame.window;
+
+			await frame.goSteps(2);
+
+			expect(frame.window === previousWindow).toBe(false);
+			expect(frame.url).toBe(secondURL + '#state');
+			expect(frame.document.body.textContent).toBe('Second');
+			await browser.close();
+		});
+
+		it('Loads a different document when going a single step across a document boundary.', async () => {
+			const { browser, frame } = await createHistory();
+			await frame.goSteps(-2);
+			const previousWindow = frame.window;
+
+			await frame.goSteps(1);
+
+			expect(frame.window === previousWindow).toBe(false);
+			expect(frame.url).toBe(secondURL);
+			expect(frame.document.body.textContent).toBe('Second');
+			await browser.close();
+		});
+
+		it('Loads a different document even when both navigations used the same data URL.', async () => {
+			const { browser, frame } = await createHistory(firstURL);
+			await frame.goBack();
+			const previousWindow = frame.window;
+
+			await frame.goBack();
+
+			expect(frame.window === previousWindow).toBe(false);
+			expect(frame.url).toBe(firstURL + '#state');
+			expect(frame.window.history.state).toEqual({ page: 'first' });
+			await browser.close();
+		});
+
+		it('Keeps the window when traversing state and hash entries within a data document.', async () => {
+			const { browser, frame } = await createHistory();
+			const previousWindow = frame.window;
+			frame.window.history.replaceState({ page: 'replaced' }, '', secondURL + '#replaced');
+			frame.window.location.hash = '#hash';
+			await frame.goto(secondURL + '#next');
+			let popStateCount = 0;
+			frame.window.addEventListener('popstate', () => popStateCount++);
+
+			await frame.goSteps(-2);
+			expect(frame.url).toBe(secondURL + '#replaced');
+			expect(frame.window.history.state).toEqual({ page: 'replaced' });
+			await frame.goForward();
+			expect(frame.url).toBe(secondURL + '#hash');
+			await frame.goBack();
+			expect(frame.url).toBe(secondURL + '#replaced');
+			await frame.goSteps(2);
+			expect(frame.url).toBe(secondURL + '#next');
+
+			expect(frame.window).toBe(previousWindow);
+			expect(frame.document.body.textContent).toBe('Second');
+			expect(popStateCount).toBe(4);
+			await browser.close();
+		});
+	});
+
 	describe('reload()', () => {
 		it('Reloads the frame.', async () => {
 			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<Response> {

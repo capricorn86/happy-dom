@@ -63,27 +63,23 @@ export default class BrowserFrameNavigator {
 
 		// Hash navigation
 		if (
+			!disableHistory &&
 			targetURLWithoutHash.href === currentURLWithoutHash.href &&
 			targetURL.hash &&
 			targetURL.hash !== frame.window?.location.hash
 		) {
 			const history = frame[PropertySymbol.history];
 
-			if (!disableHistory) {
-				history.currentItem.popState = true;
-
-				history.push({
-					title: '',
-					url: targetURL.href,
-					navigationURL: history.currentItem.navigationURL,
-					state: null,
-					popState: true,
-					scrollRestoration: HistoryScrollRestorationEnum.manual,
-					method: method || (formData ? 'POST' : 'GET'),
-					formData: formData || null,
-					inheritOrigin: history.currentItem.inheritOrigin
-				});
-			}
+			history.push({
+				title: '',
+				url: targetURL.href,
+				navigationURL: null,
+				state: null,
+				scrollRestoration: HistoryScrollRestorationEnum.manual,
+				method: method || (formData ? 'POST' : 'GET'),
+				formData: formData || null,
+				inheritOrigin: history.currentItem.inheritOrigin
+			});
 
 			frame.window.location[PropertySymbol.setURL](frame, targetURL.href);
 
@@ -149,7 +145,6 @@ export default class BrowserFrameNavigator {
 				url: targetURL.href,
 				navigationURL: targetURL.href,
 				state: null,
-				popState: false,
 				scrollRestoration: HistoryScrollRestorationEnum.auto,
 				method: method || (formData ? 'POST' : 'GET'),
 				formData: formData || null,
@@ -359,53 +354,10 @@ export default class BrowserFrameNavigator {
 		frame: IBrowserFrame;
 		goToOptions?: IGoToOptions;
 	}): Promise<Response | null> {
-		const { windowClass, frame, goToOptions } = options;
-		const history = frame[PropertySymbol.history];
-		const historyItem = history.items[history.items.indexOf(history.currentItem) - 1];
-
-		if (!historyItem) {
-			return new Promise((resolve) => {
-				frame.window.requestAnimationFrame(() => {
-					const listeners = frame[PropertySymbol.listeners].navigation;
-					frame[PropertySymbol.listeners].navigation = [];
-					for (const listener of listeners) {
-						listener();
-					}
-					resolve(null);
-				});
-			});
-		}
-
-		const fromOrigin = new URL(history.currentItem.url).origin;
-		const toOrigin = new URL(historyItem.url).origin;
-
-		history.currentItem = historyItem;
-
-		if (!historyItem.popState || fromOrigin !== toOrigin) {
-			return BrowserFrameNavigator.navigate({
-				windowClass,
-				frame,
-				goToOptions: {
-					...goToOptions,
-					referrer: frame.url
-				},
-				url: historyItem.url,
-				method: historyItem.method,
-				formData: historyItem.formData,
-				disableHistory: true
-			});
-		}
-
-		frame.window.location[PropertySymbol.setURL](frame, historyItem.url);
-
-		frame.window.dispatchEvent(
-			new frame.window.PopStateEvent('popstate', {
-				state: historyItem.state,
-				hasUAVisualTransition: false
-			})
-		);
-
-		return Promise.resolve(null);
+		return this.navigateSteps({
+			...options,
+			steps: -1
+		});
 	}
 
 	/**
@@ -424,53 +376,10 @@ export default class BrowserFrameNavigator {
 		frame: IBrowserFrame;
 		goToOptions?: IGoToOptions;
 	}): Promise<Response | null> {
-		const { windowClass, frame, goToOptions } = options;
-		const history = frame[PropertySymbol.history];
-		const historyItem = history.items[history.items.indexOf(history.currentItem) + 1];
-
-		if (!historyItem) {
-			return new Promise((resolve) => {
-				frame.window.requestAnimationFrame(() => {
-					const listeners = frame[PropertySymbol.listeners].navigation;
-					frame[PropertySymbol.listeners].navigation = [];
-					for (const listener of listeners) {
-						listener();
-					}
-					resolve(null);
-				});
-			});
-		}
-
-		const fromOrigin = new URL(history.currentItem.url).origin;
-		const toOrigin = new URL(historyItem.url).origin;
-
-		history.currentItem = historyItem;
-
-		if (!historyItem.popState || fromOrigin !== toOrigin) {
-			return BrowserFrameNavigator.navigate({
-				windowClass,
-				frame,
-				goToOptions: {
-					...goToOptions,
-					referrer: frame.url
-				},
-				url: historyItem.url,
-				method: historyItem.method,
-				formData: historyItem.formData,
-				disableHistory: true
-			});
-		}
-
-		frame.window.location[PropertySymbol.setURL](frame, historyItem.url);
-
-		frame.window.dispatchEvent(
-			new frame.window.PopStateEvent('popstate', {
-				state: historyItem.state,
-				hasUAVisualTransition: false
-			})
-		);
-
-		return Promise.resolve(null);
+		return this.navigateSteps({
+			...options,
+			steps: 1
+		});
 	}
 
 	/**
@@ -514,20 +423,22 @@ export default class BrowserFrameNavigator {
 			});
 		}
 
-		const fromOrigin = new URL(history.currentItem.url).origin;
-		let isPopState = true;
+		let isSameDocument = true;
 
-		if (steps < 0) {
+		// Check if any history items between fromIndex and toIndex have a navigationURL, indicating a different document
+		if (fromIndex > toIndex) {
+			// Backward
 			for (let i = fromIndex; i > toIndex; i--) {
-				if (!history.items[i].popState || fromOrigin !== new URL(history.items[i].url).origin) {
-					isPopState = false;
+				if (history.items[i].navigationURL) {
+					isSameDocument = false;
 					break;
 				}
 			}
-		} else {
-			for (let i = fromIndex; i < toIndex; i++) {
-				if (!history.items[i].popState || fromOrigin !== new URL(history.items[i].url).origin) {
-					isPopState = false;
+		} else if (fromIndex < toIndex) {
+			// Forward
+			for (let i = fromIndex + 1; i <= toIndex; i++) {
+				if (history.items[i].navigationURL) {
+					isSameDocument = false;
 					break;
 				}
 			}
@@ -535,7 +446,7 @@ export default class BrowserFrameNavigator {
 
 		history.currentItem = historyItem;
 
-		if (!isPopState) {
+		if (!isSameDocument) {
 			return BrowserFrameNavigator.navigate({
 				windowClass,
 				frame,

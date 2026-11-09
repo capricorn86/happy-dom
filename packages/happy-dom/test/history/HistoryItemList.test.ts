@@ -12,7 +12,6 @@ describe('HistoryItemList', () => {
 				navigationURL: 'about:blank',
 				inheritOrigin: true,
 				state: null,
-				popState: false,
 				scrollRestoration: HistoryScrollRestorationEnum.auto,
 				method: 'GET',
 				formData: null
@@ -23,7 +22,6 @@ describe('HistoryItemList', () => {
 				navigationURL: 'https://example.com',
 				inheritOrigin: false,
 				state: null,
-				popState: false,
 				scrollRestoration: HistoryScrollRestorationEnum.auto,
 				method: 'GET',
 				formData: null
@@ -34,7 +32,6 @@ describe('HistoryItemList', () => {
 				navigationURL: 'https://example.com',
 				inheritOrigin: false,
 				state: null,
-				popState: false,
 				scrollRestoration: HistoryScrollRestorationEnum.auto,
 				method: 'GET',
 				formData: null
@@ -52,7 +49,6 @@ describe('HistoryItemList', () => {
 					navigationURL: 'about:blank',
 					inheritOrigin: true,
 					state: null,
-					popState: false,
 					scrollRestoration: HistoryScrollRestorationEnum.auto,
 					method: 'GET',
 					formData: null
@@ -64,7 +60,6 @@ describe('HistoryItemList', () => {
 				navigationURL: 'https://example.com',
 				inheritOrigin: false,
 				state: null,
-				popState: false,
 				scrollRestoration: HistoryScrollRestorationEnum.auto,
 				method: 'GET',
 				formData: null
@@ -76,7 +71,6 @@ describe('HistoryItemList', () => {
 					navigationURL: 'about:blank',
 					inheritOrigin: true,
 					state: null,
-					popState: false,
 					scrollRestoration: HistoryScrollRestorationEnum.auto,
 					method: 'GET',
 					formData: null
@@ -87,7 +81,6 @@ describe('HistoryItemList', () => {
 					navigationURL: 'https://example.com',
 					inheritOrigin: false,
 					state: null,
-					popState: false,
 					scrollRestoration: HistoryScrollRestorationEnum.auto,
 					method: 'GET',
 					formData: null
@@ -105,7 +98,6 @@ describe('HistoryItemList', () => {
 				navigationURL: 'https://example.com',
 				inheritOrigin: false,
 				state: null,
-				popState: false,
 				scrollRestoration: HistoryScrollRestorationEnum.auto,
 				method: 'GET',
 				formData: null
@@ -117,7 +109,6 @@ describe('HistoryItemList', () => {
 					navigationURL: 'about:blank',
 					inheritOrigin: true,
 					state: null,
-					popState: false,
 					scrollRestoration: HistoryScrollRestorationEnum.auto,
 					method: 'GET',
 					formData: null
@@ -128,7 +119,6 @@ describe('HistoryItemList', () => {
 					navigationURL: 'https://example.com',
 					inheritOrigin: false,
 					state: null,
-					popState: false,
 					scrollRestoration: HistoryScrollRestorationEnum.auto,
 					method: 'GET',
 					formData: null
@@ -140,7 +130,6 @@ describe('HistoryItemList', () => {
 				navigationURL: 'https://example.com',
 				inheritOrigin: false,
 				state: null,
-				popState: false,
 				scrollRestoration: HistoryScrollRestorationEnum.auto,
 				method: 'GET',
 				formData: null
@@ -151,7 +140,6 @@ describe('HistoryItemList', () => {
 				navigationURL: 'https://example2.com',
 				inheritOrigin: false,
 				state: null,
-				popState: false,
 				scrollRestoration: HistoryScrollRestorationEnum.manual,
 				method: 'POST',
 				formData: null
@@ -162,7 +150,6 @@ describe('HistoryItemList', () => {
 				navigationURL: 'https://example2.com',
 				inheritOrigin: false,
 				state: null,
-				popState: false,
 				scrollRestoration: HistoryScrollRestorationEnum.manual,
 				method: 'POST',
 				formData: null
@@ -177,7 +164,6 @@ describe('HistoryItemList', () => {
 				navigationURL: 'https://example.com',
 				inheritOrigin: false,
 				state: null,
-				popState: false,
 				scrollRestoration: HistoryScrollRestorationEnum.auto,
 				method: 'GET',
 				formData: null
@@ -193,7 +179,6 @@ describe('HistoryItemList', () => {
 				navigationURL: 'data:text/plain;base64,SGVsbG8sIFdvcmxkIQ==',
 				inheritOrigin: false,
 				state: null,
-				popState: false,
 				scrollRestoration: HistoryScrollRestorationEnum.auto,
 				method: 'GET',
 				formData: null
@@ -211,7 +196,6 @@ describe('HistoryItemList', () => {
 				navigationURL: 'https://example.com',
 				inheritOrigin: false,
 				state: null,
-				popState: false,
 				scrollRestoration: HistoryScrollRestorationEnum.auto,
 				method: 'GET',
 				formData: null
@@ -222,7 +206,6 @@ describe('HistoryItemList', () => {
 				navigationURL: 'https://example2.com',
 				inheritOrigin: false,
 				state: null,
-				popState: false,
 				scrollRestoration: HistoryScrollRestorationEnum.manual,
 				method: 'POST',
 				formData: null
@@ -234,7 +217,6 @@ describe('HistoryItemList', () => {
 					navigationURL: 'about:blank',
 					inheritOrigin: true,
 					state: null,
-					popState: false,
 					scrollRestoration: HistoryScrollRestorationEnum.auto,
 					method: 'GET',
 					formData: null
@@ -245,7 +227,6 @@ describe('HistoryItemList', () => {
 					navigationURL: 'https://example2.com',
 					inheritOrigin: false,
 					state: null,
-					popState: false,
 					scrollRestoration: HistoryScrollRestorationEnum.manual,
 					method: 'POST',
 					formData: null
@@ -257,7 +238,6 @@ describe('HistoryItemList', () => {
 				navigationURL: 'https://example2.com',
 				inheritOrigin: false,
 				state: null,
-				popState: false,
 				scrollRestoration: HistoryScrollRestorationEnum.manual,
 				method: 'POST',
 				formData: null
@@ -272,7 +252,6 @@ describe('HistoryItemList', () => {
 				navigationURL: 'https://example.com',
 				inheritOrigin: false,
 				state: null,
-				popState: false,
 				scrollRestoration: HistoryScrollRestorationEnum.auto,
 				method: 'GET',
 				formData: null
@@ -288,7 +267,6 @@ describe('HistoryItemList', () => {
 				navigationURL: 'data:text/plain;base64,SGVsbG8sIFdvcmxkIQ==',
 				inheritOrigin: false,
 				state: null,
-				popState: false,
 				scrollRestoration: HistoryScrollRestorationEnum.auto,
 				method: 'GET',
 				formData: null
@@ -306,7 +284,6 @@ describe('HistoryItemList', () => {
 				navigationURL: 'https://example.com',
 				inheritOrigin: false,
 				state: null,
-				popState: false,
 				scrollRestoration: HistoryScrollRestorationEnum.auto,
 				method: 'GET',
 				formData: null
@@ -317,7 +294,6 @@ describe('HistoryItemList', () => {
 				navigationURL: 'https://example2.com',
 				inheritOrigin: false,
 				state: null,
-				popState: false,
 				scrollRestoration: HistoryScrollRestorationEnum.manual,
 				method: 'POST',
 				formData: null
@@ -330,7 +306,6 @@ describe('HistoryItemList', () => {
 					navigationURL: 'about:blank',
 					inheritOrigin: true,
 					state: null,
-					popState: false,
 					scrollRestoration: HistoryScrollRestorationEnum.auto,
 					method: 'GET',
 					formData: null
@@ -342,7 +317,6 @@ describe('HistoryItemList', () => {
 				navigationURL: 'about:blank',
 				inheritOrigin: true,
 				state: null,
-				popState: false,
 				scrollRestoration: HistoryScrollRestorationEnum.auto,
 				method: 'GET',
 				formData: null

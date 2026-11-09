@@ -23,7 +23,6 @@ describe('History', () => {
 				navigationURL: 'https://example.com',
 				inheritOrigin: false,
 				state: null,
-				popState: false,
 				scrollRestoration: HistoryScrollRestorationEnum.auto,
 				method: 'GET',
 				formData: null
@@ -35,7 +34,6 @@ describe('History', () => {
 				navigationURL: 'https://example2.com',
 				inheritOrigin: false,
 				state: null,
-				popState: false,
 				scrollRestoration: HistoryScrollRestorationEnum.auto,
 				method: 'GET',
 				formData: null
@@ -109,7 +107,6 @@ describe('History', () => {
 				navigationURL: 'https://www.github.com',
 				inheritOrigin: false,
 				state: null,
-				popState: false,
 				scrollRestoration: HistoryScrollRestorationEnum.auto,
 				method: 'GET',
 				formData: null
@@ -121,7 +118,6 @@ describe('History', () => {
 				navigationURL: 'https://www.example.com',
 				inheritOrigin: false,
 				state: null,
-				popState: false,
 				scrollRestoration: HistoryScrollRestorationEnum.auto,
 				method: 'GET',
 				formData: null
@@ -133,7 +129,6 @@ describe('History', () => {
 				navigationURL: 'https://localhost:3000/',
 				inheritOrigin: false,
 				state: null,
-				popState: false,
 				scrollRestoration: HistoryScrollRestorationEnum.auto,
 				method: 'GET',
 				formData: null
@@ -256,7 +251,6 @@ describe('History', () => {
 				navigationURL: 'https://www.github.com',
 				inheritOrigin: false,
 				state: null,
-				popState: false,
 				scrollRestoration: HistoryScrollRestorationEnum.auto,
 				method: 'GET',
 				formData: null
@@ -268,7 +262,6 @@ describe('History', () => {
 				navigationURL: 'https://www.example.com',
 				inheritOrigin: false,
 				state: null,
-				popState: false,
 				scrollRestoration: HistoryScrollRestorationEnum.auto,
 				method: 'GET',
 				formData: null
@@ -280,7 +273,6 @@ describe('History', () => {
 				navigationURL: 'https://localhost:3000/',
 				inheritOrigin: false,
 				state: null,
-				popState: false,
 				scrollRestoration: HistoryScrollRestorationEnum.auto,
 				method: 'GET',
 				formData: null
@@ -337,7 +329,6 @@ describe('History', () => {
 				navigationURL: 'https://www.github.com',
 				inheritOrigin: false,
 				state: null,
-				popState: false,
 				scrollRestoration: HistoryScrollRestorationEnum.auto,
 				method: 'GET',
 				formData: null
@@ -349,7 +340,6 @@ describe('History', () => {
 				navigationURL: 'https://www.example.com',
 				inheritOrigin: false,
 				state: null,
-				popState: false,
 				scrollRestoration: HistoryScrollRestorationEnum.auto,
 				method: 'GET',
 				formData: null
@@ -361,7 +351,6 @@ describe('History', () => {
 				navigationURL: 'https://localhost:3000/',
 				inheritOrigin: false,
 				state: null,
-				popState: false,
 				scrollRestoration: HistoryScrollRestorationEnum.auto,
 				method: 'GET',
 				formData: null
@@ -395,20 +384,6 @@ describe('History', () => {
 	});
 
 	describe('pushState()', () => {
-		it('Passes down the source URL from the current history item.', () => {
-			browserFrame.url = 'https://www.example.com/current/';
-			browserFrame[PropertySymbol.history].currentItem.navigationURL = 'https://www.example.com/';
-
-			browserFrame.window.history.pushState({ key: 'value' }, '', '/test/');
-
-			expect(browserFrame[PropertySymbol.history].currentItem.navigationURL).toBe(
-				'https://www.example.com/'
-			);
-			expect(browserFrame[PropertySymbol.history].currentItem.url).toBe(
-				'https://www.example.com/test/'
-			);
-		});
-
 		it('Pushes a new state to the history.', () => {
 			browserFrame.window.history.pushState({ key: 'value' }, '', '');
 
@@ -423,18 +398,16 @@ describe('History', () => {
 					state: null,
 					scrollRestoration: HistoryScrollRestorationEnum.auto,
 					method: 'GET',
-					popState: true,
 					formData: null
 				},
 				{
 					title: '',
 					url: 'about:blank',
-					navigationURL: 'about:blank',
+					navigationURL: null,
 					inheritOrigin: true,
 					state: { key: 'value' },
 					scrollRestoration: HistoryScrollRestorationEnum.auto,
 					method: 'GET',
-					popState: true,
 					formData: null
 				}
 			]);
@@ -470,18 +443,16 @@ describe('History', () => {
 					state: null,
 					scrollRestoration: HistoryScrollRestorationEnum.auto,
 					method: 'GET',
-					popState: true,
 					formData: null
 				},
 				{
 					title: '',
 					url: 'about:blank',
-					navigationURL: 'about:blank',
+					navigationURL: null,
 					inheritOrigin: true,
 					state: { key: 'value' },
 					scrollRestoration: HistoryScrollRestorationEnum.auto,
 					method: 'GET',
-					popState: true,
 					formData: null
 				}
 			]);
@@ -499,18 +470,16 @@ describe('History', () => {
 					state: null,
 					scrollRestoration: HistoryScrollRestorationEnum.auto,
 					method: 'GET',
-					popState: true,
 					formData: null
 				},
 				{
 					title: '',
 					url: 'about:blank',
-					navigationURL: 'about:blank',
+					navigationURL: null,
 					inheritOrigin: true,
 					state: { key: 'value2' },
 					scrollRestoration: HistoryScrollRestorationEnum.auto,
 					method: 'GET',
-					popState: true,
 					formData: null
 				}
 			]);

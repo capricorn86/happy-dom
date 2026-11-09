@@ -57,14 +57,11 @@ export default class Location {
 		url.hash = hash;
 
 		if (url.hash !== oldHash) {
-			history.currentItem.popState = true;
-
 			history.push({
 				title: '',
 				url: url.href,
-				navigationURL: history.currentItem.navigationURL,
+				navigationURL: null,
 				state: history.currentItem.state,
-				popState: true,
 				scrollRestoration: HistoryScrollRestorationEnum.manual,
 				method: history.currentItem.method,
 				formData: history.currentItem.formData || null,

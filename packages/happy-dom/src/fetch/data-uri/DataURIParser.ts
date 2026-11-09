@@ -6,7 +6,7 @@
  */
 export default class DataURIParser {
 	/**
-	 * Returns a Buffer instance from the given data URI `uri`.
+	 * Returns a Buffer instance from the given data URI `uri`, excluding its URL fragment.
 	 *
 	 * @param uri Data URI.
 	 * @returns Buffer.
@@ -21,7 +21,7 @@ export default class DataURIParser {
 		}
 
 		// Strip newlines
-		uri = uri.replace(/\r?\n/g, '');
+		uri = uri.split('#')[0].replace(/\r?\n/g, '');
 
 		// Split the URI up into the "metadata" and the "data" portions
 		const firstComma = uri.indexOf(',');
