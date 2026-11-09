@@ -375,7 +375,7 @@ export default class SyncFetch {
 	private compliesWithCrossOriginPolicy(): boolean {
 		if (
 			this.disableSameOriginPolicy ||
-			!FetchCORSUtility.isCORS(this.#window.location.href, this.request[PropertySymbol.url])
+			!FetchCORSUtility.isCORS(this.#browserFrame.navigationURL, this.request[PropertySymbol.url])
 		) {
 			return true;
 		}
@@ -667,7 +667,7 @@ export default class SyncFetch {
 
 				const headers = new this.#window.Headers(this.request.headers);
 				// Fetch requires stripping Authorization on cross-origin redirects in every credentials mode.
-				if (FetchCORSUtility.isCORS(this.request.url, locationURL)) {
+				if (FetchCORSUtility.isCORS(this.#browserFrame.navigationURL, locationURL)) {
 					headers.delete('authorization');
 				}
 				const requestInit: IRequestInit = {
@@ -683,7 +683,7 @@ export default class SyncFetch {
 				if (
 					this.request.credentials === 'omit' ||
 					(this.request.credentials === 'same-origin' &&
-						FetchCORSUtility.isCORS(this.#window.location.href, locationURL))
+						FetchCORSUtility.isCORS(this.#browserFrame.navigationURL, locationURL))
 				) {
 					headers.delete('cookie');
 					headers.delete('cookie2');

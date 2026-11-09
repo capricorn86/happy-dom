@@ -443,7 +443,7 @@ export default class Fetch {
 	private async compliesWithCrossOriginPolicy(): Promise<boolean> {
 		if (
 			this.disableSameOriginPolicy ||
-			!FetchCORSUtility.isCORS(this.#window.location.href, this.request[PropertySymbol.url])
+			!FetchCORSUtility.isCORS(this.#browserFrame.navigationURL, this.request[PropertySymbol.url])
 		) {
 			return true;
 		}
@@ -977,7 +977,7 @@ export default class Fetch {
 				if (
 					this.request.credentials === 'omit' ||
 					(this.request.credentials === 'same-origin' &&
-						FetchCORSUtility.isCORS(this.#window.location.href, locationURL))
+						FetchCORSUtility.isCORS(this.#browserFrame.navigationURL, locationURL))
 				) {
 					headers.delete('cookie');
 					headers.delete('cookie2');

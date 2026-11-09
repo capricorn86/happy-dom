@@ -29,7 +29,7 @@ export default class WindowPageOpenUtility {
 	): BrowserWindow | CrossOriginBrowserWindow | null {
 		const features = this.getWindowFeatures(options?.features || '');
 		const target = options?.target !== undefined ? String(options.target) : null;
-		const originURL = new URL(browserFrame.window.location.href);
+		const originURL = new URL(browserFrame.navigationURL);
 		const targetURL = BrowserFrameURL.getRelativeURL(browserFrame, options?.url);
 		const oldWindow = browserFrame.window;
 		let targetFrame: IBrowserFrame;

@@ -63,23 +63,24 @@ export default class BrowserFrameNavigator {
 
 		// Hash navigation
 		if (
-			!disableHistory &&
 			targetURLWithoutHash.href === currentURLWithoutHash.href &&
 			targetURL.hash &&
 			targetURL.hash !== frame.window?.location.hash
 		) {
-			const history = frame[PropertySymbol.history];
+			if (!disableHistory) {
+				const history = frame[PropertySymbol.history];
 
-			history.push({
-				title: '',
-				url: targetURL.href,
-				navigationURL: null,
-				state: null,
-				scrollRestoration: HistoryScrollRestorationEnum.manual,
-				method: method || (formData ? 'POST' : 'GET'),
-				formData: formData || null,
-				inheritOrigin: history.currentItem.inheritOrigin
-			});
+				history.push({
+					title: '',
+					url: targetURL.href,
+					navigationURL: null,
+					state: null,
+					scrollRestoration: HistoryScrollRestorationEnum.manual,
+					method: method || (formData ? 'POST' : 'GET'),
+					formData: formData || null,
+					inheritOrigin: history.currentItem.inheritOrigin
+				});
+			}
 
 			frame.window.location[PropertySymbol.setURL](frame, targetURL.href);
 
@@ -150,6 +151,8 @@ export default class BrowserFrameNavigator {
 				formData: formData || null,
 				inheritOrigin: goToOptions?.inheritOrigin || false
 			});
+		} else {
+			frame[PropertySymbol.history].currentItem.navigationURL = targetURL.href;
 		}
 
 		// Store current Window state
