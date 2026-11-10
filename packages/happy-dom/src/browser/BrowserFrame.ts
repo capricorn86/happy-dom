@@ -21,7 +21,6 @@ import type IBrowserFrameOpener from './types/IBrowserFrameOpener.js';
  */
 export default class BrowserFrame implements IBrowserFrame {
 	public readonly childFrames: BrowserFrame[] = [];
-	public readonly openedPages: BrowserPage[] = [];
 	public readonly parentFrame: BrowserFrame | null = null;
 	public readonly page: BrowserPage;
 	public readonly window: BrowserWindow;
@@ -30,6 +29,7 @@ export default class BrowserFrame implements IBrowserFrame {
 	public [PropertySymbol.listeners]: { navigation: Array<() => void> } = { navigation: [] };
 	public [PropertySymbol.contentWindow]: BrowserWindow | CrossOriginBrowserWindow | null = null;
 	public [PropertySymbol.opener]: IBrowserFrameOpener | null = null;
+	public [PropertySymbol.openedPages]: BrowserPage[] = [];
 	public [PropertySymbol.popup]: boolean = false;
 	public [PropertySymbol.history] = new HistoryItemList();
 

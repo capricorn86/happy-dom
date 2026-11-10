@@ -173,12 +173,12 @@ describe('BrowserFrameFactory', () => {
 					frame: openerPage.mainFrame,
 					window: openerPage.mainFrame.window
 				};
-				openerPage.mainFrame.openedPages.push(popupPage);
+				openerPage.mainFrame[PropertySymbol.openedPages].push(popupPage);
 			}
 
 			await BrowserFrameFactory.destroyFrame(popupPage1.mainFrame);
 
-			expect(openerPage.mainFrame.openedPages).toEqual([popupPage2]);
+			expect(openerPage.mainFrame[PropertySymbol.openedPages]).toEqual([popupPage2]);
 			expect(popupPage1.mainFrame[PropertySymbol.opener]).toBe(null);
 
 			await browser.close();
@@ -194,11 +194,11 @@ describe('BrowserFrameFactory', () => {
 				frame: openerPage.mainFrame,
 				window: openerPage.mainFrame.window
 			};
-			openerPage.mainFrame.openedPages.push(popupPage);
+			openerPage.mainFrame[PropertySymbol.openedPages].push(popupPage);
 
 			await BrowserFrameFactory.destroyFrame(openerPage.mainFrame);
 
-			expect(openerPage.mainFrame.openedPages).toEqual([]);
+			expect(openerPage.mainFrame[PropertySymbol.openedPages]).toEqual([]);
 			expect(popupPage.mainFrame.closed).toBe(false);
 			expect(popupPage.mainFrame.window).toBe(popupWindow);
 			expect(popupPage.mainFrame[PropertySymbol.opener]).toBe(null);

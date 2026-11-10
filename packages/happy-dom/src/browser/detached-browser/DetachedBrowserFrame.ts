@@ -24,7 +24,6 @@ export default class DetachedBrowserFrame implements IBrowserFrame {
 	public declare window: BrowserWindow;
 
 	public readonly childFrames: DetachedBrowserFrame[] = [];
-	public readonly openedPages: DetachedBrowserPage[] = [];
 	public readonly parentFrame: DetachedBrowserFrame | null = null;
 	public readonly page: DetachedBrowserPage;
 	public readonly closed: boolean = false;
@@ -32,6 +31,7 @@ export default class DetachedBrowserFrame implements IBrowserFrame {
 	public [PropertySymbol.listeners]: { navigation: Array<() => void> } = { navigation: [] };
 	public [PropertySymbol.contentWindow]: BrowserWindow | CrossOriginBrowserWindow | null = null;
 	public [PropertySymbol.opener]: IBrowserFrameOpener | null = null;
+	public [PropertySymbol.openedPages]: DetachedBrowserPage[] = [];
 	public [PropertySymbol.popup]: boolean = false;
 	public [PropertySymbol.history] = new HistoryItemList();
 

@@ -208,14 +208,14 @@ export default class BrowserFrameNavigator {
 		}
 
 		// Popups should loose their opener references
-		for (const popup of frame.openedPages) {
+		for (const popup of frame[PropertySymbol.openedPages]) {
 			if (popup.mainFrame[PropertySymbol.opener]) {
 				popup.mainFrame[PropertySymbol.opener].window = null;
 				popup.mainFrame[PropertySymbol.opener].frame = null;
 			}
 			BrowserFrameCrossOriginIsolation.isolate(popup.mainFrame);
 		}
-		frame.openedPages.length = 0;
+		frame[PropertySymbol.openedPages].length = 0;
 
 		// Handle "about" protocol URL
 		if (targetURL.protocol === 'about:') {

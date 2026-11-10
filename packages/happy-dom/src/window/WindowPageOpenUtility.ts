@@ -61,7 +61,7 @@ export default class WindowPageOpenUtility {
 					targetFrame[PropertySymbol.opener].frame = browserFrame;
 					targetFrame[PropertySymbol.opener].window = browserFrame.window;
 				}
-				browserFrame.openedPages.push(newPage);
+				browserFrame[PropertySymbol.openedPages].push(newPage);
 				break;
 		}
 

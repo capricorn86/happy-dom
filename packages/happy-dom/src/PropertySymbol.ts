@@ -72,6 +72,7 @@ export const mutationObservers = Symbol('mutationObservers');
 export const contentWindow = Symbol('contentWindow');
 export const pointerCaptures = Symbol('pointerCaptures');
 export const opener = Symbol('opener');
+export const openedPages = Symbol('openedPages');
 export const popup = Symbol('popup');
 export const isConnected = Symbol('isConnected');
 export const parentNode = Symbol('parentNode');

@@ -16,7 +16,6 @@ import type IBrowserFrameOpener from './IBrowserFrameOpener.js';
  */
 export default interface IBrowserFrame {
 	readonly childFrames: IBrowserFrame[];
-	readonly openedPages: IBrowserPage[];
 	readonly parentFrame: IBrowserFrame | null;
 	readonly page: IBrowserPage;
 	readonly window: BrowserWindow;
@@ -28,6 +27,7 @@ export default interface IBrowserFrame {
 	[PropertySymbol.asyncTaskManager]: AsyncTaskManager;
 	[PropertySymbol.listeners]: { navigation: Array<() => void> };
 	[PropertySymbol.contentWindow]: BrowserWindow | CrossOriginBrowserWindow | null;
+	[PropertySymbol.openedPages]: IBrowserPage[];
 	[PropertySymbol.opener]: IBrowserFrameOpener | null;
 	[PropertySymbol.popup]: boolean;
 

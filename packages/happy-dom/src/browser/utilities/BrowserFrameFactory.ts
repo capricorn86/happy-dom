@@ -65,9 +65,11 @@ export default class BrowserFrameFactory {
 			}
 
 			if (frame[PropertySymbol.opener]?.frame) {
-				const index = frame[PropertySymbol.opener].frame.openedPages.indexOf(frame.page);
+				const index = frame[PropertySymbol.opener].frame[PropertySymbol.openedPages].indexOf(
+					frame.page
+				);
 				if (index !== -1) {
-					frame[PropertySymbol.opener].frame.openedPages.splice(index, 1);
+					frame[PropertySymbol.opener].frame[PropertySymbol.openedPages].splice(index, 1);
 				}
 			}
 
@@ -88,13 +90,13 @@ export default class BrowserFrameFactory {
 							frame[PropertySymbol.listeners].navigation = [];
 						}
 
-						for (const openedPage of frame.openedPages) {
+						for (const openedPage of frame[PropertySymbol.openedPages]) {
 							openedPage.mainFrame[PropertySymbol.opener] = null;
 							BrowserFrameCrossOriginIsolation.isolate(openedPage.mainFrame);
 						}
 
 						frame.childFrames.length = 0;
-						frame.openedPages.length = 0;
+						frame[PropertySymbol.openedPages].length = 0;
 
 						resolve();
 					})
@@ -123,13 +125,13 @@ export default class BrowserFrameFactory {
 								frame[PropertySymbol.listeners].navigation = [];
 							}
 
-							for (const popup of frame.openedPages) {
+							for (const popup of frame[PropertySymbol.openedPages]) {
 								popup.mainFrame[PropertySymbol.opener] = null;
 								BrowserFrameCrossOriginIsolation.isolate(popup.mainFrame);
 							}
 
 							frame.childFrames.length = 0;
-							frame.openedPages.length = 0;
+							frame[PropertySymbol.openedPages].length = 0;
 
 							resolve();
 						})

@@ -70,7 +70,7 @@ describe('BrowserFrameURL', () => {
 
 			popupFrame[PropertySymbol.opener] = { frame: page.mainFrame, window: page.mainFrame.window };
 
-			page.mainFrame.openedPages.push(popupPage);
+			page.mainFrame[PropertySymbol.openedPages].push(popupPage);
 
 			popupFrame.url = 'about:blank';
 
