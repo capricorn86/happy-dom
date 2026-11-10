@@ -1515,7 +1515,7 @@ Task #1
 			const firstURL = 'data:text/html,<body>First</body>';
 			const secondURL = 'data:text/html,<body>Second</body>';
 
-			const createHistory = async (
+			const createDataHistory = async (
 				nextURL = secondURL
 			): Promise<{
 				browser: Browser;
@@ -1532,8 +1532,254 @@ Task #1
 				return { browser, frame };
 			};
 
+			const createHTTPHistory = async (): Promise<{
+				browser: Browser;
+				frame: IBrowserFrame;
+				requests: string[];
+			}> => {
+				const browser = new Browser();
+				const page = browser.newPage();
+				page.mainFrame.url = 'https://parent.example/';
+				const frame = BrowserFrameFactory.createChildFrame(page.mainFrame);
+				const requests: string[] = [];
+
+				vi.spyOn(Fetch.prototype, 'send').mockImplementation(async () => {
+					requests.push(frame.url);
+					return Object.defineProperty(new frame.window.Response('<body>Loaded</body>'), 'url', {
+						value: frame.url
+					});
+				});
+
+				await frame.goto('https://parent.example/initial', { referrer: page.mainFrame.url });
+				frame.window.history.pushState({ page: 'one' }, '', '/one');
+				frame.window.history.pushState({ page: 'two' }, '', '/two');
+				return { browser, frame, requests };
+			};
+
+			it('Reloads a restored document once and reuses it for its other state entries.', async () => {
+				const { browser, frame, requests } = await createHTTPHistory();
+				await frame.goto('https://parent.example/other');
+				const previousWindow = frame.window;
+
+				await frame.goBack();
+
+				expect(frame.window === previousWindow).toBe(false);
+				expect(frame.url).toBe('https://parent.example/two');
+				expect(frame[PropertySymbol.history].currentItem.documentState.url).toBe(
+					'https://parent.example/two'
+				);
+				expect(frame.window.history.state).toEqual({ page: 'two' });
+				const restoredWindow = frame.window;
+				frame.document.body.textContent = 'Live state';
+				const popState = vi.fn();
+				frame.window.addEventListener('popstate', popState);
+
+				await frame.goBack();
+				expect(frame.url).toBe('https://parent.example/one');
+				expect(frame.window.history.state).toEqual({ page: 'one' });
+				await frame.goBack();
+				expect(frame.url).toBe('https://parent.example/initial');
+				expect(frame.window.history.state).toBeNull();
+				await frame.goSteps(2);
+				expect(frame.url).toBe('https://parent.example/two');
+				expect(frame.window.history.state).toEqual({ page: 'two' });
+
+				expect(frame.window === restoredWindow).toBe(true);
+				expect(frame.document.body.textContent).toBe('Live state');
+				expect(frame[PropertySymbol.history].currentItem.documentState.url).toBe(
+					'https://parent.example/two'
+				);
+				expect(popState).toHaveBeenCalledTimes(3);
+				expect(requests).toEqual([
+					'https://parent.example/initial',
+					'https://parent.example/other',
+					'https://parent.example/two'
+				]);
+				await browser.close();
+			});
+
+			it('Keeps earlier and later state entries in the same document after reload.', async () => {
+				const { browser, frame, requests } = await createHTTPHistory();
+				await frame.goBack();
+				const previousWindow = frame.window;
+
+				await frame.reload();
+
+				expect(frame.window === previousWindow).toBe(false);
+				expect(frame.window.history.state).toEqual({ page: 'one' });
+				const reloadedWindow = frame.window;
+				frame.document.body.textContent = 'Live state';
+				const popState = vi.fn();
+				frame.window.addEventListener('popstate', popState);
+
+				await frame.goBack();
+				expect(frame.url).toBe('https://parent.example/initial');
+				await frame.goSteps(2);
+				expect(frame.url).toBe('https://parent.example/two');
+				expect(frame.window.history.state).toEqual({ page: 'two' });
+
+				expect(frame.window === reloadedWindow).toBe(true);
+				expect(frame.document.body.textContent).toBe('Live state');
+				expect(frame[PropertySymbol.history].currentItem.documentState.url).toBe(
+					'https://parent.example/one'
+				);
+				expect(popState).toHaveBeenCalledTimes(2);
+				expect(requests).toEqual(['https://parent.example/initial', 'https://parent.example/one']);
+				await browser.close();
+			});
+
+			it('Preserves document boundaries when restoring a replaced state entry.', async () => {
+				const { browser, frame, requests } = await createHTTPHistory();
+				frame.window.history.replaceState({ page: 'replaced' }, '', '/replacement');
+				await frame.goto('https://parent.example/other');
+
+				await frame.goBack();
+
+				const restoredWindow = frame.window;
+				expect(frame.url).toBe('https://parent.example/replacement');
+				expect(frame.window.history.state).toEqual({ page: 'replaced' });
+				await frame.goBack();
+				expect(frame.url).toBe('https://parent.example/one');
+				await frame.goForward();
+
+				expect(frame.window === restoredWindow).toBe(true);
+				expect(frame.url).toBe('https://parent.example/replacement');
+				expect(frame[PropertySymbol.history].currentItem.documentState.url).toBe(
+					'https://parent.example/replacement'
+				);
+				expect(frame.window.history.state).toEqual({ page: 'replaced' });
+				expect(requests).toEqual([
+					'https://parent.example/initial',
+					'https://parent.example/other',
+					'https://parent.example/replacement'
+				]);
+				await browser.close();
+			});
+
+			it('Separates a redirected state entry from the entries on both sides of it.', async () => {
+				const { browser, frame } = await createHTTPHistory();
+				await frame.goto('https://parent.example/other');
+				vi.mocked(Fetch.prototype.send).mockResolvedValueOnce(
+					Object.defineProperties(new frame.window.Response('<body>Redirected</body>'), {
+						url: { value: 'https://parent.example/final' },
+						redirected: { value: true }
+					})
+				);
+
+				await frame.goSteps(-2);
+
+				const redirectedWindow = frame.window;
+				expect(frame.url).toBe('https://parent.example/final');
+				expect(frame[PropertySymbol.history].currentItem.documentState.url).toBe(
+					'https://parent.example/final'
+				);
+				expect(frame.window.history.state).toBeNull();
+				await frame.goForward();
+				expect(frame.window === redirectedWindow).toBe(false);
+				expect(frame.url).toBe('https://parent.example/two');
+				expect(frame[PropertySymbol.history].currentItem.documentState.url).toBe(
+					'https://parent.example/two'
+				);
+				expect(frame.window.history.state).toEqual({ page: 'two' });
+				const nextWindow = frame.window;
+				await frame.goBack();
+				expect(frame.window === nextWindow).toBe(false);
+				expect(frame.url).toBe('https://parent.example/final');
+				const previousWindow = frame.window;
+				await frame.goBack();
+				expect(frame.window === previousWindow).toBe(false);
+				expect(frame.url).toBe('https://parent.example/initial');
+				expect(frame[PropertySymbol.history].currentItem.documentState.url).toBe(
+					'https://parent.example/initial'
+				);
+				await browser.close();
+			});
+
+			it('Reloads the next state entry after a cross-origin redirect during traversal.', async () => {
+				const { browser, frame } = await createHTTPHistory();
+				await frame.goto('https://parent.example/other');
+				vi.mocked(Fetch.prototype.send).mockResolvedValueOnce(
+					Object.defineProperties(new frame.window.Response('<body>Redirected</body>'), {
+						url: { value: 'https://other.example/final' },
+						redirected: { value: true }
+					})
+				);
+
+				await frame.goSteps(-2);
+
+				const redirectedWindow = frame.window;
+				expect(frame.window.location.origin).toBe('https://other.example');
+				expect(frame[PropertySymbol.history].currentItem.documentState.url).toBe(
+					'https://other.example/final'
+				);
+				expect(frame.window.parent).toBeInstanceOf(CrossOriginBrowserWindow);
+				expect(frame.window.history.state).toBeNull();
+
+				await frame.goForward();
+
+				expect(frame.window === redirectedWindow).toBe(false);
+				expect(frame.document.body.textContent).toBe('Loaded');
+				expect(frame.window.location.origin).toBe('https://parent.example');
+				expect(frame[PropertySymbol.history].currentItem.documentState.url).toBe(
+					'https://parent.example/two'
+				);
+				expect(frame.window.parent === frame.parentFrame?.window).toBe(true);
+				expect(frame.window.history.state).toEqual({ page: 'two' });
+				await browser.close();
+			});
+
+			it('Separates a reloaded state entry even when a redirect ends at the original URL.', async () => {
+				const { browser, frame } = await createHTTPHistory();
+				await frame.goBack();
+				vi.mocked(Fetch.prototype.send).mockResolvedValueOnce(
+					Object.defineProperties(new frame.window.Response('<body>Redirected</body>'), {
+						url: { value: frame.url },
+						redirected: { value: true }
+					})
+				);
+
+				await frame.reload();
+
+				const redirectedWindow = frame.window;
+				expect(frame.url).toBe('https://parent.example/one');
+				expect(frame.window.history.state).toBeNull();
+				await frame.goForward();
+				expect(frame.window === redirectedWindow).toBe(false);
+				expect(frame.url).toBe('https://parent.example/two');
+				expect(frame.window.history.state).toEqual({ page: 'two' });
+				await browser.close();
+			});
+
+			it(`Keeps the current document when the setting "navigation.crossOriginPolicy" blocks traversal to another origin.`, async () => {
+				const { browser, frame } = await createHTTPHistory();
+				browser.settings.navigation.crossOriginPolicy =
+					BrowserNavigationCrossOriginPolicyEnum.sameOrigin;
+				vi.mocked(Fetch.prototype.send).mockResolvedValueOnce(
+					Object.defineProperties(new frame.window.Response('<body>Redirected</body>'), {
+						url: { value: 'https://other.example/final' },
+						redirected: { value: true }
+					})
+				);
+				await frame.goto('https://parent.example/redirect');
+				expect(frame[PropertySymbol.history].currentItem.documentState.url).toBe(
+					'https://other.example/final'
+				);
+				await frame.goto('https://parent.example/next');
+				const currentWindow = frame.window;
+
+				await frame.goBack();
+
+				expect(frame.window === currentWindow).toBe(true);
+				expect(frame.url).toBe('https://parent.example/next');
+				expect(frame[PropertySymbol.history].currentItem.documentState.url).toBe(
+					'https://parent.example/next'
+				);
+				expect(frame.window.parent === frame.parentFrame?.window).toBe(true);
+				await browser.close();
+			});
+
 			it('Loads the previous data document when going back across a document boundary.', async () => {
-				const { browser, frame } = await createHistory();
+				const { browser, frame } = await createDataHistory();
 				await frame.goBack();
 				const previousWindow = frame.window;
 
@@ -1549,7 +1795,7 @@ Task #1
 			});
 
 			it('Loads the next data document when going forward across a document boundary.', async () => {
-				const { browser, frame } = await createHistory();
+				const { browser, frame } = await createDataHistory();
 				await frame.goBack();
 				await frame.goBack();
 				const previousWindow = frame.window;
@@ -1564,7 +1810,7 @@ Task #1
 			});
 
 			it('Loads the target data document when going multiple steps back.', async () => {
-				const { browser, frame } = await createHistory();
+				const { browser, frame } = await createDataHistory();
 				const previousWindow = frame.window;
 
 				await frame.goSteps(-2);
@@ -1576,7 +1822,7 @@ Task #1
 			});
 
 			it('Loads the target data document when going multiple steps forward.', async () => {
-				const { browser, frame } = await createHistory();
+				const { browser, frame } = await createDataHistory();
 				await frame.goSteps(-2);
 				const previousWindow = frame.window;
 
@@ -1589,7 +1835,7 @@ Task #1
 			});
 
 			it('Loads a different document when going a single step across a document boundary.', async () => {
-				const { browser, frame } = await createHistory();
+				const { browser, frame } = await createDataHistory();
 				await frame.goSteps(-2);
 				const previousWindow = frame.window;
 
@@ -1602,7 +1848,7 @@ Task #1
 			});
 
 			it('Loads a different document even when both navigations used the same data URL.', async () => {
-				const { browser, frame } = await createHistory(firstURL);
+				const { browser, frame } = await createDataHistory(firstURL);
 				await frame.goBack();
 				const previousWindow = frame.window;
 
@@ -1615,7 +1861,7 @@ Task #1
 			});
 
 			it('Keeps the window when traversing state and hash entries within a data document.', async () => {
-				const { browser, frame } = await createHistory();
+				const { browser, frame } = await createDataHistory();
 				const previousWindow = frame.window;
 				frame.window.history.replaceState({ page: 'replaced' }, '', secondURL + '#replaced');
 				frame.window.location.hash = '#hash';

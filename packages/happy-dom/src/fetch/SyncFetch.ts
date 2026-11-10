@@ -101,9 +101,10 @@ export default class SyncFetch {
 	 * @returns Response.
 	 */
 	public send(): ISyncResponse {
-		const navigationURL = new URL(this.#browserFrame.navigationURL);
+		const history = this.#browserFrame[PropertySymbol.history];
+		const originURL = new URL(history.currentItem.documentState.url);
 
-		FetchRequestReferrerUtility.prepareRequest(navigationURL, this.request);
+		FetchRequestReferrerUtility.prepareRequest(originURL, this.request);
 
 		if (this.requestHeaders) {
 			for (const header of this.requestHeaders) {
@@ -166,13 +167,10 @@ export default class SyncFetch {
 		}
 
 		// Security check for "https" to "http" requests.
-		if (
-			this.request[PropertySymbol.url].protocol === 'http:' &&
-			navigationURL.protocol === 'https:'
-		) {
+		if (this.request[PropertySymbol.url].protocol === 'http:' && originURL.protocol === 'https:') {
 			throw new this.#window.DOMException(
 				`Mixed Content: The page at '${
-					navigationURL.href
+					originURL.href
 				}' was loaded over HTTPS, but requested an insecure XMLHttpRequest endpoint '${
 					this.request.url
 				}'. This request has been blocked; the content must be served over HTTPS.`,
@@ -375,11 +373,12 @@ export default class SyncFetch {
 	 * @returns True if it complies with the policy.
 	 */
 	private compliesWithCrossOriginPolicy(): boolean {
-		const navigationURL = new URL(this.#browserFrame.navigationURL);
+		const history = this.#browserFrame[PropertySymbol.history];
+		const originURL = new URL(history.currentItem.documentState.url);
 
 		if (
 			this.disableSameOriginPolicy ||
-			!FetchCORSUtility.isCORS(navigationURL, this.request[PropertySymbol.url])
+			!FetchCORSUtility.isCORS(originURL, this.request[PropertySymbol.url])
 		) {
 			return true;
 		}
@@ -391,7 +390,7 @@ export default class SyncFetch {
 		if (cachedPreflightResponse) {
 			if (
 				cachedPreflightResponse.allowOrigin !== '*' &&
-				cachedPreflightResponse.allowOrigin !== navigationURL.origin
+				cachedPreflightResponse.allowOrigin !== originURL.origin
 			) {
 				return false;
 			}
@@ -414,7 +413,7 @@ export default class SyncFetch {
 
 		const corsHeaders = new this.#window.Headers({
 			'Access-Control-Request-Method': this.request.method,
-			Origin: navigationURL.origin
+			Origin: originURL.origin
 		});
 
 		if (requestHeaders.length > 0) {
@@ -446,7 +445,7 @@ export default class SyncFetch {
 			return false;
 		}
 
-		if (allowOrigin !== '*' && allowOrigin !== navigationURL.origin) {
+		if (allowOrigin !== '*' && allowOrigin !== originURL.origin) {
 			return false;
 		}
 
@@ -687,7 +686,10 @@ export default class SyncFetch {
 				if (
 					this.request.credentials === 'omit' ||
 					(this.request.credentials === 'same-origin' &&
-						FetchCORSUtility.isCORS(this.#browserFrame.navigationURL, locationURL))
+						FetchCORSUtility.isCORS(
+							this.#browserFrame[PropertySymbol.history].currentItem.documentState.url,
+							locationURL
+						))
 				) {
 					headers.delete('cookie');
 					headers.delete('cookie2');

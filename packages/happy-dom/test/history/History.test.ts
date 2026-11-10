@@ -20,23 +20,27 @@ describe('History', () => {
 			browserFrame[PropertySymbol.history].items.push({
 				title: 'Example',
 				url: 'https://example.com',
-				navigationURL: 'https://example.com',
-				inheritOrigin: false,
+				documentState: {
+					url: 'https://example.com',
+					method: 'GET',
+					formData: null,
+					inheritOrigin: false
+				},
 				state: null,
-				scrollRestoration: HistoryScrollRestorationEnum.auto,
-				method: 'GET',
-				formData: null
+				scrollRestoration: HistoryScrollRestorationEnum.auto
 			});
 
 			browserFrame[PropertySymbol.history].items.push({
 				title: 'Example2',
 				url: 'https://example2.com',
-				navigationURL: 'https://example2.com',
-				inheritOrigin: false,
+				documentState: {
+					url: 'https://example2.com',
+					method: 'GET',
+					formData: null,
+					inheritOrigin: false
+				},
 				state: null,
-				scrollRestoration: HistoryScrollRestorationEnum.auto,
-				method: 'GET',
-				formData: null
+				scrollRestoration: HistoryScrollRestorationEnum.auto
 			});
 
 			// 3 as the first item is added as "about:blank" in the constructor.
@@ -104,34 +108,40 @@ describe('History', () => {
 			browserFrame[PropertySymbol.history].push({
 				title: 'Github',
 				url: 'https://www.github.com',
-				navigationURL: 'https://www.github.com',
-				inheritOrigin: false,
+				documentState: {
+					url: 'https://www.github.com',
+					method: 'GET',
+					formData: null,
+					inheritOrigin: false
+				},
 				state: null,
-				scrollRestoration: HistoryScrollRestorationEnum.auto,
-				method: 'GET',
-				formData: null
+				scrollRestoration: HistoryScrollRestorationEnum.auto
 			});
 
 			browserFrame[PropertySymbol.history].push({
 				title: 'Example',
 				url: 'https://www.example.com',
-				navigationURL: 'https://www.example.com',
-				inheritOrigin: false,
+				documentState: {
+					url: 'https://www.example.com',
+					method: 'GET',
+					formData: null,
+					inheritOrigin: false
+				},
 				state: null,
-				scrollRestoration: HistoryScrollRestorationEnum.auto,
-				method: 'GET',
-				formData: null
+				scrollRestoration: HistoryScrollRestorationEnum.auto
 			});
 
 			browserFrame[PropertySymbol.history].push({
 				title: '',
 				url: 'https://localhost:3000/',
-				navigationURL: 'https://localhost:3000/',
-				inheritOrigin: false,
+				documentState: {
+					url: 'https://localhost:3000/',
+					method: 'GET',
+					formData: null,
+					inheritOrigin: false
+				},
 				state: null,
-				scrollRestoration: HistoryScrollRestorationEnum.auto,
-				method: 'GET',
-				formData: null
+				scrollRestoration: HistoryScrollRestorationEnum.auto
 			});
 
 			browserFrame.window.history.back();
@@ -248,34 +258,40 @@ describe('History', () => {
 			browserFrame[PropertySymbol.history].push({
 				title: 'Github',
 				url: 'https://www.github.com',
-				navigationURL: 'https://www.github.com',
-				inheritOrigin: false,
+				documentState: {
+					url: 'https://www.github.com',
+					method: 'GET',
+					formData: null,
+					inheritOrigin: false
+				},
 				state: null,
-				scrollRestoration: HistoryScrollRestorationEnum.auto,
-				method: 'GET',
-				formData: null
+				scrollRestoration: HistoryScrollRestorationEnum.auto
 			});
 
 			browserFrame[PropertySymbol.history].push({
 				title: 'Example',
 				url: 'https://www.example.com',
-				navigationURL: 'https://www.example.com',
-				inheritOrigin: false,
+				documentState: {
+					url: 'https://www.example.com',
+					method: 'GET',
+					formData: null,
+					inheritOrigin: false
+				},
 				state: null,
-				scrollRestoration: HistoryScrollRestorationEnum.auto,
-				method: 'GET',
-				formData: null
+				scrollRestoration: HistoryScrollRestorationEnum.auto
 			});
 
 			browserFrame[PropertySymbol.history].push({
 				title: '',
 				url: 'https://localhost:3000/',
-				navigationURL: 'https://localhost:3000/',
-				inheritOrigin: false,
+				documentState: {
+					url: 'https://localhost:3000/',
+					method: 'GET',
+					formData: null,
+					inheritOrigin: false
+				},
 				state: null,
-				scrollRestoration: HistoryScrollRestorationEnum.auto,
-				method: 'GET',
-				formData: null
+				scrollRestoration: HistoryScrollRestorationEnum.auto
 			});
 
 			browserFrame.window.history.back();
@@ -326,34 +342,40 @@ describe('History', () => {
 			browserFrame[PropertySymbol.history].push({
 				title: 'Github',
 				url: 'https://www.github.com',
-				navigationURL: 'https://www.github.com',
-				inheritOrigin: false,
+				documentState: {
+					url: 'https://www.github.com',
+					method: 'GET',
+					formData: null,
+					inheritOrigin: false
+				},
 				state: null,
-				scrollRestoration: HistoryScrollRestorationEnum.auto,
-				method: 'GET',
-				formData: null
+				scrollRestoration: HistoryScrollRestorationEnum.auto
 			});
 
 			browserFrame[PropertySymbol.history].push({
 				title: 'Example',
 				url: 'https://www.example.com',
-				navigationURL: 'https://www.example.com',
-				inheritOrigin: false,
+				documentState: {
+					url: 'https://www.example.com',
+					method: 'GET',
+					formData: null,
+					inheritOrigin: false
+				},
 				state: null,
-				scrollRestoration: HistoryScrollRestorationEnum.auto,
-				method: 'GET',
-				formData: null
+				scrollRestoration: HistoryScrollRestorationEnum.auto
 			});
 
 			browserFrame[PropertySymbol.history].push({
 				title: '',
 				url: 'https://localhost:3000/',
-				navigationURL: 'https://localhost:3000/',
-				inheritOrigin: false,
+				documentState: {
+					url: 'https://localhost:3000/',
+					method: 'GET',
+					formData: null,
+					inheritOrigin: false
+				},
 				state: null,
-				scrollRestoration: HistoryScrollRestorationEnum.auto,
-				method: 'GET',
-				formData: null
+				scrollRestoration: HistoryScrollRestorationEnum.auto
 			});
 
 			browserFrame.window.history.go(-2);
@@ -384,6 +406,26 @@ describe('History', () => {
 	});
 
 	describe('pushState()', () => {
+		it('Shares document navigation metadata with the new history item.', () => {
+			const documentState = browserFrame[PropertySymbol.history].currentItem.documentState;
+			const formData = new browserFrame.window.FormData();
+			formData.set('key', 'value');
+			documentState.method = 'POST';
+			documentState.formData = formData;
+			documentState.inheritOrigin = false;
+
+			browserFrame.window.history.pushState({ key: 'value' }, '', '');
+
+			const items = browserFrame[PropertySymbol.history].items;
+			expect(items[1].documentState).toBe(documentState);
+			expect(items[1].documentState).toEqual({
+				url: 'about:blank',
+				method: 'POST',
+				formData,
+				inheritOrigin: false
+			});
+		});
+
 		it('Pushes a new state to the history.', () => {
 			browserFrame.window.history.pushState({ key: 'value' }, '', '');
 
@@ -393,35 +435,43 @@ describe('History', () => {
 				{
 					title: '',
 					url: 'about:blank',
-					navigationURL: 'about:blank',
-					inheritOrigin: true,
+					documentState: {
+						url: 'about:blank',
+						method: 'GET',
+						formData: null,
+						inheritOrigin: true
+					},
 					state: null,
-					scrollRestoration: HistoryScrollRestorationEnum.auto,
-					method: 'GET',
-					formData: null
+					scrollRestoration: HistoryScrollRestorationEnum.auto
 				},
 				{
 					title: '',
 					url: 'about:blank',
-					navigationURL: null,
-					inheritOrigin: true,
+					documentState: {
+						url: 'about:blank',
+						method: 'GET',
+						formData: null,
+						inheritOrigin: true
+					},
 					state: { key: 'value' },
-					scrollRestoration: HistoryScrollRestorationEnum.auto,
-					method: 'GET',
-					formData: null
+					scrollRestoration: HistoryScrollRestorationEnum.auto
 				}
 			]);
+
+			const items = browserFrame[PropertySymbol.history].items;
+			expect(items[1].documentState).toBe(items[0].documentState);
 		});
 	});
 
 	describe('replaceState()', () => {
 		it('Passes down the source URL from the current history item.', () => {
 			browserFrame.url = 'https://www.example.com/current/';
-			browserFrame[PropertySymbol.history].currentItem.navigationURL = 'https://www.example.com/';
+			browserFrame[PropertySymbol.history].currentItem.documentState.url =
+				'https://www.example.com/';
 
 			browserFrame.window.history.replaceState({ key: 'value' }, '', '/test/');
 
-			expect(browserFrame[PropertySymbol.history].currentItem.navigationURL).toBe(
+			expect(browserFrame[PropertySymbol.history].currentItem.documentState.url).toBe(
 				'https://www.example.com/'
 			);
 			expect(browserFrame[PropertySymbol.history].currentItem.url).toBe(
@@ -438,22 +488,26 @@ describe('History', () => {
 				{
 					title: '',
 					url: 'about:blank',
-					navigationURL: 'about:blank',
-					inheritOrigin: true,
+					documentState: {
+						url: 'about:blank',
+						method: 'GET',
+						formData: null,
+						inheritOrigin: true
+					},
 					state: null,
-					scrollRestoration: HistoryScrollRestorationEnum.auto,
-					method: 'GET',
-					formData: null
+					scrollRestoration: HistoryScrollRestorationEnum.auto
 				},
 				{
 					title: '',
 					url: 'about:blank',
-					navigationURL: null,
-					inheritOrigin: true,
+					documentState: {
+						url: 'about:blank',
+						method: 'GET',
+						formData: null,
+						inheritOrigin: true
+					},
 					state: { key: 'value' },
-					scrollRestoration: HistoryScrollRestorationEnum.auto,
-					method: 'GET',
-					formData: null
+					scrollRestoration: HistoryScrollRestorationEnum.auto
 				}
 			]);
 
@@ -465,22 +519,26 @@ describe('History', () => {
 				{
 					title: '',
 					url: 'about:blank',
-					navigationURL: 'about:blank',
-					inheritOrigin: true,
+					documentState: {
+						url: 'about:blank',
+						method: 'GET',
+						formData: null,
+						inheritOrigin: true
+					},
 					state: null,
-					scrollRestoration: HistoryScrollRestorationEnum.auto,
-					method: 'GET',
-					formData: null
+					scrollRestoration: HistoryScrollRestorationEnum.auto
 				},
 				{
 					title: '',
 					url: 'about:blank',
-					navigationURL: null,
-					inheritOrigin: true,
+					documentState: {
+						url: 'about:blank',
+						method: 'GET',
+						formData: null,
+						inheritOrigin: true
+					},
 					state: { key: 'value2' },
-					scrollRestoration: HistoryScrollRestorationEnum.auto,
-					method: 'GET',
-					formData: null
+					scrollRestoration: HistoryScrollRestorationEnum.auto
 				}
 			]);
 		});

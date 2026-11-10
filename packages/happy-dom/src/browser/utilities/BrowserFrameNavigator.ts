@@ -9,10 +9,10 @@ import BrowserFrameValidator from './BrowserFrameValidator.js';
 import AsyncTaskManager from '../../async-task-manager/AsyncTaskManager.js';
 import type FormData from '../../form-data/FormData.js';
 import HistoryScrollRestorationEnum from '../../history/HistoryScrollRestorationEnum.js';
+import type IHistoryItem from '../../history/IHistoryItem.js';
 import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum.js';
 import Fetch from '../../fetch/Fetch.js';
 import BrowserFrameCrossOriginIsolation from './BrowserFrameCrossOriginIsolation.js';
-import type IHistoryItem from '../../history/IHistoryItem.js';
 
 /**
  * Browser frame navigation utility.
@@ -29,7 +29,7 @@ export default class BrowserFrameNavigator {
 	 * @param [options.goToOptions] Go to options.
 	 * @param [options.method] Method.
 	 * @param [options.formData] Form data.
-	 * @param [options.reload] True if the navigation is a reload of the current history item.
+	 * @param [options.historyItem] Existing history item to load (reload or traversal) instead of pushing a new one. It becomes the current item only if the navigation is allowed.
 	 * @returns Response.
 	 */
 	public static async navigate(options: {
@@ -42,9 +42,9 @@ export default class BrowserFrameNavigator {
 		goToOptions?: IGoToOptions;
 		method?: string;
 		formData?: FormData | null;
-		reload?: boolean;
+		historyItem?: IHistoryItem;
 	}): Promise<Response | null> {
-		const { windowClass, frame, url, formData, method, goToOptions, reload } = options;
+		const { windowClass, frame, url, formData, method, goToOptions, historyItem } = options;
 		const exceptionObserver = frame.page.context.browser[PropertySymbol.exceptionObserver];
 		const referrer = goToOptions?.referrer || frame.window.location.origin;
 		const targetURL = BrowserFrameURL.getRelativeURL(frame, url);
@@ -67,19 +67,16 @@ export default class BrowserFrameNavigator {
 			targetURLWithoutHash.href === currentURLWithoutHash.href &&
 			targetURL.hash &&
 			targetURL.hash !== frame.window?.location.hash &&
-			!reload
+			!historyItem
 		) {
 			const history = frame[PropertySymbol.history];
 
 			history.push({
 				title: '',
 				url: targetURL.href,
-				navigationURL: null,
+				documentState: history.currentItem.documentState,
 				state: null,
-				scrollRestoration: HistoryScrollRestorationEnum.manual,
-				method: method || (formData ? 'POST' : 'GET'),
-				formData: formData || null,
-				inheritOrigin: history.currentItem.inheritOrigin
+				scrollRestoration: HistoryScrollRestorationEnum.manual
 			});
 
 			frame.window.location[PropertySymbol.setURL](frame, targetURL.href);
@@ -128,9 +125,16 @@ export default class BrowserFrameNavigator {
 
 		if (!BrowserFrameValidator.validateFrameNavigation(frame)) {
 			if (!frame.page.context.browser.settings.navigation.disableFallbackToSetURL) {
+				const history = frame[PropertySymbol.history];
+				if (historyItem) {
+					history.currentItem = historyItem;
+				}
 				frame.window.location[PropertySymbol.setURL](frame, targetURL.href);
-				frame[PropertySymbol.history].currentItem.url = targetURL.href;
-				frame[PropertySymbol.history].currentItem.navigationURL = targetURL.href;
+				history.currentItem.url = targetURL.href;
+				history.currentItem.documentState = {
+					...history.currentItem.documentState,
+					url: targetURL.href
+				};
 				BrowserFrameCrossOriginIsolation.isolate(frame);
 			}
 
@@ -138,21 +142,26 @@ export default class BrowserFrameNavigator {
 		}
 
 		// History management.
-		if (!reload) {
-			const history = frame[PropertySymbol.history];
+		const history = frame[PropertySymbol.history];
 
+		if (historyItem) {
+			// The new document is shared by all items of the entry's document state.
+			history.currentItem = historyItem;
+			historyItem.documentState.url = targetURL.href;
+		} else {
+			const navigationMethod = method || (formData ? 'POST' : 'GET');
 			history.push({
 				title: '',
 				url: targetURL.href,
-				navigationURL: targetURL.href,
+				documentState: {
+					url: targetURL.href,
+					method: navigationMethod,
+					formData: formData || null,
+					inheritOrigin: goToOptions?.inheritOrigin || false
+				},
 				state: null,
-				scrollRestoration: HistoryScrollRestorationEnum.auto,
-				method: method || (formData ? 'POST' : 'GET'),
-				formData: formData || null,
-				inheritOrigin: goToOptions?.inheritOrigin || false
+				scrollRestoration: HistoryScrollRestorationEnum.auto
 			});
-		} else {
-			frame[PropertySymbol.history].currentItem.navigationURL = targetURL.href;
 		}
 
 		// Store current Window state
@@ -294,11 +303,17 @@ export default class BrowserFrameNavigator {
 			return null;
 		}
 
-		// The URL may have changed due to a redirect.
-		if (response.url && response.url !== frame[PropertySymbol.history].currentItem.url) {
+		// A redirect gives only this item a new document state, even if it ends at the original URL.
+		// Other items of the previous document state keep it and load it again when traversed to.
+		// @see https://html.spec.whatwg.org/multipage/browsing-the-web.html#create-navigation-params-by-fetching
+		if (response.url && (response.redirected || response.url !== history.currentItem.url)) {
 			frame.window[PropertySymbol.location][PropertySymbol.setURL](frame, response.url);
-			frame[PropertySymbol.history].currentItem.url = response.url;
-			frame[PropertySymbol.history].currentItem.navigationURL = response.url;
+			history.currentItem.url = response.url;
+			history.currentItem.documentState = {
+				...history.currentItem.documentState,
+				url: response.url
+			};
+			history.currentItem.state = null;
 			BrowserFrameCrossOriginIsolation.isolate(frame);
 		}
 
@@ -409,9 +424,7 @@ export default class BrowserFrameNavigator {
 
 		const { windowClass, frame, goToOptions, steps } = options;
 		const history = frame[PropertySymbol.history];
-		const fromIndex = history.items.indexOf(history.currentItem);
-		const toIndex = fromIndex + steps;
-		const historyItem = history.items[toIndex];
+		const historyItem = history.items[history.items.indexOf(history.currentItem) + steps];
 
 		if (!historyItem) {
 			return new Promise((resolve) => {
@@ -426,30 +439,7 @@ export default class BrowserFrameNavigator {
 			});
 		}
 
-		let isSameDocument = true;
-
-		// Check if any history items between fromIndex and toIndex have a navigationURL, indicating a different document
-		if (fromIndex > toIndex) {
-			// Backward
-			for (let i = fromIndex; i > toIndex; i--) {
-				if (history.items[i].navigationURL) {
-					isSameDocument = false;
-					break;
-				}
-			}
-		} else if (fromIndex < toIndex) {
-			// Forward
-			for (let i = fromIndex + 1; i <= toIndex; i++) {
-				if (history.items[i].navigationURL) {
-					isSameDocument = false;
-					break;
-				}
-			}
-		}
-
-		history.currentItem = historyItem;
-
-		if (!isSameDocument) {
+		if (historyItem.documentState !== history.currentItem.documentState) {
 			return BrowserFrameNavigator.navigate({
 				windowClass,
 				frame,
@@ -458,12 +448,13 @@ export default class BrowserFrameNavigator {
 					referrer: frame.url
 				},
 				url: historyItem.url,
-				method: historyItem.method,
-				formData: historyItem.formData,
-				reload: true
+				method: historyItem.documentState.method,
+				formData: historyItem.documentState.formData,
+				historyItem
 			});
 		}
 
+		history.currentItem = historyItem;
 		frame.window.location[PropertySymbol.setURL](frame, historyItem.url);
 
 		frame.window.dispatchEvent(
@@ -503,9 +494,9 @@ export default class BrowserFrameNavigator {
 				referrer: frame.url
 			},
 			url: history.currentItem.url,
-			method: history.currentItem.method,
-			formData: history.currentItem.formData,
-			reload: true
+			method: history.currentItem.documentState.method,
+			formData: history.currentItem.documentState.formData,
+			historyItem: history.currentItem
 		});
 	}
 }

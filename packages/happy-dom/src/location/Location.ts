@@ -61,12 +61,9 @@ export default class Location {
 			history.push({
 				title: '',
 				url: url.href,
-				navigationURL: null,
+				documentState: history.currentItem.documentState,
 				state: history.currentItem.state,
-				scrollRestoration: HistoryScrollRestorationEnum.manual,
-				method: history.currentItem.method,
-				formData: history.currentItem.formData || null,
-				inheritOrigin: history.currentItem.inheritOrigin
+				scrollRestoration: HistoryScrollRestorationEnum.manual
 			});
 
 			this[PropertySymbol.setURL](this.#browserFrame, url.href);

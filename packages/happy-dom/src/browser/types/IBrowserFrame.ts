@@ -24,7 +24,6 @@ export default interface IBrowserFrame {
 	readonly closed: boolean;
 	content: string;
 	url: string;
-	navigationURL: string;
 	[PropertySymbol.history]: HistoryItemList;
 	[PropertySymbol.asyncTaskManager]: AsyncTaskManager;
 	[PropertySymbol.listeners]: { navigation: Array<() => void> };
@@ -111,5 +110,5 @@ export default interface IBrowserFrame {
 	 *
 	 * @param [options] Options.
 	 */
-	reload(options: IReloadOptions): Promise<Response | null>;
+	reload(options?: IReloadOptions): Promise<Response | null>;
 }

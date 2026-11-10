@@ -8,12 +8,14 @@ export default class HistoryItemList {
 	public currentItem: IHistoryItem = {
 		title: '',
 		url: 'about:blank',
-		navigationURL: 'about:blank',
+		documentState: {
+			url: 'about:blank',
+			method: 'GET',
+			formData: null,
+			inheritOrigin: true
+		},
 		state: null,
-		scrollRestoration: HistoryScrollRestorationEnum.auto,
-		method: 'GET',
-		formData: null,
-		inheritOrigin: true
+		scrollRestoration: HistoryScrollRestorationEnum.auto
 	};
 	public readonly items: IHistoryItem[] = [this.currentItem];
 
@@ -63,31 +65,15 @@ export default class HistoryItemList {
 		this.currentItem = {
 			title: '',
 			url: 'about:blank',
-			navigationURL: 'about:blank',
+			documentState: {
+				url: 'about:blank',
+				method: 'GET',
+				formData: null,
+				inheritOrigin: true
+			},
 			state: null,
-			scrollRestoration: HistoryScrollRestorationEnum.auto,
-			method: 'GET',
-			formData: null,
-			inheritOrigin: true
+			scrollRestoration: HistoryScrollRestorationEnum.auto
 		};
 		this.items.push(this.currentItem);
-	}
-
-	/**
-	 * Returns the current navigation URL by looking back in the history items.
-	 *
-	 * @returns The current navigation URL.
-	 */
-	public getNavigationURL(): string {
-		const index = this.items.indexOf(this.currentItem);
-		if (index !== -1) {
-			for (let i = index; i >= 0; i--) {
-				const item = this.items[i];
-				if (item.navigationURL) {
-					return item.navigationURL;
-				}
-			}
-		}
-		return 'about:blank';
 	}
 }

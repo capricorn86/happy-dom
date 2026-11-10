@@ -93,18 +93,13 @@ export default class BrowserFrame implements IBrowserFrame {
 
 		this.window[PropertySymbol.location][PropertySymbol.setURL](this, relativeURLHref);
 		this[PropertySymbol.history].currentItem.url = relativeURLHref;
-		this[PropertySymbol.history].currentItem.navigationURL = relativeURLHref;
+		// The window is not reloaded, so the entry is moved to a document state of its own.
+		this[PropertySymbol.history].currentItem.documentState = {
+			...this[PropertySymbol.history].currentItem.documentState,
+			url: relativeURLHref
+		};
 
 		BrowserFrameCrossOriginIsolation.isolate(this);
-	}
-
-	/**
-	 * Returns the navigated URL, which may differ from the current URL that could have been overriden by the History API.
-	 *
-	 * @returns URL.
-	 */
-	public get navigationURL(): string {
-		return this[PropertySymbol.history].getNavigationURL();
 	}
 
 	/**

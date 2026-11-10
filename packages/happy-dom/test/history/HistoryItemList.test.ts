@@ -9,32 +9,38 @@ describe('HistoryItemList', () => {
 			expect(history.currentItem).toEqual({
 				title: '',
 				url: 'about:blank',
-				navigationURL: 'about:blank',
-				inheritOrigin: true,
+				documentState: {
+					url: 'about:blank',
+					method: 'GET',
+					formData: null,
+					inheritOrigin: true
+				},
 				state: null,
-				scrollRestoration: HistoryScrollRestorationEnum.auto,
-				method: 'GET',
-				formData: null
+				scrollRestoration: HistoryScrollRestorationEnum.auto
 			});
 			history.push({
 				title: 'Example',
 				url: 'https://example.com',
-				navigationURL: 'https://example.com',
-				inheritOrigin: false,
+				documentState: {
+					url: 'https://example.com',
+					method: 'GET',
+					formData: null,
+					inheritOrigin: false
+				},
 				state: null,
-				scrollRestoration: HistoryScrollRestorationEnum.auto,
-				method: 'GET',
-				formData: null
+				scrollRestoration: HistoryScrollRestorationEnum.auto
 			});
 			expect(history.currentItem).toEqual({
 				title: 'Example',
 				url: 'https://example.com',
-				navigationURL: 'https://example.com',
-				inheritOrigin: false,
+				documentState: {
+					url: 'https://example.com',
+					method: 'GET',
+					formData: null,
+					inheritOrigin: false
+				},
 				state: null,
-				scrollRestoration: HistoryScrollRestorationEnum.auto,
-				method: 'GET',
-				formData: null
+				scrollRestoration: HistoryScrollRestorationEnum.auto
 			});
 		});
 	});
@@ -46,44 +52,52 @@ describe('HistoryItemList', () => {
 				{
 					title: '',
 					url: 'about:blank',
-					navigationURL: 'about:blank',
-					inheritOrigin: true,
+					documentState: {
+						url: 'about:blank',
+						method: 'GET',
+						formData: null,
+						inheritOrigin: true
+					},
 					state: null,
-					scrollRestoration: HistoryScrollRestorationEnum.auto,
-					method: 'GET',
-					formData: null
+					scrollRestoration: HistoryScrollRestorationEnum.auto
 				}
 			]);
 			history.push({
 				title: 'Example',
 				url: 'https://example.com',
-				navigationURL: 'https://example.com',
-				inheritOrigin: false,
+				documentState: {
+					url: 'https://example.com',
+					method: 'GET',
+					formData: null,
+					inheritOrigin: false
+				},
 				state: null,
-				scrollRestoration: HistoryScrollRestorationEnum.auto,
-				method: 'GET',
-				formData: null
+				scrollRestoration: HistoryScrollRestorationEnum.auto
 			});
 			expect(history.items).toEqual([
 				{
 					title: '',
 					url: 'about:blank',
-					navigationURL: 'about:blank',
-					inheritOrigin: true,
+					documentState: {
+						url: 'about:blank',
+						method: 'GET',
+						formData: null,
+						inheritOrigin: true
+					},
 					state: null,
-					scrollRestoration: HistoryScrollRestorationEnum.auto,
-					method: 'GET',
-					formData: null
+					scrollRestoration: HistoryScrollRestorationEnum.auto
 				},
 				{
 					title: 'Example',
 					url: 'https://example.com',
-					navigationURL: 'https://example.com',
-					inheritOrigin: false,
+					documentState: {
+						url: 'https://example.com',
+						method: 'GET',
+						formData: null,
+						inheritOrigin: false
+					},
 					state: null,
-					scrollRestoration: HistoryScrollRestorationEnum.auto,
-					method: 'GET',
-					formData: null
+					scrollRestoration: HistoryScrollRestorationEnum.auto
 				}
 			]);
 		});
@@ -95,64 +109,76 @@ describe('HistoryItemList', () => {
 			history.push({
 				title: 'Example',
 				url: 'https://example.com',
-				navigationURL: 'https://example.com',
-				inheritOrigin: false,
+				documentState: {
+					url: 'https://example.com',
+					method: 'GET',
+					formData: null,
+					inheritOrigin: false
+				},
 				state: null,
-				scrollRestoration: HistoryScrollRestorationEnum.auto,
-				method: 'GET',
-				formData: null
+				scrollRestoration: HistoryScrollRestorationEnum.auto
 			});
 			expect(history.items).toEqual([
 				{
 					title: '',
 					url: 'about:blank',
-					navigationURL: 'about:blank',
-					inheritOrigin: true,
+					documentState: {
+						url: 'about:blank',
+						method: 'GET',
+						formData: null,
+						inheritOrigin: true
+					},
 					state: null,
-					scrollRestoration: HistoryScrollRestorationEnum.auto,
-					method: 'GET',
-					formData: null
+					scrollRestoration: HistoryScrollRestorationEnum.auto
 				},
 				{
 					title: 'Example',
 					url: 'https://example.com',
-					navigationURL: 'https://example.com',
-					inheritOrigin: false,
+					documentState: {
+						url: 'https://example.com',
+						method: 'GET',
+						formData: null,
+						inheritOrigin: false
+					},
 					state: null,
-					scrollRestoration: HistoryScrollRestorationEnum.auto,
-					method: 'GET',
-					formData: null
+					scrollRestoration: HistoryScrollRestorationEnum.auto
 				}
 			]);
 			expect(history.currentItem).toEqual({
 				title: 'Example',
 				url: 'https://example.com',
-				navigationURL: 'https://example.com',
-				inheritOrigin: false,
+				documentState: {
+					url: 'https://example.com',
+					method: 'GET',
+					formData: null,
+					inheritOrigin: false
+				},
 				state: null,
-				scrollRestoration: HistoryScrollRestorationEnum.auto,
-				method: 'GET',
-				formData: null
+				scrollRestoration: HistoryScrollRestorationEnum.auto
 			});
 			history.push({
 				title: 'Example 2',
 				url: 'https://example2.com',
-				navigationURL: 'https://example2.com',
-				inheritOrigin: false,
+				documentState: {
+					url: 'https://example2.com',
+					method: 'POST',
+					formData: null,
+					inheritOrigin: false
+				},
 				state: null,
-				scrollRestoration: HistoryScrollRestorationEnum.manual,
-				method: 'POST',
-				formData: null
+				scrollRestoration: HistoryScrollRestorationEnum.manual
 			});
 			expect(history.currentItem).toEqual({
 				title: 'Example 2',
 				url: 'https://example2.com',
-				navigationURL: 'https://example2.com',
-				inheritOrigin: false,
+				documentState: {
+					url: 'https://example2.com',
+					method: 'POST',
+					formData: null,
+					inheritOrigin: false
+				},
 				state: null,
-				scrollRestoration: HistoryScrollRestorationEnum.manual,
-				method: 'POST',
-				formData: null
+				scrollRestoration: HistoryScrollRestorationEnum.manual
 			});
 		});
 
@@ -161,14 +187,16 @@ describe('HistoryItemList', () => {
 			history.push({
 				title: 'Example',
 				url: 'https://example.com',
-				navigationURL: 'https://example.com',
-				inheritOrigin: false,
+				documentState: {
+					url: 'https://example.com',
+					method: 'GET',
+					formData: null,
+					inheritOrigin: false
+				},
 				state: null,
-				scrollRestoration: HistoryScrollRestorationEnum.auto,
-				method: 'GET',
-				formData: null
+				scrollRestoration: HistoryScrollRestorationEnum.auto
 			});
-			expect(history.currentItem.navigationURL).toBe('https://example.com');
+			expect(history.currentItem.documentState.url).toBe('https://example.com');
 		});
 
 		it('Supports a data URL as the source URL', () => {
@@ -176,14 +204,18 @@ describe('HistoryItemList', () => {
 			history.push({
 				title: 'Example',
 				url: 'https://example.com',
-				navigationURL: 'data:text/plain;base64,SGVsbG8sIFdvcmxkIQ==',
-				inheritOrigin: false,
+				documentState: {
+					url: 'data:text/plain;base64,SGVsbG8sIFdvcmxkIQ==',
+					method: 'GET',
+					formData: null,
+					inheritOrigin: false
+				},
 				state: null,
-				scrollRestoration: HistoryScrollRestorationEnum.auto,
-				method: 'GET',
-				formData: null
+				scrollRestoration: HistoryScrollRestorationEnum.auto
 			});
-			expect(history.currentItem.navigationURL).toBe('data:text/plain;base64,SGVsbG8sIFdvcmxkIQ==');
+			expect(history.currentItem.documentState.url).toBe(
+				'data:text/plain;base64,SGVsbG8sIFdvcmxkIQ=='
+			);
 		});
 	});
 
@@ -193,54 +225,64 @@ describe('HistoryItemList', () => {
 			history.push({
 				title: 'Example',
 				url: 'https://example.com',
-				navigationURL: 'https://example.com',
-				inheritOrigin: false,
+				documentState: {
+					url: 'https://example.com',
+					method: 'GET',
+					formData: null,
+					inheritOrigin: false
+				},
 				state: null,
-				scrollRestoration: HistoryScrollRestorationEnum.auto,
-				method: 'GET',
-				formData: null
+				scrollRestoration: HistoryScrollRestorationEnum.auto
 			});
 			history.replace({
 				title: 'Example 2',
 				url: 'https://example2.com',
-				navigationURL: 'https://example2.com',
-				inheritOrigin: false,
+				documentState: {
+					url: 'https://example2.com',
+					method: 'POST',
+					formData: null,
+					inheritOrigin: false
+				},
 				state: null,
-				scrollRestoration: HistoryScrollRestorationEnum.manual,
-				method: 'POST',
-				formData: null
+				scrollRestoration: HistoryScrollRestorationEnum.manual
 			});
 			expect(history.items).toEqual([
 				{
 					title: '',
 					url: 'about:blank',
-					navigationURL: 'about:blank',
-					inheritOrigin: true,
+					documentState: {
+						url: 'about:blank',
+						method: 'GET',
+						formData: null,
+						inheritOrigin: true
+					},
 					state: null,
-					scrollRestoration: HistoryScrollRestorationEnum.auto,
-					method: 'GET',
-					formData: null
+					scrollRestoration: HistoryScrollRestorationEnum.auto
 				},
 				{
 					title: 'Example 2',
 					url: 'https://example2.com',
-					navigationURL: 'https://example2.com',
-					inheritOrigin: false,
+					documentState: {
+						url: 'https://example2.com',
+						method: 'POST',
+						formData: null,
+						inheritOrigin: false
+					},
 					state: null,
-					scrollRestoration: HistoryScrollRestorationEnum.manual,
-					method: 'POST',
-					formData: null
+					scrollRestoration: HistoryScrollRestorationEnum.manual
 				}
 			]);
 			expect(history.currentItem).toEqual({
 				title: 'Example 2',
 				url: 'https://example2.com',
-				navigationURL: 'https://example2.com',
-				inheritOrigin: false,
+				documentState: {
+					url: 'https://example2.com',
+					method: 'POST',
+					formData: null,
+					inheritOrigin: false
+				},
 				state: null,
-				scrollRestoration: HistoryScrollRestorationEnum.manual,
-				method: 'POST',
-				formData: null
+				scrollRestoration: HistoryScrollRestorationEnum.manual
 			});
 		});
 
@@ -249,14 +291,16 @@ describe('HistoryItemList', () => {
 			history.replace({
 				title: 'Example',
 				url: 'https://example.com',
-				navigationURL: 'https://example.com',
-				inheritOrigin: false,
+				documentState: {
+					url: 'https://example.com',
+					method: 'GET',
+					formData: null,
+					inheritOrigin: false
+				},
 				state: null,
-				scrollRestoration: HistoryScrollRestorationEnum.auto,
-				method: 'GET',
-				formData: null
+				scrollRestoration: HistoryScrollRestorationEnum.auto
 			});
-			expect(history.currentItem.navigationURL).toBe('https://example.com');
+			expect(history.currentItem.documentState.url).toBe('https://example.com');
 		});
 
 		it('Supports a data URL as the source URL', () => {
@@ -264,14 +308,18 @@ describe('HistoryItemList', () => {
 			history.replace({
 				title: 'Example',
 				url: 'https://example.com',
-				navigationURL: 'data:text/plain;base64,SGVsbG8sIFdvcmxkIQ==',
-				inheritOrigin: false,
+				documentState: {
+					url: 'data:text/plain;base64,SGVsbG8sIFdvcmxkIQ==',
+					method: 'GET',
+					formData: null,
+					inheritOrigin: false
+				},
 				state: null,
-				scrollRestoration: HistoryScrollRestorationEnum.auto,
-				method: 'GET',
-				formData: null
+				scrollRestoration: HistoryScrollRestorationEnum.auto
 			});
-			expect(history.currentItem.navigationURL).toBe('data:text/plain;base64,SGVsbG8sIFdvcmxkIQ==');
+			expect(history.currentItem.documentState.url).toBe(
+				'data:text/plain;base64,SGVsbG8sIFdvcmxkIQ=='
+			);
 		});
 	});
 
@@ -281,45 +329,53 @@ describe('HistoryItemList', () => {
 			history.push({
 				title: 'Example',
 				url: 'https://example.com',
-				navigationURL: 'https://example.com',
-				inheritOrigin: false,
+				documentState: {
+					url: 'https://example.com',
+					method: 'GET',
+					formData: null,
+					inheritOrigin: false
+				},
 				state: null,
-				scrollRestoration: HistoryScrollRestorationEnum.auto,
-				method: 'GET',
-				formData: null
+				scrollRestoration: HistoryScrollRestorationEnum.auto
 			});
 			history.push({
 				title: 'Example 2',
 				url: 'https://example2.com',
-				navigationURL: 'https://example2.com',
-				inheritOrigin: false,
+				documentState: {
+					url: 'https://example2.com',
+					method: 'POST',
+					formData: null,
+					inheritOrigin: false
+				},
 				state: null,
-				scrollRestoration: HistoryScrollRestorationEnum.manual,
-				method: 'POST',
-				formData: null
+				scrollRestoration: HistoryScrollRestorationEnum.manual
 			});
 			history.clear();
 			expect(history.items).toEqual([
 				{
 					title: '',
 					url: 'about:blank',
-					navigationURL: 'about:blank',
-					inheritOrigin: true,
+					documentState: {
+						url: 'about:blank',
+						method: 'GET',
+						formData: null,
+						inheritOrigin: true
+					},
 					state: null,
-					scrollRestoration: HistoryScrollRestorationEnum.auto,
-					method: 'GET',
-					formData: null
+					scrollRestoration: HistoryScrollRestorationEnum.auto
 				}
 			]);
 			expect(history.currentItem).toEqual({
 				title: '',
 				url: 'about:blank',
-				navigationURL: 'about:blank',
-				inheritOrigin: true,
+				documentState: {
+					url: 'about:blank',
+					method: 'GET',
+					formData: null,
+					inheritOrigin: true
+				},
 				state: null,
-				scrollRestoration: HistoryScrollRestorationEnum.auto,
-				method: 'GET',
-				formData: null
+				scrollRestoration: HistoryScrollRestorationEnum.auto
 			});
 		});
 	});

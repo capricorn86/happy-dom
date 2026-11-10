@@ -50,20 +50,18 @@ export default class BrowserFrameURL {
 	 * @returns Frame origin, or null for data origins.
 	 */
 	private static getInheritedOrigin(frame: IBrowserFrame): string | null {
-		const navigationURL = new URL(frame.navigationURL);
+		const history = frame[PropertySymbol.history];
+		const url = new URL(history.currentItem.documentState.url);
 
 		// Data URLs are treated as unique opaque origins by modern browsers, rather than inheriting the origin of the settings object responsible for the navigation.
 		// A window ID distinguishes each data document while allowing inherited about:blank frames to share its origin.
 		// @see https://developer.mozilla.org/en-US/docs/Web/URI/Reference/Schemes/data
-		if (navigationURL.protocol === 'data:') {
+		if (url.protocol === 'data:') {
 			return `data:${frame.window[PropertySymbol.internalId]}`;
 		}
 
-		if (
-			!frame[PropertySymbol.history].currentItem.inheritOrigin ||
-			navigationURL.origin !== 'null'
-		) {
-			return navigationURL.origin;
+		if (!history.currentItem.documentState.inheritOrigin || url.origin !== 'null') {
+			return url.origin;
 		}
 
 		// Popup frame
@@ -76,6 +74,6 @@ export default class BrowserFrameURL {
 			return this.getInheritedOrigin(frame.parentFrame);
 		}
 
-		return navigationURL.origin;
+		return url.origin;
 	}
 }
