@@ -6,7 +6,7 @@
  */
 export default class DataURIParser {
 	/**
-	 * Returns a Buffer instance from the given data URI `uri`, excluding its URL fragment.
+	 * Returns a Buffer instance from the given data URI `uri`.
 	 *
 	 * @param uri Data URI.
 	 * @returns Buffer.

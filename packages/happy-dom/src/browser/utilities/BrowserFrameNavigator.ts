@@ -329,8 +329,6 @@ export default class BrowserFrameNavigator {
 			frame.page.context.browser.settings.navigation.beforeContentCallback(frame.window);
 		}
 
-		// Set the frame content
-
 		// Fixes issue where evaluating the response can throw an error.
 		// By using requestAnimationFrame() the error will not reject the promise.
 		// The error will be caught by process error level listener or a try and catch in the requestAnimationFrame().

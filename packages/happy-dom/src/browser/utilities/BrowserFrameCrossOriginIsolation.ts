@@ -20,6 +20,7 @@ export default class BrowserFrameCrossOriginIsolation {
 	 * @param frame Frame.
 	 */
 	public static isolate(frame: IBrowserFrame): void {
+		// Reset window references
 		frame.window[PropertySymbol.parent] = frame.window;
 		frame.window[PropertySymbol.top] = frame.window;
 		frame[PropertySymbol.contentWindow] = null;
@@ -42,7 +43,6 @@ export default class BrowserFrameCrossOriginIsolation {
 		}
 
 		// Child frame (e.g. iframe)
-
 		if (!frame.parentFrame) {
 			this.isolateChildFrames(frame);
 			return;
