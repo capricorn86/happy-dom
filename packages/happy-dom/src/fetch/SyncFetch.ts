@@ -101,8 +101,7 @@ export default class SyncFetch {
 	 * @returns Response.
 	 */
 	public send(): ISyncResponse {
-		const history = this.#browserFrame[PropertySymbol.history];
-		const originURL = new URL(history.currentItem.documentState.url);
+		const originURL = new URL(this.#window[PropertySymbol.location].href);
 
 		FetchRequestReferrerUtility.prepareRequest(originURL, this.request);
 
@@ -373,8 +372,7 @@ export default class SyncFetch {
 	 * @returns True if it complies with the policy.
 	 */
 	private compliesWithCrossOriginPolicy(): boolean {
-		const history = this.#browserFrame[PropertySymbol.history];
-		const originURL = new URL(history.currentItem.documentState.url);
+		const originURL = new URL(this.#window[PropertySymbol.location].href);
 
 		if (
 			this.disableSameOriginPolicy ||
@@ -686,10 +684,7 @@ export default class SyncFetch {
 				if (
 					this.request.credentials === 'omit' ||
 					(this.request.credentials === 'same-origin' &&
-						FetchCORSUtility.isCORS(
-							this.#browserFrame[PropertySymbol.history].currentItem.documentState.url,
-							locationURL
-						))
+						FetchCORSUtility.isCORS(this.#window[PropertySymbol.location].href, locationURL))
 				) {
 					headers.delete('cookie');
 					headers.delete('cookie2');
