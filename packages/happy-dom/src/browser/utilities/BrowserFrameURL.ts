@@ -16,10 +16,6 @@ export default class BrowserFrameURL {
 	public static getRelativeURL(frame: IBrowserFrame, url?: string | URL | null): URL {
 		url = url ? String(url) : 'about:blank';
 
-		if (url.startsWith('about:') || url.startsWith('javascript:')) {
-			return new URL(url);
-		}
-
 		try {
 			// Use internal PropertySymbol.location to avoid being affected by mocks on window.location
 			return new URL(url, frame.window[PropertySymbol.location].href);

@@ -1,4 +1,5 @@
 import type IBrowserFrame from '../browser/types/IBrowserFrame.js';
+import BrowserFrameURL from '../browser/utilities/BrowserFrameURL.js';
 import HashChangeEvent from '../event/events/HashChangeEvent.js';
 import HistoryScrollRestorationEnum from '../history/HistoryScrollRestorationEnum.js';
 import * as PropertySymbol from '../PropertySymbol.js';
@@ -127,10 +128,14 @@ export default class Location {
 			return;
 		}
 
-		if (new URL(url).protocol === 'data:') {
-			throw new this.#browserFrame.window.Error(
+		if (
+			this.#browserFrame.page.mainFrame === this.#browserFrame &&
+			BrowserFrameURL.getRelativeURL(this.#browserFrame, url).protocol === 'data:'
+		) {
+			this.#browserFrame.window.console.error(
 				'Not allowed to navigate top frame to data URL: ' + url
 			);
+			return;
 		}
 
 		this.#browserFrame.goto(url).catch((error) => {

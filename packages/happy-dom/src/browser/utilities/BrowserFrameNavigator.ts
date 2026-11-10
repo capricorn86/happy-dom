@@ -12,6 +12,7 @@ import HistoryScrollRestorationEnum from '../../history/HistoryScrollRestoration
 import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum.js';
 import Fetch from '../../fetch/Fetch.js';
 import BrowserFrameCrossOriginIsolation from './BrowserFrameCrossOriginIsolation.js';
+import type IHistoryItem from '../../history/IHistoryItem.js';
 
 /**
  * Browser frame navigation utility.
@@ -28,7 +29,7 @@ export default class BrowserFrameNavigator {
 	 * @param [options.goToOptions] Go to options.
 	 * @param [options.method] Method.
 	 * @param [options.formData] Form data.
-	 * @param [options.disableHistory] Disables adding the navigation to the history.
+	 * @param [options.reload] True if the navigation is a reload of the current history item.
 	 * @returns Response.
 	 */
 	public static async navigate(options: {
@@ -41,9 +42,9 @@ export default class BrowserFrameNavigator {
 		goToOptions?: IGoToOptions;
 		method?: string;
 		formData?: FormData | null;
-		disableHistory?: boolean;
+		reload?: boolean;
 	}): Promise<Response | null> {
-		const { windowClass, frame, url, formData, method, goToOptions, disableHistory } = options;
+		const { windowClass, frame, url, formData, method, goToOptions, reload } = options;
 		const exceptionObserver = frame.page.context.browser[PropertySymbol.exceptionObserver];
 		const referrer = goToOptions?.referrer || frame.window.location.origin;
 		const targetURL = BrowserFrameURL.getRelativeURL(frame, url);
@@ -65,22 +66,21 @@ export default class BrowserFrameNavigator {
 		if (
 			targetURLWithoutHash.href === currentURLWithoutHash.href &&
 			targetURL.hash &&
-			targetURL.hash !== frame.window?.location.hash
+			targetURL.hash !== frame.window?.location.hash &&
+			!reload
 		) {
-			if (!disableHistory) {
-				const history = frame[PropertySymbol.history];
+			const history = frame[PropertySymbol.history];
 
-				history.push({
-					title: '',
-					url: targetURL.href,
-					navigationURL: null,
-					state: null,
-					scrollRestoration: HistoryScrollRestorationEnum.manual,
-					method: method || (formData ? 'POST' : 'GET'),
-					formData: formData || null,
-					inheritOrigin: history.currentItem.inheritOrigin
-				});
-			}
+			history.push({
+				title: '',
+				url: targetURL.href,
+				navigationURL: null,
+				state: null,
+				scrollRestoration: HistoryScrollRestorationEnum.manual,
+				method: method || (formData ? 'POST' : 'GET'),
+				formData: formData || null,
+				inheritOrigin: history.currentItem.inheritOrigin
+			});
 
 			frame.window.location[PropertySymbol.setURL](frame, targetURL.href);
 
@@ -138,7 +138,7 @@ export default class BrowserFrameNavigator {
 		}
 
 		// History management.
-		if (!disableHistory) {
+		if (!reload) {
 			const history = frame[PropertySymbol.history];
 
 			history.push({
@@ -460,7 +460,7 @@ export default class BrowserFrameNavigator {
 				url: historyItem.url,
 				method: historyItem.method,
 				formData: historyItem.formData,
-				disableHistory: true
+				reload: true
 			});
 		}
 
@@ -505,7 +505,7 @@ export default class BrowserFrameNavigator {
 			url: history.currentItem.url,
 			method: history.currentItem.method,
 			formData: history.currentItem.formData,
-			disableHistory: true
+			reload: true
 		});
 	}
 }

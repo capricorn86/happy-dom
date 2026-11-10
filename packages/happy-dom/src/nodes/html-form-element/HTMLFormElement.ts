@@ -21,6 +21,7 @@ import type HTMLDialogElement from '../html-dialog-element/HTMLDialogElement.js'
 import ElementEventAttributeUtility from '../element/ElementEventAttributeUtility.js';
 import type HTMLTextAreaElement from '../html-text-area-element/HTMLTextAreaElement.js';
 import type HTMLOutputElement from '../html-output-element/HTMLOutputElement.js';
+import BrowserFrameURL from '../../browser/utilities/BrowserFrameURL.js';
 
 /**
  * HTML Form Element.
@@ -638,12 +639,11 @@ export default class HTMLFormElement extends HTMLElement {
 				break;
 		}
 
-		const url = new URL(action);
+		const url = BrowserFrameURL.getRelativeURL(browserFrame, action);
 
-		if (url.protocol === 'data:') {
-			throw new this[PropertySymbol.window].Error(
-				'Not allowed to navigate top frame to data URL: ' + url
-			);
+		if (targetFrame.page.mainFrame === targetFrame && url.protocol === 'data:') {
+			browserFrame.window.console.error('Not allowed to navigate top frame to data URL: ' + url);
+			return;
 		}
 
 		if (method === 'get') {
