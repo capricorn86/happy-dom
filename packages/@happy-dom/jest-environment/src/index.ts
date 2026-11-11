@@ -152,8 +152,7 @@ export default class HappyDOMEnvironment implements JestEnvironment {
 		this.fakeTimers!.dispose();
 		this.fakeTimersModern!.dispose();
 
-		await (<Window>(<unknown>this.global)).happyDOM.abort();
-		(<Window>(<unknown>this.global)).close();
+		await (<Window>(<unknown>this.global)).happyDOM.close();
 
 		this.global = null!;
 		this.moduleMocker = null!;
