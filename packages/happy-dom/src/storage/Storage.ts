@@ -1,4 +1,3 @@
-import ClassMethodBinder from '../utilities/ClassMethodBinder.js';
 import * as PropertySymbol from '../PropertySymbol.js';
 
 /**
@@ -15,12 +14,36 @@ export default class Storage {
 	constructor() {
 		const data = this[PropertySymbol.data];
 
-		const methodBinder = new ClassMethodBinder(this, [Storage]);
-
 		return new Proxy(this, {
 			get: (target, property) => {
-				if (property in target || typeof property === 'symbol') {
-					methodBinder.bind(property);
+				if (typeof property === 'symbol') {
+					return (<any>target)[property];
+				}
+
+				if (property in target) {
+					// A property defined directly on the store (for example by
+					// `vi.spyOn(storage, 'getItem')`) wins over the prototype.
+					if (Object.prototype.hasOwnProperty.call(target, property)) {
+						return (<any>target)[property];
+					}
+
+					// Methods are looked up on `Storage.prototype` on every
+					// read and bound to the store, so a later patch of the
+					// prototype (for example by `vi.spyOn(Storage.prototype,
+					// 'setItem')`) is picked up instead of a bound copy made
+					// on the first read outliving it.
+					if (property !== 'constructor') {
+						const descriptor = Object.getOwnPropertyDescriptor(Storage.prototype, property);
+						if (descriptor) {
+							if (typeof descriptor.value === 'function') {
+								return descriptor.value.bind(target);
+							}
+							if (descriptor.get !== undefined) {
+								return descriptor.get.call(target);
+							}
+						}
+					}
+
 					return (<any>target)[property];
 				}
 				if (property in data) {
@@ -28,8 +51,6 @@ export default class Storage {
 				}
 			},
 			set(target, property, newValue): boolean {
-				methodBinder.bind(property);
-
 				if (property in target || typeof property === 'symbol') {
 					return true;
 				}
@@ -37,12 +58,23 @@ export default class Storage {
 				data[String(property)] = String(newValue);
 				return true;
 			},
-			deleteProperty(_target, property): boolean {
-				if (property in data) {
-					delete data[String(property)];
-					return true;
+			deleteProperty(target, property): boolean {
+				if (typeof property === 'string') {
+					if (property in data) {
+						delete data[property];
+						return true;
+					}
+
+					// A method (or other property) defined directly on the
+					// store can be deleted, like on an ordinary object, so
+					// restoring a spy on the store does not leave the mock
+					// behind. The next read falls back to the prototype.
+					if (Object.prototype.hasOwnProperty.call(target, property)) {
+						return delete (<any>target)[property];
+					}
 				}
-				return false;
+
+				return true;
 			},
 			ownKeys(): string[] {
 				return Object.keys(data);
@@ -55,8 +87,6 @@ export default class Storage {
 				return false;
 			},
 			defineProperty(target, property, descriptor): boolean {
-				methodBinder.preventBinding(property);
-
 				if (property in target) {
 					Object.defineProperty(target, property, descriptor);
 					return true;
