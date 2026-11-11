@@ -1422,6 +1422,55 @@ describe('QuerySelector', () => {
 			]);
 		});
 
+		it('Returns elements matching selectors with combinators inside :is(), :where(), :not(), :has() and :nth-child(An+B of S) (issue #2584).', () => {
+			document.body.innerHTML =
+				'<table><tr><th id="a">A</th><th id="b">B</th></tr></table>' +
+				'<div id="d"><p><span id="s1"></span></p></div>' +
+				'<section><span id="s2"></span></section>';
+
+			const ids = (selector: string): string[] =>
+				Array.from(document.querySelectorAll(selector)).map(
+					(element) => element.id || element.tagName
+				);
+
+			expect(ids(':is(tr > :nth-child(2))')).toEqual(['b']);
+			expect(ids(':where(tr > :nth-child(2))')).toEqual(['b']);
+			expect(ids('th:not(tr > :nth-child(2))')).toEqual(['a']);
+			expect(ids(':is(div > p > span)')).toEqual(['s1']);
+			expect(ids(':is(section > span, th#a)')).toEqual(['a', 's2']);
+			expect(ids('span:not(div span)')).toEqual(['s2']);
+			expect(ids(':is(#a + th)')).toEqual(['b']);
+			expect(ids('table:has(tr > #missing)')).toEqual([]);
+			expect(ids('div:has(p > #s2)')).toEqual([]);
+			expect(ids(':is(tr > th):nth-child(2)')).toEqual(['b']);
+			expect(ids(':nth-child(2 of tr > th)')).toEqual(['b']);
+			expect(ids(':nth-child(1 of section > span)')).toEqual(['s2']);
+			expect(ids(':nth-child(1 of span, p)')).toEqual(['P', 's1', 's2']);
+		});
+
+		it('Only matches :has() chains against strict descendants of the anchor (issue #2584).', () => {
+			document.body.innerHTML =
+				'<div class="a" id="outer-a"><div id="d1"><span class="b" id="b1"></span></div></div>' +
+				'<div id="d2"><span id="s2"></span></div>' +
+				'<div id="d3"><p><span id="s3"></span></p></div>';
+
+			const ids = (selector: string): string[] =>
+				Array.from(document.querySelectorAll(selector)).map(
+					(element) => element.id || element.tagName
+				);
+
+			// The anchor itself must not satisfy the leftmost part of the chain.
+			expect(ids('div:has(div span)')).toEqual(['outer-a']);
+			// An ancestor above the anchor must not satisfy the chain.
+			expect(ids('#d1:has(.a .b)')).toEqual([]);
+			expect(ids('#d2:has(span)')).toEqual(['d2']);
+			// With a leading ">", the leftmost part must match a direct child of the anchor.
+			expect(ids('#d2:has(> div span)')).toEqual([]);
+			expect(ids('#d2:has(> span)')).toEqual(['d2']);
+			expect(ids('#d3:has(> p > span)')).toEqual(['d3']);
+			expect(ids('#d3:has(> div span)')).toEqual([]);
+		});
+
 		it('Correctly parses complex CSS :has() expression with nested :not() (issue #1910)', () => {
 			const container = document.createElement('div');
 			container.innerHTML = `
