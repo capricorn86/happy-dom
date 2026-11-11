@@ -297,21 +297,30 @@ export default class SelectorItem {
 					? { priorityWeight: 10 }
 					: null;
 			case 'not':
-				for (const selectorItem of pseudo.selectorItems!) {
-					if (selectorItem.match(scope, element)) {
-						return null;
-					}
+				if (!pseudo.selectorGroups) {
+					return null;
 				}
-				return { priorityWeight: 10 };
+				return this.matchSelectorGroups(scope, pseudo.selectorGroups, element, {}, ignoreErrors)
+					? null
+					: { priorityWeight: 10 };
 			case 'nth-child':
 				let nthChildIndex = -1;
-				if (pseudo.selectorItems?.[0] && !pseudo.selectorItems[0].match(scope, element)) {
+				if (
+					pseudo.selectorGroups &&
+					!this.matchSelectorGroups(scope, pseudo.selectorGroups, element, {}, ignoreErrors)
+				) {
 					return null;
 				}
 				for (let i = 0, max = parentChildren.length; i < max; i++) {
 					if (
-						!pseudo.selectorItems?.[0] ||
-						pseudo.selectorItems![0].match(scope, parentChildren[i])
+						!pseudo.selectorGroups ||
+						this.matchSelectorGroups(
+							scope,
+							pseudo.selectorGroups,
+							parentChildren[i],
+							{},
+							ignoreErrors
+						)
 					) {
 						nthChildIndex++;
 					}
@@ -337,13 +346,22 @@ export default class SelectorItem {
 				return null;
 			case 'nth-last-child':
 				let nthLastChildIndex = -1;
-				if (pseudo.selectorItems?.[0] && !pseudo.selectorItems[0].match(scope, element)) {
+				if (
+					pseudo.selectorGroups &&
+					!this.matchSelectorGroups(scope, pseudo.selectorGroups, element, {}, ignoreErrors)
+				) {
 					return null;
 				}
 				for (let i = parentChildren.length - 1; i >= 0; i--) {
 					if (
-						!pseudo.selectorItems?.[0] ||
-						pseudo.selectorItems![0].match(scope, parentChildren[i])
+						!pseudo.selectorGroups ||
+						this.matchSelectorGroups(
+							scope,
+							pseudo.selectorGroups,
+							parentChildren[i],
+							{},
+							ignoreErrors
+						)
 					) {
 						nthLastChildIndex++;
 					}
@@ -374,57 +392,68 @@ export default class SelectorItem {
 				}
 				return element.isConnected && element.id === hash.slice(1) ? { priorityWeight: 10 } : null;
 			case 'is':
-				let priorityWeightForIs = 0;
-				if (!pseudo.selectorItems) {
+				if (!pseudo.selectorGroups) {
 					return null;
 				}
-				for (const selectorItem of pseudo.selectorItems) {
-					const match = selectorItem.match(scope, element);
-					if (match && priorityWeightForIs < match.priorityWeight) {
-						priorityWeightForIs = match.priorityWeight;
-					}
-				}
-				return priorityWeightForIs ? { priorityWeight: priorityWeightForIs } : null;
+				const isMatch = this.matchSelectorGroups(
+					scope,
+					pseudo.selectorGroups,
+					element,
+					{},
+					ignoreErrors
+				);
+				return isMatch && isMatch.priorityWeight
+					? { priorityWeight: isMatch.priorityWeight }
+					: null;
 			case 'where':
-				if (!pseudo.selectorItems) {
+				if (!pseudo.selectorGroups) {
 					return null;
 				}
-				for (const selectorItem of pseudo.selectorItems) {
-					if (selectorItem.match(scope, element)) {
-						return { priorityWeight: 0 };
-					}
-				}
-				return null;
+				return this.matchSelectorGroups(scope, pseudo.selectorGroups, element, {}, ignoreErrors)
+					? { priorityWeight: 0 }
+					: null;
 			case 'has':
 				let priorityWeightForHas = 0;
-				if (pseudo.arguments && pseudo.selectorItems) {
+				if (pseudo.arguments && pseudo.selectorGroups) {
 					if (pseudo.arguments[0] === '+') {
 						const nextSibling = element.nextElementSibling;
 						if (!nextSibling) {
 							return null;
 						}
-						for (const selectorItem of pseudo.selectorItems) {
-							const match = selectorItem.match(scope, nextSibling);
-							if (match && priorityWeightForHas < match.priorityWeight) {
-								priorityWeightForHas = match.priorityWeight;
-							}
+						const match = this.matchSelectorGroups(
+							scope,
+							pseudo.selectorGroups,
+							nextSibling,
+							{},
+							ignoreErrors
+						);
+						if (match && priorityWeightForHas < match.priorityWeight) {
+							priorityWeightForHas = match.priorityWeight;
 						}
 					} else if (pseudo.arguments[0] === '>') {
-						for (const selectorItem of pseudo.selectorItems) {
-							for (const child of element[PropertySymbol.elementArray]) {
-								const match = selectorItem.match(scope, child);
-								if (match && priorityWeightForHas < match.priorityWeight) {
-									priorityWeightForHas = match.priorityWeight;
-									break;
-								}
-							}
+						// Every part of the chain must match a strict descendant of the anchor,
+						// and the leftmost part must match a direct child of it.
+						const match = this.matchSelectorGroupsInDescendants(
+							scope,
+							pseudo.selectorGroups,
+							element,
+							{ boundary: element, leftmostParent: element },
+							ignoreErrors
+						);
+						if (match && priorityWeightForHas < match.priorityWeight) {
+							priorityWeightForHas = match.priorityWeight;
 						}
 					} else {
-						for (const selectorItem of pseudo.selectorItems) {
-							const match = this.matchChildOfElement(scope, selectorItem, element, ignoreErrors);
-							if (match && priorityWeightForHas < match.priorityWeight) {
-								priorityWeightForHas = match.priorityWeight;
-							}
+						// Every part of the chain must match a strict descendant of the anchor.
+						const match = this.matchSelectorGroupsInDescendants(
+							scope,
+							pseudo.selectorGroups,
+							element,
+							{ boundary: element },
+							ignoreErrors
+						);
+						if (match && priorityWeightForHas < match.priorityWeight) {
+							priorityWeightForHas = match.priorityWeight;
 						}
 					}
 				}
@@ -502,31 +531,233 @@ export default class SelectorItem {
 	}
 
 	/**
-	 * Matches a selector item against children of an element.
+	 * Matches a list of selector groups against an element.
+	 *
+	 * Each group is a full complex selector and is matched right to left from the element,
+	 * like QuerySelector.matches() does. Returns the highest priority weight of the
+	 * matching groups, or null if none of them matches. Used for the selector list
+	 * arguments of :is(), :where(), :not(), :has() and :nth-child(An+B of S).
 	 *
 	 * @param scope Scope.
-	 * @param selectorItem Selector item.
-	 * @param element Element.
+	 * @param selectorGroups Selector groups (ordered left to right within each group).
+	 * @param element Element to match against.
+	 * @param [options] Options.
+	 * @param [options.boundary] Elements at or above this element must not be matched by the chain (for :has(), every part of the chain must match a strict descendant of the anchor).
+	 * @param [options.leftmostParent] The element matched by the leftmost item of the chain must be a direct child of this element (for :has() with a leading ">").
 	 * @param [ignoreErrors] Ignores errors.
 	 * @returns Result.
 	 */
-	private matchChildOfElement(
+	private matchSelectorGroups(
 		scope: Element | DocumentFragment | null,
-		selectorItem: SelectorItem,
+		selectorGroups: Array<Array<SelectorItem>>,
 		element: Element,
+		options: {
+			boundary?: Element | null;
+			leftmostParent?: Element | null;
+		} = {},
 		ignoreErrors?: boolean
-	): { priorityWeight: number } | null {
-		for (const child of element[PropertySymbol.elementArray]) {
-			const match = selectorItem.match(scope, child, ignoreErrors);
+	): ISelectorMatch | null {
+		let priorityWeight = 0;
+		let matched = false;
+
+		for (const selectorItems of selectorGroups) {
+			const match = this.matchSelectorGroup(
+				scope,
+				selectorItems.slice().reverse(),
+				element,
+				options,
+				ignoreErrors,
+				0
+			);
 			if (match) {
-				return match;
-			}
-			const childMatch = this.matchChildOfElement(scope, selectorItem, child, ignoreErrors);
-			if (childMatch) {
-				return childMatch;
+				matched = true;
+				if (priorityWeight < match.priorityWeight) {
+					priorityWeight = match.priorityWeight;
+				}
 			}
 		}
-		return null;
+
+		return matched ? { priorityWeight } : null;
+	}
+
+	/**
+	 * Matches a single selector group against an element.
+	 *
+	 * The items are ordered right to left: the first item matches the element itself and
+	 * each following item is matched against an element related to it by the combinator
+	 * stored on the item, mirroring QuerySelector.matchSelector().
+	 *
+	 * @param scope Scope.
+	 * @param selectorItems Selector items ordered right to left.
+	 * @param element Element to match against.
+	 * @param [options] Options.
+	 * @param [options.boundary] Elements at or above this element must not be matched by the chain (for :has(), every part of the chain must match a strict descendant of the anchor).
+	 * @param [options.leftmostParent] The element matched by the leftmost item of the chain must be a direct child of this element (for :has() with a leading ">").
+	 * @param [ignoreErrors] Ignores errors.
+	 * @param [priorityWeight] Accumulated priority weight.
+	 * @returns Result.
+	 */
+	private matchSelectorGroup(
+		scope: Element | DocumentFragment | null,
+		selectorItems: SelectorItem[],
+		element: Element,
+		options: {
+			boundary?: Element | null;
+			leftmostParent?: Element | null;
+		} = {},
+		ignoreErrors?: boolean,
+		priorityWeight = 0
+	): ISelectorMatch | null {
+		const selectorItem = selectorItems[0];
+
+		if (!selectorItem) {
+			return null;
+		}
+
+		// The chain must not match the boundary element itself (for :has()).
+		if (options.boundary && element === options.boundary) {
+			return null;
+		}
+
+		const result = selectorItem.match(scope, element, ignoreErrors);
+
+		if (!result) {
+			return null;
+		}
+
+		const weight = priorityWeight + result.priorityWeight;
+
+		if (selectorItems.length === 1) {
+			// The leftmost item must be a direct child of the anchor for :has(> ...).
+			if (options.leftmostParent && element.parentNode !== options.leftmostParent) {
+				return null;
+			}
+			return { priorityWeight: weight };
+		}
+
+		const rest = selectorItems.slice(1);
+
+		switch (selectorItem.combinator) {
+			case SelectorCombinatorEnum.adjacentSibling:
+				const previousElementSibling = element.previousElementSibling;
+				if (!previousElementSibling) {
+					return null;
+				}
+				return this.matchSelectorGroup(
+					scope,
+					rest,
+					previousElementSibling,
+					options,
+					ignoreErrors,
+					weight
+				);
+			case SelectorCombinatorEnum.child:
+			case SelectorCombinatorEnum.none:
+				const parentElement = element.parentNode;
+				if (!parentElement || parentElement === element[PropertySymbol.ownerDocument]) {
+					return null;
+				}
+				return this.matchSelectorGroup(
+					scope,
+					rest,
+					<Element>parentElement,
+					options,
+					ignoreErrors,
+					weight
+				);
+			case SelectorCombinatorEnum.descendant:
+				let ancestor = element.parentNode;
+				while (ancestor && ancestor !== element[PropertySymbol.ownerDocument]) {
+					if (options.boundary && ancestor === options.boundary) {
+						break;
+					}
+					const match = this.matchSelectorGroup(
+						scope,
+						rest,
+						<Element>ancestor,
+						options,
+						ignoreErrors,
+						weight
+					);
+					if (match) {
+						return match;
+					}
+					ancestor = ancestor.parentNode;
+				}
+				return null;
+			case SelectorCombinatorEnum.subsequentSibling:
+				const siblingParentElement = <Element>element.parentNode;
+				if (!siblingParentElement) {
+					return null;
+				}
+				const siblings = siblingParentElement[PropertySymbol.elementArray];
+				const index = siblings.indexOf(element);
+				for (let i = index - 1; i >= 0; i--) {
+					const match = this.matchSelectorGroup(
+						scope,
+						rest,
+						siblings[i],
+						options,
+						ignoreErrors,
+						weight
+					);
+					if (match) {
+						return match;
+					}
+				}
+				return null;
+		}
+	}
+
+	/**
+	 * Matches a list of selector groups against the descendants of an element.
+	 *
+	 * @param scope Scope.
+	 * @param selectorGroups Selector groups (ordered left to right within each group).
+	 * @param element Element whose descendants are matched against.
+	 * @param [options] Options.
+	 * @param [options.boundary] Elements at or above this element must not be matched by the chain (for :has(), every part of the chain must match a strict descendant of the anchor).
+	 * @param [options.leftmostParent] The element matched by the leftmost item of the chain must be a direct child of this element (for :has() with a leading ">").
+	 * @param [ignoreErrors] Ignores errors.
+	 * @returns Result.
+	 */
+	private matchSelectorGroupsInDescendants(
+		scope: Element | DocumentFragment | null,
+		selectorGroups: Array<Array<SelectorItem>>,
+		element: Element,
+		options: {
+			boundary?: Element | null;
+			leftmostParent?: Element | null;
+		} = {},
+		ignoreErrors?: boolean
+	): ISelectorMatch | null {
+		let priorityWeight = 0;
+		let matched = false;
+
+		for (const child of element[PropertySymbol.elementArray]) {
+			const match = this.matchSelectorGroups(scope, selectorGroups, child, options, ignoreErrors);
+			if (match) {
+				matched = true;
+				if (priorityWeight < match.priorityWeight) {
+					priorityWeight = match.priorityWeight;
+				}
+			}
+			const childMatch = this.matchSelectorGroupsInDescendants(
+				scope,
+				selectorGroups,
+				child,
+				options,
+				ignoreErrors
+			);
+			if (childMatch) {
+				matched = true;
+				if (priorityWeight < childMatch.priorityWeight) {
+					priorityWeight = childMatch.priorityWeight;
+				}
+			}
+		}
+
+		return matched ? { priorityWeight } : null;
 	}
 
 	/**
