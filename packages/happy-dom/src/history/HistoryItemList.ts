@@ -12,7 +12,7 @@ export default class HistoryItemList {
 			url: 'about:blank',
 			method: 'GET',
 			formData: null,
-			inheritOrigin: true
+			inheritedOrigin: null
 		},
 		state: null,
 		scrollRestoration: HistoryScrollRestorationEnum.auto
@@ -69,7 +69,7 @@ export default class HistoryItemList {
 				url: 'about:blank',
 				method: 'GET',
 				formData: null,
-				inheritOrigin: true
+				inheritedOrigin: null
 			},
 			state: null,
 			scrollRestoration: HistoryScrollRestorationEnum.auto

@@ -547,6 +547,49 @@ Task #1
 				await browser.close();
 			});
 
+			it('Keeps the inherited origin of an "about:blank" document when traversing the history and reloading.', async () => {
+				const browser = new Browser();
+				const page = browser.newPage();
+				page.mainFrame.url = 'https://parent.example/';
+				const frame = BrowserFrameFactory.createChildFrame(page.mainFrame);
+				mockFetch(page.mainFrame.window);
+
+				await frame.goto('about:blank', { inheritOrigin: true });
+				await frame.goto('https://child.example/');
+				expect(frame.window.parent).toBeInstanceOf(CrossOriginBrowserWindow);
+
+				await frame.goBack();
+				expect(frame.url).toBe('about:blank');
+				expect(frame.window.parent).toBe(page.mainFrame.window);
+
+				await frame.reload();
+				expect(frame.window.parent).toBe(page.mainFrame.window);
+
+				await browser.close();
+			});
+
+			it('Keeps the origin inherited from the opener when the opener navigates to another origin.', async () => {
+				const browser = new Browser();
+				const page = browser.newPage();
+				page.mainFrame.url = 'https://opener.example/';
+				mockFetch(page.mainFrame.window);
+
+				page.mainFrame.window.open('about:blank');
+				await browser.waitUntilComplete();
+				const popupFrame = browser.defaultContext.pages[1].mainFrame;
+
+				await page.mainFrame.goto('https://other.example/');
+
+				const frame = BrowserFrameFactory.createChildFrame(popupFrame);
+				await frame.goto('https://opener.example/child');
+
+				expect(popupFrame.window.opener).toBe(null);
+				expect(frame.window.parent).toBe(popupFrame.window);
+				expect(frame.window.top).toBe(popupFrame.window);
+
+				await browser.close();
+			});
+
 			it('Keeps the origin of the document when a frame navigates to "about:blank".', async () => {
 				const browser = new Browser();
 				const page = browser.newPage();

@@ -36,45 +36,45 @@ export default class BrowserFrameURL {
 			return true;
 		}
 
-		const parentOrigin = this.getInheritedOrigin(parentFrame);
-		const childOrigin = this.getInheritedOrigin(childFrame);
-
-		return parentOrigin !== null && childOrigin !== null && parentOrigin === childOrigin;
+		return this.getOrigin(parentFrame) === this.getOrigin(childFrame);
 	}
 
 	/**
-	 * Returns the frame origin or an origin inherited from it's parent or opener.
+	 * Returns the origin of the document in a frame.
+	 *
+	 * "about:blank", "about:srcdoc" and "javascript:" documents use the origin that was inherited from the parent or opener frame when the navigation started.
+	 * Opaque origins (e.g. "data:" URLs) get a unique origin, as they are only same-origin with themselves.
 	 *
 	 * @see https://developer.mozilla.org/en-US/docs/Web/Security/Defenses/Same-origin_policy#inherited_origins
 	 * @param frame Frame.
-	 * @returns Frame origin, or null for data origins.
+	 * @returns Origin.
 	 */
-	private static getInheritedOrigin(frame: IBrowserFrame): string | null {
-		const history = frame[PropertySymbol.history];
-		const url = new URL(history.currentItem.documentState.url);
-		const uniqueOrigin = `${url.protocol}${frame.window[PropertySymbol.internalId]}`;
+	public static getOrigin(frame: IBrowserFrame): string {
+		const documentState = frame[PropertySymbol.history].currentItem.documentState;
+		const url = new URL(documentState.url);
 
-		// Data URLs are treated as unique opaque origins by modern browsers, rather than inheriting the origin of the settings object responsible for the navigation.
-		// A window ID distinguishes each data document while allowing inherited about:blank frames to share its origin.
-		// @see https://developer.mozilla.org/en-US/docs/Web/URI/Reference/Schemes/data
-		if (url.protocol === 'data:') {
-			return uniqueOrigin;
-		}
-
-		if (!history.currentItem.documentState.inheritOrigin || url.origin !== 'null') {
+		if (url.origin !== 'null') {
 			return url.origin;
 		}
 
-		// Popup frame
-		if (frame[PropertySymbol.opener]?.frame) {
-			return this.getInheritedOrigin(frame[PropertySymbol.opener].frame);
+		// Data URLs are treated as unique opaque origins by modern browsers, rather than inheriting the origin of the settings object responsible for the navigation.
+		// @see https://developer.mozilla.org/en-US/docs/Web/URI/Reference/Schemes/data
+		if (url.protocol !== 'data:' && documentState.inheritedOrigin !== null) {
+			return documentState.inheritedOrigin;
 		}
 
-		// Child frame (e.g. iframe)
-		if (frame.parentFrame) {
-			return this.getInheritedOrigin(frame.parentFrame);
-		}
+		// A window ID distinguishes each opaque origin, while allowing inheriting "about:blank" frames to share it.
+		return `${url.protocol}${frame.window[PropertySymbol.internalId]}`;
+	}
 
-		return url.origin !== 'null' ? url.origin : uniqueOrigin;
+	/**
+	 * Returns the origin that a document navigated in the frame can inherit from its opener or parent frame.
+	 *
+	 * @param frame Frame.
+	 * @returns Origin, or null if there is no opener or parent frame.
+	 */
+	public static getInheritableOrigin(frame: IBrowserFrame): string | null {
+		const sourceFrame = frame[PropertySymbol.opener]?.frame ?? frame.parentFrame;
+		return sourceFrame ? this.getOrigin(sourceFrame) : null;
 	}
 }

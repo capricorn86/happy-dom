@@ -514,7 +514,7 @@ describe('HTMLAreaElement', () => {
 			expect(window.location.href).toBe('about:blank');
 		});
 
-		it(`Doesn't navigate, but changes the location of a new window when a "click" event is dispatched inside the main frame of a detached browser when the Happy DOM setting "navigation.disableFallbackToSetURL" is set to "false" and "navigation.disableChildPageNavigation" is set to "true".`, () => {
+		it(`Doesn't navigate or change the location of a new window when a "click" event is dispatched inside the main frame of a detached browser when the Happy DOM setting "navigation.disableFallbackToSetURL" is set to "false" and "navigation.disableChildPageNavigation" is set to "true".`, () => {
 			const window = new Window({
 				settings: {
 					navigation: {
@@ -536,7 +536,7 @@ describe('HTMLAreaElement', () => {
 			newWindow.document.body.appendChild(element);
 			element.dispatchEvent(new PointerEvent('click'));
 			expect(newWindow.closed).toBe(false);
-			expect(newWindow.location.href).toBe('https://www.example.com/');
+			expect(newWindow.location.href).toBe('about:blank');
 		});
 
 		it('Changes the location when a "click" event is dispatched inside the main frame of a detached browser when the Happy DOM setting "navigation.disableFallbackToSetURL" is set to "false".', () => {

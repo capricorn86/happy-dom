@@ -457,7 +457,7 @@ describe('HTMLIFrameElement', () => {
 			await errorPromise;
 		});
 
-		it('Restricts the content window when the navigation is replaced by setting the URL because child frame navigation is disabled.', async () => {
+		it("Keeps the initial 'about:blank' document when child frame navigation is disabled.", async () => {
 			const browser = new Browser({
 				settings: {
 					enableIframePageLoading: true,
@@ -472,8 +472,9 @@ describe('HTMLIFrameElement', () => {
 
 			await page.waitUntilComplete();
 
-			expect(iframe.contentWindow instanceof CrossOriginBrowserWindow).toBe(true);
-			expect(iframe.contentDocument).toBe(null);
+			expect(iframe.contentWindow instanceof CrossOriginBrowserWindow).toBe(false);
+			expect(iframe.contentWindow?.location.href).toBe('about:blank');
+			expect(iframe.contentDocument?.body.innerHTML).toBe('');
 
 			await browser.close();
 		});

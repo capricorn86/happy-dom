@@ -464,10 +464,15 @@ describe('BrowserWindow', () => {
 	});
 
 	describe('set location()', () => {
-		it('Sets the location.', () => {
-			browser.settings.navigation.disableMainFrameNavigation = true;
+		it('Sets the location.', async () => {
+			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (
+				this: Fetch
+			): Promise<Response> {
+				return Promise.resolve(new window.Response(''));
+			});
 			window.location = 'https://localhost:8080/test/page/';
-			expect(window.location.href).toBe('https://localhost:8080/test/page/');
+			expect(window === browserFrame.window).toBe(false);
+			expect(browserFrame.window.location.href).toBe('https://localhost:8080/test/page/');
 		});
 	});
 

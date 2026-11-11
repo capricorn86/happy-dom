@@ -50,6 +50,9 @@ export default class BrowserFrameNavigator {
 		const targetURL = BrowserFrameURL.getRelativeURL(frame, url);
 		const targetURLWithoutHash = new URL(targetURL.href.split('#')[0]);
 		const currentURLWithoutHash = new URL(frame.url.split('#')[0]);
+		const inheritedOrigin = goToOptions?.inheritOrigin
+			? BrowserFrameURL.getInheritableOrigin(frame)
+			: null;
 		const resolveNavigationListeners = (): void => {
 			const listeners = frame[PropertySymbol.listeners].navigation;
 			frame[PropertySymbol.listeners].navigation = [];
@@ -139,7 +142,8 @@ export default class BrowserFrameNavigator {
 				history.currentItem.url = targetURL.href;
 				history.currentItem.documentState = {
 					...history.currentItem.documentState,
-					url: targetURL.href
+					url: targetURL.href,
+					inheritedOrigin: historyItem ? historyItem.documentState.inheritedOrigin : inheritedOrigin
 				};
 				BrowserFrameCrossOriginIsolation.isolate(frame);
 			}
@@ -163,7 +167,7 @@ export default class BrowserFrameNavigator {
 					url: targetURL.href,
 					method: navigationMethod,
 					formData: formData || null,
-					inheritOrigin: goToOptions?.inheritOrigin || false
+					inheritedOrigin
 				},
 				state: null,
 				scrollRestoration: HistoryScrollRestorationEnum.auto

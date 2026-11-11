@@ -72,7 +72,7 @@ describe('BrowserFrameURL', () => {
 
 			page.mainFrame[PropertySymbol.openedPages].push(popupPage);
 
-			popupFrame.url = 'about:blank';
+			await popupFrame.goto('about:blank', { inheritOrigin: true });
 
 			// Inherits origin from opener frame
 			expect(BrowserFrameURL.isSameOrigin(popupFrame, page.mainFrame)).toBe(true);

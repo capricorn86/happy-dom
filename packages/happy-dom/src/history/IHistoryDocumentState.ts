@@ -12,6 +12,6 @@ export default interface IHistoryDocumentState {
 	method: string;
 	// Request form-data used to reload the document.
 	formData: FormData | null;
-	// Whether this document inherits its origin from the parent/opener frame.
-	inheritOrigin: boolean;
+	// Origin inherited from the parent or opener frame when the navigation started, or null if the document doesn't inherit an origin.
+	inheritedOrigin: string | null;
 }

@@ -2,6 +2,7 @@ import type IBrowserFrame from '../types/IBrowserFrame.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
 import type IBrowserPage from '../types/IBrowserPage.js';
 import BrowserFrameCrossOriginIsolation from './BrowserFrameCrossOriginIsolation.js';
+import BrowserFrameURL from './BrowserFrameURL.js';
 
 /**
  * Browser frame factory.
@@ -22,7 +23,8 @@ export default class BrowserFrameFactory {
 		frame.window[PropertySymbol.parent] = parentFrame.window;
 		frame.window[PropertySymbol.top] = parentFrame.window.top;
 		frame[PropertySymbol.contentWindow] = frame.window;
-		frame[PropertySymbol.history].currentItem.documentState.inheritOrigin = true;
+		frame[PropertySymbol.history].currentItem.documentState.inheritedOrigin =
+			BrowserFrameURL.getOrigin(parentFrame);
 		return frame;
 	}
 
