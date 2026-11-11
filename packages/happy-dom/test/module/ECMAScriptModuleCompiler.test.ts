@@ -773,6 +773,42 @@ $happy_dom.exports['string6'] = string6;
 }`);
 		});
 
+		it('Handles "import.meta" after keywords and operators.', () => {
+			const code = `
+                function getURL() {
+                    return import.meta.url;
+                }
+                const env = window.env ?? import.meta.env;
+                const url = window.url || import.meta.url;
+                const isProduction = !import.meta.env.DEV;
+                const offset = window.offset -import.meta.offset;
+                const scale = window.scale *import.meta.scale;
+                const rest = window.count %import.meta.count;
+                const mask = window.mask ^import.meta.mask;
+                const inverted = ~import.meta.mask;
+            `;
+
+			const compiler = new ECMAScriptModuleCompiler(window);
+			const result = compiler.compile('http://localhost:8080/js/app/main.js', code);
+
+			expect(result.imports).toEqual([]);
+
+			expect(result.execute.toString()).toBe(`async function anonymous($happy_dom) {
+                function getURL() {
+                    return $happy_dom.importMeta.url;
+                }
+                const env = window.env ?? $happy_dom.importMeta.env;
+                const url = window.url || $happy_dom.importMeta.url;
+                const isProduction = !$happy_dom.importMeta.env.DEV;
+                const offset = window.offset -$happy_dom.importMeta.offset;
+                const scale = window.scale *$happy_dom.importMeta.scale;
+                const rest = window.count %$happy_dom.importMeta.count;
+                const mask = window.mask ^$happy_dom.importMeta.mask;
+                const inverted = ~$happy_dom.importMeta.mask;
+            
+}`);
+		});
+
 		it('Unsanitized export names are not interpolated as executable code (GHSA-6q6h-j7hj-3r64)', () => {
 			const code = `export { require('child_process').execSync('id') }`;
 

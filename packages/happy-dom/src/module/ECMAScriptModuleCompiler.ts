@@ -69,7 +69,7 @@ const VALID_BINDING_NAME_REGEXP = /^[\p{ID_Start}_$][\p{ID_Continue}$\u200c\u200
 /**
  * Valid preceding token before a statement.
  */
-const PRECEDING_STATEMENT_TOKEN_REGEXP = /['"`(){}\s;=><\[\]+-,:&]/;
+const PRECEDING_STATEMENT_TOKEN_REGEXP = /['"`(){}\s;=><\[\]+\-,:&?!|*%^~]/;
 
 /**
  * Valid preceding token before a regexp.
@@ -232,7 +232,8 @@ export default class ECMAScriptModuleCompiler {
 				count.singleLineComment === 0 &&
 				count.regExp === 0 &&
 				(this.templateString.length === 0 || this.templateString[0] > 0) &&
-				PRECEDING_STATEMENT_TOKEN_REGEXP.test(this.getNonSpacePrecedingToken(code, match.index))
+				(PRECEDING_STATEMENT_TOKEN_REGEXP.test(precedingToken) ||
+					PRECEDING_STATEMENT_TOKEN_REGEXP.test(this.getNonSpacePrecedingToken(code, match.index)))
 			) {
 				// Import meta
 				newCode += `$happy_dom.importMeta.${match[1]}`;
