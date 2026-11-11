@@ -129,7 +129,9 @@ export default class Fetch {
 			);
 		}
 
-		FetchRequestReferrerUtility.prepareRequest(new URL(this.#window.location.href), this.request);
+		const originURL = new URL(this.#window[PropertySymbol.location].href);
+
+		FetchRequestReferrerUtility.prepareRequest(originURL, this.request);
 
 		if (this.requestHeaders) {
 			for (const header of this.requestHeaders) {
@@ -186,13 +188,10 @@ export default class Fetch {
 		}
 
 		// Security check for "https" to "http" requests.
-		if (
-			this.request[PropertySymbol.url].protocol === 'http:' &&
-			this.#window.location.protocol === 'https:'
-		) {
+		if (this.request[PropertySymbol.url].protocol === 'http:' && originURL.protocol === 'https:') {
 			throw new this.#window.DOMException(
 				`Mixed Content: The page at '${
-					this.#window.location.href
+					originURL.href
 				}' was loaded over HTTPS, but requested an insecure XMLHttpRequest endpoint '${
 					this.request.url
 				}'. This request has been blocked; the content must be served over HTTPS.`,
@@ -441,9 +440,11 @@ export default class Fetch {
 	 * @returns True if it complies with the policy.
 	 */
 	private async compliesWithCrossOriginPolicy(): Promise<boolean> {
+		const originURL = new URL(this.#window[PropertySymbol.location].href);
+
 		if (
 			this.disableSameOriginPolicy ||
-			!FetchCORSUtility.isCORS(this.#window.location.href, this.request[PropertySymbol.url])
+			!FetchCORSUtility.isCORS(originURL, this.request[PropertySymbol.url])
 		) {
 			return true;
 		}
@@ -455,7 +456,7 @@ export default class Fetch {
 		if (cachedPreflightResponse) {
 			if (
 				cachedPreflightResponse.allowOrigin !== '*' &&
-				cachedPreflightResponse.allowOrigin !== this.#window.location.origin
+				cachedPreflightResponse.allowOrigin !== originURL.origin
 			) {
 				return false;
 			}
@@ -478,7 +479,7 @@ export default class Fetch {
 
 		const corsHeaders = new this.#window.Headers({
 			'Access-Control-Request-Method': this.request.method,
-			Origin: this.#window.location.origin
+			Origin: originURL.origin
 		});
 
 		if (requestHeaders.length > 0) {
@@ -510,7 +511,7 @@ export default class Fetch {
 			return false;
 		}
 
-		if (allowOrigin !== '*' && allowOrigin !== this.#window.location.origin) {
+		if (allowOrigin !== '*' && allowOrigin !== originURL.origin) {
 			return false;
 		}
 
@@ -977,7 +978,7 @@ export default class Fetch {
 				if (
 					this.request.credentials === 'omit' ||
 					(this.request.credentials === 'same-origin' &&
-						FetchCORSUtility.isCORS(this.#window.location.href, locationURL))
+						FetchCORSUtility.isCORS(this.#window[PropertySymbol.location].href, locationURL))
 				) {
 					headers.delete('cookie');
 					headers.delete('cookie2');

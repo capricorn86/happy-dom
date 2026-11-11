@@ -47,14 +47,14 @@ describe('HTMLAreaElement', () => {
 			it(`Returns the "${property}" attribute.`, () => {
 				const element = document.createElement('area');
 				element.setAttribute(property, 'test');
-				expect(element[property]).toBe('test');
+				expect((<any>element)[property]).toBe('test');
 			});
 		});
 
 		describe(`set ${property}()`, () => {
 			it(`Sets the attribute "${property}".`, () => {
 				const element = document.createElement('area');
-				element[property] = 'test';
+				(<any>element)[property] = 'test';
 				expect(element.getAttribute(property)).toBe('test');
 			});
 		});
@@ -514,7 +514,7 @@ describe('HTMLAreaElement', () => {
 			expect(window.location.href).toBe('about:blank');
 		});
 
-		it(`Doesn't navigate, but changes the location of a new window when a "click" event is dispatched inside the main frame of a detached browser when the Happy DOM setting "navigation.disableFallbackToSetURL" is set to "false" and "navigation.disableChildPageNavigation" is set to "true".`, () => {
+		it(`Doesn't navigate or change the location of a new window when a "click" event is dispatched inside the main frame of a detached browser when the Happy DOM setting "navigation.disableFallbackToSetURL" is set to "false" and "navigation.disableChildPageNavigation" is set to "true".`, () => {
 			const window = new Window({
 				settings: {
 					navigation: {
@@ -536,7 +536,7 @@ describe('HTMLAreaElement', () => {
 			newWindow.document.body.appendChild(element);
 			element.dispatchEvent(new PointerEvent('click'));
 			expect(newWindow.closed).toBe(false);
-			expect(newWindow.location.href).toBe('https://www.example.com/');
+			expect(newWindow.location.href).toBe('about:blank');
 		});
 
 		it('Changes the location when a "click" event is dispatched inside the main frame of a detached browser when the Happy DOM setting "navigation.disableFallbackToSetURL" is set to "false".', () => {
@@ -563,7 +563,7 @@ describe('HTMLAreaElement', () => {
 		it('Opens a window when a "click" event is dispatched on an element with target set to "_blank" inside the main frame of a detached browser.', () => {
 			let request: Request | null = null;
 
-			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<Response> {
+			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (this: any): Promise<Response> {
 				request = <Request>this.request;
 				return Promise.resolve(<Response>{
 					text: () => Promise.resolve('Test')
@@ -581,7 +581,7 @@ describe('HTMLAreaElement', () => {
 		it('Navigates the browser when a "click" event is dispatched on an element inside a non-main frame of a detached browser.', () => {
 			let request: Request | null = null;
 
-			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<Response> {
+			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (this: any): Promise<Response> {
 				request = <Request>this.request;
 				return Promise.resolve(<Response>{
 					text: () => Promise.resolve('Test')

@@ -9,6 +9,7 @@ import type { Script } from 'vm';
 import type IReloadOptions from './IReloadOptions.js';
 import type CrossOriginBrowserWindow from '../../window/CrossOriginBrowserWindow.js';
 import type HistoryItemList from '../../history/HistoryItemList.js';
+import type IBrowserFrameOpener from './IBrowserFrameOpener.js';
 
 /**
  * Browser frame.
@@ -25,8 +26,9 @@ export default interface IBrowserFrame {
 	[PropertySymbol.history]: HistoryItemList;
 	[PropertySymbol.asyncTaskManager]: AsyncTaskManager;
 	[PropertySymbol.listeners]: { navigation: Array<() => void> };
-	[PropertySymbol.openerFrame]: IBrowserFrame | null;
-	[PropertySymbol.openerWindow]: BrowserWindow | CrossOriginBrowserWindow | null;
+	[PropertySymbol.contentWindow]: BrowserWindow | CrossOriginBrowserWindow | null;
+	[PropertySymbol.openedPages]: IBrowserPage[];
+	[PropertySymbol.opener]: IBrowserFrameOpener | null;
 	[PropertySymbol.popup]: boolean;
 
 	/**
@@ -108,5 +110,5 @@ export default interface IBrowserFrame {
 	 *
 	 * @param [options] Options.
 	 */
-	reload(options: IReloadOptions): Promise<Response | null>;
+	reload(options?: IReloadOptions): Promise<Response | null>;
 }

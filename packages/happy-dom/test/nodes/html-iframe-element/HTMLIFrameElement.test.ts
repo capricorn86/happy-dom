@@ -12,6 +12,7 @@ import Browser from '../../../src/browser/Browser.js';
 import DOMTokenList from '../../../src/dom/DOMTokenList.js';
 import Event from '../../../src/event/Event.js';
 import Fetch from '../../../src/fetch/Fetch.js';
+import BrowserWindow from '../../../src/window/BrowserWindow.js';
 
 describe('HTMLIFrameElement', () => {
 	let window: Window;
@@ -438,6 +439,87 @@ describe('HTMLIFrameElement', () => {
 			);
 		});
 
+		it('Dispatches an error event if "x-frame-options" is "sameorigin" and a same-origin URL redirects to another origin.', async () => {
+			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (): Promise<Response> {
+				return Promise.resolve(<Response>(<unknown>{
+					text: () => Promise.resolve('<html></html>'),
+					ok: true,
+					url: 'https://other.example/iframe.html',
+					headers: new Headers({ 'x-frame-options': 'sameorigin' })
+				}));
+			});
+
+			window.happyDOM?.setURL('https://localhost:8080');
+			element.src = 'https://localhost:8080/redirect.html';
+
+			const errorPromise = new Promise((resolve) => element.addEventListener('error', resolve));
+			document.body.appendChild(element);
+			await errorPromise;
+		});
+
+		it("Keeps the initial 'about:blank' document when child frame navigation is disabled.", async () => {
+			const browser = new Browser({
+				settings: {
+					enableIframePageLoading: true,
+					navigation: { disableChildFrameNavigation: true }
+				}
+			});
+			const page = browser.newPage();
+			page.mainFrame.url = 'https://localhost:8080/';
+			const iframe = <HTMLIFrameElement>page.mainFrame.window.document.createElement('iframe');
+			iframe.src = 'https://other.example/iframe.html';
+			page.mainFrame.window.document.body.appendChild(iframe);
+
+			await page.waitUntilComplete();
+
+			expect(iframe.contentWindow instanceof CrossOriginBrowserWindow).toBe(false);
+			expect(iframe.contentWindow?.location.href).toBe('about:blank');
+			expect(iframe.contentDocument?.body.innerHTML).toBe('');
+
+			await browser.close();
+		});
+
+		it('Preserves opaque-origin isolation for nested "about:blank" iframes after history.replaceState().', async () => {
+			const browser = new Browser({ settings: { enableIframePageLoading: true } });
+			const page = browser.newPage();
+			vi.spyOn(Fetch.prototype, 'send').mockImplementation(() =>
+				Promise.resolve(new page.mainFrame.window.Response('<html><body></body></html>'))
+			);
+			page.mainFrame.url = 'https://localhost:8080/';
+			const iframe = <HTMLIFrameElement>page.mainFrame.window.document.createElement('iframe');
+			iframe.src = 'data:text/html,<body></body>';
+			page.mainFrame.window.document.body.appendChild(iframe);
+
+			await page.waitUntilComplete();
+
+			const dataFrame = page.mainFrame.childFrames[0];
+
+			expect(() => dataFrame.window.history.replaceState(null, '', 'about:blank')).toThrowError(
+				expect.objectContaining({
+					name: 'SecurityError',
+					constructor: dataFrame.window.DOMException
+				})
+			);
+			expect(dataFrame.window.location.href).toBe('data:text/html,<body></body>');
+
+			dataFrame.window.history.replaceState(null, '', 'data:text/html,<body></body>#hash');
+
+			const nestedIframe = <HTMLIFrameElement>dataFrame.window.document.createElement('iframe');
+
+			nestedIframe.src = 'about:blank';
+			dataFrame.window.document.body.appendChild(nestedIframe);
+
+			await page.waitUntilComplete();
+
+			const nestedWindow = <BrowserWindow>dataFrame.childFrames[0].window;
+
+			expect(nestedWindow.top).toBeInstanceOf(CrossOriginBrowserWindow);
+			expect(nestedWindow.top.document).toBeUndefined();
+			expect(nestedWindow.parent).toBe(dataFrame.window);
+
+			await browser.close();
+		});
+
 		it('Returns content window for URL with same origin.', async () => {
 			const responseHTML = '<html><head></head><body>Test</body></html>';
 			let fetchedURL: string | null = null;
@@ -529,68 +611,182 @@ describe('HTMLIFrameElement', () => {
 		});
 
 		it('Returns instance of CrossOriginBrowserWindow for URL with different origin.', async () => {
-			await new Promise((resolve) => {
-				const browser = new Browser({ settings: { enableIframePageLoading: true } });
-				const page = browser.newPage();
-				const window = page.mainFrame.window;
-				const document = window.document;
-				const element = <HTMLIFrameElement>document.createElement('iframe');
-				const iframeOrigin = 'https://other.origin.com';
-				const iframeSrc = iframeOrigin + '/iframe.html';
-				const documentOrigin = 'https://localhost:8080';
-				let fetchedURL: string | null = null;
+			const browser = new Browser({ settings: { enableIframePageLoading: true }, console });
+			const page = browser.newPage();
+			const window = page.mainFrame.window;
+			const document = window.document;
+			const element = <HTMLIFrameElement>document.createElement('iframe');
+			const iframeOrigin = 'https://other.origin.com';
+			const iframeSrc = iframeOrigin + '/iframe.html';
+			const documentOrigin = 'https://localhost:8080';
+			let fetchedURL: string | null = null;
 
-				page.mainFrame.url = documentOrigin;
+			page.mainFrame.url = documentOrigin;
 
-				vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (
-					this: Fetch
-				): Promise<Response> {
-					fetchedURL = <string>(<any>this).request.url;
-					return new Promise((resolve) => {
-						setTimeout(() => {
-							resolve(<Response>(<unknown>{
-								text: () => Promise.resolve('<html><head></head><body>Test</body></html>'),
-								ok: true,
-								headers: new Headers()
-							}));
-						}, 1);
-					});
-				});
-
-				document.body.appendChild(element);
-				element.src = iframeSrc;
-				element.addEventListener('load', () => {
-					const message = 'test';
-					let triggeredEvent: MessageEvent | null = null;
-					expect(fetchedURL).toBe(iframeSrc);
-					expect(element.contentWindow instanceof CrossOriginBrowserWindow).toBe(true);
-					expect(() => element.contentWindow?.location.href).toThrow(
-						new DOMException(
-							`Blocked a frame with origin "${documentOrigin}" from accessing a cross-origin frame.`,
-							DOMExceptionNameEnum.securityError
-						)
-					);
-					expect(element.contentWindow?.self === element.contentWindow).toBe(true);
-					expect(element.contentWindow?.window === element.contentWindow).toBe(true);
-					expect(element.contentWindow?.parent === window).toBe(true);
-					expect(element.contentWindow?.top === window).toBe(true);
-					page.mainFrame.childFrames[0].window.addEventListener(
-						'message',
-						(event) => (triggeredEvent = <MessageEvent>event)
-					);
-					element.contentWindow?.postMessage(message, iframeOrigin);
-					expect(triggeredEvent).toBe(null);
-
+			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (
+				this: Fetch
+			): Promise<Response> {
+				fetchedURL = <string>(<any>this).request.url;
+				return new Promise((resolve) => {
 					setTimeout(() => {
-						expect(element.contentDocument).toBe(null);
-						expect((<MessageEvent>triggeredEvent).data).toBe(message);
-						expect((<MessageEvent>triggeredEvent).origin).toBe(documentOrigin);
-						expect((<MessageEvent>triggeredEvent).source === window).toBe(true);
-						expect((<MessageEvent>triggeredEvent).lastEventId).toBe('');
-						resolve(null);
-					}, 10);
+						resolve(<Response>(<unknown>{
+							text: () => Promise.resolve('<html><head></head><body>Test</body></html>'),
+							ok: true,
+							headers: new Headers()
+						}));
+					}, 1);
 				});
 			});
+
+			document.body.appendChild(element);
+			element.src = iframeSrc;
+			await new Promise((resolve) => element.addEventListener('load', resolve));
+
+			const message = 'test';
+			let triggeredEvent: MessageEvent | null = null;
+			expect(fetchedURL).toBe(iframeSrc);
+			expect(element.contentWindow instanceof CrossOriginBrowserWindow).toBe(true);
+
+			expect(() => element.contentWindow?.location.href).toThrow(
+				new DOMException(
+					`Blocked a frame with origin "${documentOrigin}/" from accessing a cross-origin frame.`,
+					DOMExceptionNameEnum.securityError
+				)
+			);
+			expect(element.contentWindow?.self === element.contentWindow).toBe(true);
+			expect(element.contentWindow?.window === element.contentWindow).toBe(true);
+			expect(element.contentWindow?.parent === window).toBe(true);
+			expect(element.contentWindow?.top === window).toBe(true);
+			page.mainFrame.childFrames[0].window.addEventListener(
+				'message',
+				(event) => (triggeredEvent = <MessageEvent>event)
+			);
+			element.contentWindow?.postMessage(message, iframeOrigin);
+			expect(triggeredEvent).toBe(null);
+
+			await new Promise((resolve) => setTimeout(resolve, 10));
+
+			expect(element.contentDocument).toBe(null);
+			expect((<MessageEvent>triggeredEvent!).data).toBe(message);
+			expect((<MessageEvent>triggeredEvent!).origin).toBe(documentOrigin);
+			expect((<MessageEvent>triggeredEvent!).source === window).toBe(true);
+			expect((<MessageEvent>triggeredEvent!).lastEventId).toBe('');
+		});
+
+		it('Keeps the iframe isolated when "src" is changed to a "javascript:" URL and returns the same CrossOriginBrowserWindow.', async () => {
+			const browser = new Browser({
+				settings: { enableJavaScriptEvaluation: true, enableIframePageLoading: true }
+			});
+			const page = browser.newPage();
+			page.mainFrame.url = 'https://parent.example/';
+			const iframe = <HTMLIFrameElement>page.mainFrame.window.document.createElement('iframe');
+			vi.spyOn(Fetch.prototype, 'send').mockImplementation(() =>
+				Promise.resolve(new page.mainFrame.window.Response('<body>Child</body>'))
+			);
+
+			iframe.src = 'https://child.example/';
+			page.mainFrame.window.document.body.appendChild(iframe);
+			await page.waitUntilComplete();
+
+			const childWindow = page.mainFrame.childFrames[0].window;
+			const contentWindow = iframe.contentWindow;
+
+			expect(contentWindow).toBeInstanceOf(CrossOriginBrowserWindow);
+			expect(iframe.contentWindow).toBe(contentWindow);
+			expect(childWindow.parent).toBeInstanceOf(CrossOriginBrowserWindow);
+
+			iframe.src =
+				'javascript:document.body.textContent = String([parent.document, top.document].join())';
+			await page.waitUntilComplete();
+
+			expect(page.mainFrame.childFrames[0].window).toBe(childWindow);
+			expect(childWindow.document.body.textContent).toBe(',');
+			expect(iframe.contentWindow).toBe(contentWindow);
+			expect(iframe.contentDocument).toBe(null);
+
+			await browser.close();
+		});
+
+		it('Updates the content window when the origin of the iframe changes due to a redirect or navigation inside of the iframe.', async () => {
+			const browser = new Browser({ settings: { enableIframePageLoading: true } });
+			const page = browser.newPage();
+			page.mainFrame.url = 'https://parent.example/';
+			const iframe = <HTMLIFrameElement>page.mainFrame.window.document.createElement('iframe');
+			const response = new page.mainFrame.window.Response('<body>Child</body>');
+			Object.defineProperty(response, 'url', { value: 'https://child.example/' });
+			vi.spyOn(Fetch.prototype, 'send')
+				.mockResolvedValueOnce(response)
+				.mockImplementation(() =>
+					Promise.resolve(new page.mainFrame.window.Response('<body>Child</body>'))
+				);
+
+			iframe.src = 'https://parent.example/redirect';
+			page.mainFrame.window.document.body.appendChild(iframe);
+			await page.waitUntilComplete();
+
+			const frame = page.mainFrame.childFrames[0];
+
+			expect(iframe.contentWindow).toBeInstanceOf(CrossOriginBrowserWindow);
+			expect(iframe.contentDocument).toBe(null);
+			expect(frame.window.parent).toBeInstanceOf(CrossOriginBrowserWindow);
+
+			await frame.goto('https://parent.example/returned');
+			expect(iframe.contentWindow).toBe(frame.window);
+			expect(iframe.contentDocument).toBe(frame.document);
+			expect(frame.window.parent).toBe(page.mainFrame.window);
+
+			await frame.goto('https://other.example/');
+			expect(iframe.contentWindow).toBeInstanceOf(CrossOriginBrowserWindow);
+			expect(iframe.contentDocument).toBe(null);
+			expect(frame.window.parent).toBeInstanceOf(CrossOriginBrowserWindow);
+
+			await browser.close();
+		});
+
+		it('Allows access between a same-origin iframe and its parent for "about:blank" and "srcdoc".', async () => {
+			const browser = new Browser({ settings: { enableIframePageLoading: true } });
+			const page = browser.newPage();
+			page.mainFrame.url = 'https://parent.example/';
+			const blank = <HTMLIFrameElement>page.mainFrame.window.document.createElement('iframe');
+			const srcdoc = <HTMLIFrameElement>page.mainFrame.window.document.createElement('iframe');
+
+			blank.src = 'about:blank';
+			srcdoc.srcdoc = '<body>Test</body>';
+			page.mainFrame.window.document.body.appendChild(blank);
+			page.mainFrame.window.document.body.appendChild(srcdoc);
+			await page.waitUntilComplete();
+
+			for (const iframe of [blank, srcdoc]) {
+				expect(iframe.contentWindow).toBeInstanceOf(BrowserWindow);
+				expect(iframe.contentWindow?.parent).toBe(page.mainFrame.window);
+				expect(iframe.contentWindow?.top).toBe(page.mainFrame.window);
+				expect(iframe.contentDocument).toBeTruthy();
+			}
+
+			await browser.close();
+		});
+
+		it('Gives the iframe the origin of its parent when "src" is changed to "about:blank".', async () => {
+			const browser = new Browser({ settings: { enableIframePageLoading: true } });
+			const page = browser.newPage();
+			page.mainFrame.url = 'https://parent.example/';
+			const iframe = <HTMLIFrameElement>page.mainFrame.window.document.createElement('iframe');
+			vi.spyOn(Fetch.prototype, 'send').mockImplementation(() =>
+				Promise.resolve(new page.mainFrame.window.Response('<body>Child</body>'))
+			);
+
+			iframe.src = 'https://child.example/';
+			page.mainFrame.window.document.body.appendChild(iframe);
+			await page.waitUntilComplete();
+			expect(iframe.contentWindow).toBeInstanceOf(CrossOriginBrowserWindow);
+
+			iframe.src = 'about:blank';
+			await page.waitUntilComplete();
+			expect(iframe.contentWindow).toBe(page.mainFrame.childFrames[0].window);
+			expect(iframe.contentDocument).toBe(page.mainFrame.childFrames[0].document);
+			expect(iframe.contentWindow?.parent).toBe(page.mainFrame.window);
+
+			await browser.close();
 		});
 
 		it('Restricts access between a data URL iframe and its parent.', async () => {

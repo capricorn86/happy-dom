@@ -7,30 +7,6 @@ import * as PropertySymbol from '../../PropertySymbol.js';
  */
 export default class BrowserFrameURL {
 	/**
-	 * Returns whether a target URL has the same origin as the origin URL.
-	 *
-	 * @param originURL Origin URL.
-	 * @param targetURL Target URL.
-	 * @returns Whether the URLs have the same origin.
-	 */
-	public static isSameOrigin(originURL: Pick<URL, 'origin'>, targetURL: URL): boolean {
-		return (
-			this.hasInheritedOrigin(targetURL) ||
-			(targetURL.origin !== 'null' && originURL.origin === targetURL.origin)
-		);
-	}
-
-	/**
-	 * Returns whether a target URL has an opaque origin instead of an inherited origin.
-	 *
-	 * @param targetURL Target URL.
-	 * @returns Whether the URL has an opaque origin.
-	 */
-	public static hasOpaqueOrigin(targetURL: URL): boolean {
-		return targetURL.origin === 'null' && !this.hasInheritedOrigin(targetURL);
-	}
-
-	/**
 	 * Returns relative URL.
 	 *
 	 * @param frame Frame.
@@ -39,10 +15,6 @@ export default class BrowserFrameURL {
 	 */
 	public static getRelativeURL(frame: IBrowserFrame, url?: string | URL | null): URL {
 		url = url ? String(url) : 'about:blank';
-
-		if (url.startsWith('about:') || url.startsWith('javascript:')) {
-			return new URL(url);
-		}
 
 		try {
 			// Use internal PropertySymbol.location to avoid being affected by mocks on window.location
@@ -53,16 +25,56 @@ export default class BrowserFrameURL {
 	}
 
 	/**
-	 * Returns whether a target URL has an inherited origin.
+	 * Checks if the child frame is same-origin as the parent frame.
 	 *
-	 * @param targetURL Target URL.
-	 * @returns Whether the URL has an inherited origin.
+	 * @param parentFrame Parent frame.
+	 * @param childFrame Child frame.
+	 * @returns True if same-origin.
 	 */
-	private static hasInheritedOrigin(targetURL: URL): boolean {
-		return (
-			targetURL.protocol === 'javascript:' ||
-			(targetURL.protocol === 'about:' &&
-				(targetURL.pathname === 'blank' || targetURL.pathname === 'srcdoc'))
-		);
+	public static isSameOrigin(parentFrame: IBrowserFrame, childFrame: IBrowserFrame): boolean {
+		if (parentFrame === childFrame) {
+			return true;
+		}
+
+		return this.getOrigin(parentFrame) === this.getOrigin(childFrame);
+	}
+
+	/**
+	 * Returns the origin of the document in a frame.
+	 *
+	 * "about:blank", "about:srcdoc" and "javascript:" documents use the origin that was inherited from the parent or opener frame when the navigation started.
+	 * Opaque origins (e.g. "data:" URLs) get a unique origin, as they are only same-origin with themselves.
+	 *
+	 * @see https://developer.mozilla.org/en-US/docs/Web/Security/Defenses/Same-origin_policy#inherited_origins
+	 * @param frame Frame.
+	 * @returns Origin.
+	 */
+	public static getOrigin(frame: IBrowserFrame): string {
+		const documentState = frame[PropertySymbol.history].currentItem.documentState;
+		const url = new URL(documentState.url);
+
+		if (url.origin !== 'null') {
+			return url.origin;
+		}
+
+		// Data URLs are treated as unique opaque origins by modern browsers, rather than inheriting the origin of the settings object responsible for the navigation.
+		// @see https://developer.mozilla.org/en-US/docs/Web/URI/Reference/Schemes/data
+		if (url.protocol !== 'data:' && documentState.inheritedOrigin !== null) {
+			return documentState.inheritedOrigin;
+		}
+
+		// A window ID distinguishes each opaque origin, while allowing inheriting "about:blank" frames to share it.
+		return `${url.protocol}${frame.window[PropertySymbol.internalId]}`;
+	}
+
+	/**
+	 * Returns the origin that a document navigated in the frame can inherit from its opener or parent frame.
+	 *
+	 * @param frame Frame.
+	 * @returns Origin, or null if there is no opener or parent frame.
+	 */
+	public static getInheritableOrigin(frame: IBrowserFrame): string | null {
+		const sourceFrame = frame[PropertySymbol.opener]?.frame ?? frame.parentFrame;
+		return sourceFrame ? this.getOrigin(sourceFrame) : null;
 	}
 }

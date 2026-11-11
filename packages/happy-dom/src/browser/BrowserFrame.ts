@@ -13,6 +13,8 @@ import BrowserFrameNavigator from './utilities/BrowserFrameNavigator.js';
 import type IReloadOptions from './types/IReloadOptions.js';
 import type Document from '../nodes/document/Document.js';
 import HistoryItemList from '../history/HistoryItemList.js';
+import BrowserFrameCrossOriginIsolation from './utilities/BrowserFrameCrossOriginIsolation.js';
+import type IBrowserFrameOpener from './types/IBrowserFrameOpener.js';
 
 /**
  * Browser frame.
@@ -25,9 +27,10 @@ export default class BrowserFrame implements IBrowserFrame {
 	public readonly closed: boolean = false;
 	public [PropertySymbol.asyncTaskManager]: AsyncTaskManager = new AsyncTaskManager(this);
 	public [PropertySymbol.listeners]: { navigation: Array<() => void> } = { navigation: [] };
-	public [PropertySymbol.openerFrame]: IBrowserFrame | null = null;
-	public [PropertySymbol.openerWindow]: BrowserWindow | CrossOriginBrowserWindow | null = null;
-	public [PropertySymbol.popup] = false;
+	public [PropertySymbol.contentWindow]: BrowserWindow | CrossOriginBrowserWindow | null = null;
+	public [PropertySymbol.opener]: IBrowserFrameOpener | null = null;
+	public [PropertySymbol.openedPages]: BrowserPage[] = [];
+	public [PropertySymbol.popup]: boolean = false;
 	public [PropertySymbol.history] = new HistoryItemList();
 
 	/**
@@ -76,15 +79,27 @@ export default class BrowserFrame implements IBrowserFrame {
 	}
 
 	/**
-	 * Sets the content.
+	 * Sets the URL.
 	 *
 	 * @param url URL.
 	 */
 	public set url(url) {
-		this.window[PropertySymbol.location][PropertySymbol.setURL](
-			this,
-			BrowserFrameURL.getRelativeURL(this, url).href
-		);
+		if (!this.window) {
+			throw new Error('The frame has been destroyed, the "window" property is not set.');
+		}
+
+		const relativeURL = BrowserFrameURL.getRelativeURL(this, url);
+		const relativeURLHref = relativeURL.href;
+
+		this.window[PropertySymbol.location][PropertySymbol.setURL](this, relativeURLHref);
+		this[PropertySymbol.history].currentItem.url = relativeURLHref;
+		// The window is not reloaded, so the entry is moved to a document state of its own.
+		this[PropertySymbol.history].currentItem.documentState = {
+			...this[PropertySymbol.history].currentItem.documentState,
+			url: relativeURLHref
+		};
+
+		BrowserFrameCrossOriginIsolation.isolate(this);
 	}
 
 	/**

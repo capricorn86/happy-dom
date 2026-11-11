@@ -155,7 +155,7 @@ export default interface IOptionalBrowserSettings {
 		/** Disables navigation to other pages in child pages (such as popup windows). */
 		disableChildPageNavigation?: boolean;
 
-		/** Disables the fallback to setting the URL when navigating to a page is disabled or when inside a detached browser frame. */
+		/** Disables the fallback to setting the URL when navigating to a page is disabled inside a detached browser frame. */
 		disableFallbackToSetURL?: boolean;
 
 		/** Sets the policy for cross-origin navigation. */

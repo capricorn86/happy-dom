@@ -52,6 +52,8 @@ export default interface ICSSStyleDeclaration {
 	'transition-timing-function': string;
 	triggerScope: string;
 	'trigger-scope': string;
+	accentColor: string;
+	'accent-color': string;
 	color: string;
 	direction: string;
 	fontFamily: string;
@@ -111,8 +113,6 @@ export default interface ICSSStyleDeclaration {
 	textRendering: string;
 	'text-rendering': string;
 	zoom: string;
-	accentColor: string;
-	'accent-color': string;
 	alignContent: string;
 	'align-content': string;
 	alignItems: string;

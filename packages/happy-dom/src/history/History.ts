@@ -1,9 +1,10 @@
 import type IBrowserFrame from '../browser/types/IBrowserFrame.js';
 import HistoryScrollRestorationEnum from './HistoryScrollRestorationEnum.js';
 import * as PropertySymbol from '../PropertySymbol.js';
-import BrowserFrameURL from '../browser/utilities/BrowserFrameURL.js';
 import DOMExceptionNameEnum from '../exception/DOMExceptionNameEnum.js';
 import type BrowserWindow from '../window/BrowserWindow.js';
+import { URL } from 'url';
+import QuerySelector from '../query-selector/QuerySelector.js';
 
 /**
  * History API.
@@ -132,30 +133,17 @@ export default class History {
 		}
 
 		const location = this.#window[PropertySymbol.location];
-		const newURL = url ? BrowserFrameURL.getRelativeURL(this.#browserFrame, url) : location;
-
-		if (url && newURL.origin !== location.origin) {
-			throw new this.#window.DOMException(
-				`Failed to execute 'pushState' on 'History': A history state object with URL '${url.toString()}' cannot be created in a document with origin '${
-					location.origin
-				}' and URL '${location.href}'.`,
-				DOMExceptionNameEnum.securityError
-			);
-		}
-
-		history.currentItem.popState = true;
+		const newURL = this.#getURL(url, 'pushState');
 
 		history.push({
 			title: this.#window.document.title,
-			href: newURL.href,
+			url: newURL.href,
+			documentState: history.currentItem.documentState,
 			state,
-			popState: true,
-			scrollRestoration: history.currentItem.scrollRestoration,
-			method: history.currentItem.method || 'GET',
-			formData: history.currentItem.formData || null
+			scrollRestoration: history.currentItem.scrollRestoration
 		});
 
-		location[PropertySymbol.setURL](this.#browserFrame, history.currentItem.href);
+		location[PropertySymbol.setURL](this.#browserFrame, history.currentItem.url);
 	}
 
 	/**
@@ -183,29 +171,18 @@ export default class History {
 		}
 
 		const location = this.#window[PropertySymbol.location];
-		const newURL = url ? BrowserFrameURL.getRelativeURL(this.#browserFrame, url) : location;
-
-		if (url && newURL.origin !== location.origin) {
-			throw new this.#window.DOMException(
-				`Failed to execute 'pushState' on 'History': A history state object with URL '${url.toString()}' cannot be created in a document with origin '${
-					location.origin
-				}' and URL '${location.href}'.`,
-				DOMExceptionNameEnum.securityError
-			);
-		}
+		const newURL = this.#getURL(url, 'replaceState');
 
 		history.replace({
 			title: this.#window.document.title,
-			href: newURL.href,
+			url: newURL.href,
+			documentState: history.currentItem.documentState,
 			state,
-			popState: history.currentItem.popState,
-			scrollRestoration: history.currentItem.scrollRestoration,
-			method: history.currentItem.method,
-			formData: history.currentItem.formData
+			scrollRestoration: history.currentItem.scrollRestoration
 		});
 
 		if (url) {
-			location[PropertySymbol.setURL](this.#browserFrame, history.currentItem.href);
+			location[PropertySymbol.setURL](this.#browserFrame, history.currentItem.url);
 		}
 	}
 
@@ -216,5 +193,70 @@ export default class History {
 	 */
 	public [PropertySymbol.destroy](): void {
 		this.#browserFrame = null;
+	}
+
+	/**
+	 * Resolves a URL and checks whether the document URL can be rewritten to it.
+	 *
+	 * @see https://html.spec.whatwg.org/multipage/nav-history-apis.html#can-have-its-url-rewritten
+	 * @param url URL.
+	 * @param method History method.
+	 * @returns Validated URL.
+	 */
+	#getURL(url: string | URL | undefined, method: 'pushState' | 'replaceState'): URL {
+		const location = this.#window[PropertySymbol.location];
+		const documentURL = new URL(location.href);
+
+		if (!url) {
+			return documentURL;
+		}
+
+		const urlString = String(url);
+		const baseHref = this.#getBaseHref();
+		let newURL: URL;
+
+		try {
+			newURL = new URL(urlString, baseHref === null ? documentURL : new URL(baseHref, documentURL));
+		} catch {
+			throw new this.#window.DOMException(
+				`Failed to execute '${method}' on 'History': The provided URL '${urlString}' is invalid.`,
+				DOMExceptionNameEnum.securityError
+			);
+		}
+
+		const canRewritePath = newURL.protocol === 'http:' || newURL.protocol === 'https:';
+		const canRewriteQuery = canRewritePath || newURL.protocol === 'file:';
+
+		if (
+			newURL.protocol !== documentURL.protocol ||
+			newURL.username !== documentURL.username ||
+			newURL.password !== documentURL.password ||
+			newURL.host !== documentURL.host ||
+			(!canRewritePath && newURL.pathname !== documentURL.pathname) ||
+			(!canRewriteQuery && newURL.href.split('#')[0] !== documentURL.href.split('#')[0])
+		) {
+			throw new this.#window.DOMException(
+				`Failed to execute '${method}' on 'History': A history state object with URL '${urlString}' cannot be created in a document with origin '${location.origin}' and URL '${location.href}'.`,
+				DOMExceptionNameEnum.securityError
+			);
+		}
+
+		return newURL;
+	}
+
+	/**
+	 * Returns the first base href from internal document attributes.
+	 *
+	 * Note that Document.baseURI is not used here, in order to prevent overridden baseURI getters from affecting URL resolution.
+	 *
+	 * @returns Base href, or null if absent.
+	 */
+	#getBaseHref(): string | null {
+		const baseElement = QuerySelector.querySelector(this.#window.document, 'base[href]');
+		return (
+			baseElement?.[PropertySymbol.attributes][PropertySymbol.itemsByNamespaceURI].get(':href')?.[
+				PropertySymbol.value
+			] ?? null
+		);
 	}
 }

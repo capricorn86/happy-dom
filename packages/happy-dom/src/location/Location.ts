@@ -1,4 +1,5 @@
 import type IBrowserFrame from '../browser/types/IBrowserFrame.js';
+import BrowserFrameURL from '../browser/utilities/BrowserFrameURL.js';
 import HashChangeEvent from '../event/events/HashChangeEvent.js';
 import HistoryScrollRestorationEnum from '../history/HistoryScrollRestorationEnum.js';
 import * as PropertySymbol from '../PropertySymbol.js';
@@ -57,16 +58,12 @@ export default class Location {
 		url.hash = hash;
 
 		if (url.hash !== oldHash) {
-			history.currentItem.popState = true;
-
 			history.push({
 				title: '',
-				href: url.href,
+				url: url.href,
+				documentState: history.currentItem.documentState,
 				state: history.currentItem.state,
-				popState: true,
-				scrollRestoration: HistoryScrollRestorationEnum.manual,
-				method: history.currentItem.method,
-				formData: history.currentItem.formData || null
+				scrollRestoration: HistoryScrollRestorationEnum.manual
 			});
 
 			this[PropertySymbol.setURL](this.#browserFrame, url.href);
@@ -125,6 +122,16 @@ export default class Location {
 	 */
 	public set href(url: string) {
 		if (!this.#browserFrame) {
+			return;
+		}
+
+		if (
+			this.#browserFrame.page.mainFrame === this.#browserFrame &&
+			BrowserFrameURL.getRelativeURL(this.#browserFrame, url).protocol === 'data:'
+		) {
+			this.#browserFrame.window.console.error(
+				'Not allowed to navigate top frame to data URL: ' + url
+			);
 			return;
 		}
 
