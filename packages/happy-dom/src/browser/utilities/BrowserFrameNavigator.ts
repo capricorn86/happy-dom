@@ -124,7 +124,13 @@ export default class BrowserFrameNavigator {
 		}
 
 		if (!BrowserFrameValidator.validateFrameNavigation(frame)) {
-			if (!frame.page.context.browser.settings.navigation.disableFallbackToSetURL) {
+			// We should only fallback to setting the URL if the navigation is disabled inside a detached browser frame.
+			// Detached browser frames can't be navigated normally as they are created directly using "new Window()".
+			// Navigating would destroy the window and reference to it.
+			if (
+				!frame.page.context.browser.settings.navigation.disableFallbackToSetURL &&
+				BrowserFrameValidator.isDetachedBrowserFrame(frame)
+			) {
 				const history = frame[PropertySymbol.history];
 				if (historyItem) {
 					history.currentItem = historyItem;

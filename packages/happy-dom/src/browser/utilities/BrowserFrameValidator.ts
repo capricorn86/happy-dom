@@ -58,12 +58,7 @@ export default class BrowserFrameValidator {
 
 		// When using the Window instance directly and not via the Browser API we should not navigate the browser frame.
 		// Only a detached browser has a windowClass property and we want to avoid a circular dependency.
-		if (
-			(<DetachedBrowserFrame>frame).page.context.browser.windowClass &&
-			frame.page.context === frame.page.context.browser.defaultContext &&
-			frame.page.context.pages[0] === frame.page &&
-			frame.page.mainFrame === frame
-		) {
+		if (this.isDetachedBrowserFrame(frame)) {
 			return false;
 		}
 
@@ -80,5 +75,20 @@ export default class BrowserFrameValidator {
 		}
 
 		return true;
+	}
+
+	/**
+	 * Returns true if the frame is a detached browser frame.
+	 *
+	 * @param frame Frame.
+	 * @returns True if the frame is a detached browser frame.
+	 */
+	public static isDetachedBrowserFrame(frame: IBrowserFrame): boolean {
+		return (
+			(<DetachedBrowserFrame>frame).page.context.browser.windowClass &&
+			frame.page.context === frame.page.context.browser.defaultContext &&
+			frame.page.context.pages[0] === frame.page &&
+			frame.page.mainFrame === frame
+		);
 	}
 }

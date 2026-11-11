@@ -52,12 +52,13 @@ export default class BrowserFrameURL {
 	private static getInheritedOrigin(frame: IBrowserFrame): string | null {
 		const history = frame[PropertySymbol.history];
 		const url = new URL(history.currentItem.documentState.url);
+		const uniqueOrigin = `${url.protocol}${frame.window[PropertySymbol.internalId]}`;
 
 		// Data URLs are treated as unique opaque origins by modern browsers, rather than inheriting the origin of the settings object responsible for the navigation.
 		// A window ID distinguishes each data document while allowing inherited about:blank frames to share its origin.
 		// @see https://developer.mozilla.org/en-US/docs/Web/URI/Reference/Schemes/data
 		if (url.protocol === 'data:') {
-			return `data:${frame.window[PropertySymbol.internalId]}`;
+			return uniqueOrigin;
 		}
 
 		if (!history.currentItem.documentState.inheritOrigin || url.origin !== 'null') {
@@ -74,6 +75,6 @@ export default class BrowserFrameURL {
 			return this.getInheritedOrigin(frame.parentFrame);
 		}
 
-		return url.origin;
+		return url.origin !== 'null' ? url.origin : uniqueOrigin;
 	}
 }
