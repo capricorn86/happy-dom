@@ -209,5 +209,57 @@ describe('Storage', () => {
 
 			expect(storage.getItem('key1')).toBe('mocked');
 		});
+
+		it('Should be able to spy on prototype methods after a method was already used.', () => {
+			storage.getItem('key1');
+
+			const spy = vi.spyOn(Storage.prototype, 'getItem').mockImplementation(() => 'mocked');
+
+			expect(storage.getItem('key1')).toBe('mocked');
+			expect(spy).toHaveBeenCalled();
+
+			spy.mockRestore();
+			expect(storage.getItem('key1')).toBe(null);
+		});
+
+		it('Should apply a Storage.prototype patch after a method was already used.', () => {
+			storage.setItem('key1', 'value1');
+
+			const original = Storage.prototype.setItem;
+			Storage.prototype.setItem = function (): void {
+				throw new Error('blocked');
+			};
+
+			try {
+				expect(() => storage.setItem('key1', 'value2')).toThrow('blocked');
+			} finally {
+				Storage.prototype.setItem = original;
+			}
+
+			expect(storage.getItem('key1')).toBe('value1');
+		});
+	});
+
+	describe('delete', () => {
+		it('Should be able to delete a method defined on the store.', () => {
+			Object.defineProperty(storage, 'getItem', {
+				configurable: true,
+				writable: true,
+				value: () => 'own'
+			});
+
+			expect(Reflect.deleteProperty(storage, 'getItem')).toBe(true);
+			expect(storage.getItem('key1')).toBe(null);
+		});
+
+		it('Should be able to delete a stored key and leave the methods alone.', () => {
+			storage.setItem('key1', 'value1');
+
+			expect(Reflect.deleteProperty(storage, 'key1')).toBe(true);
+			expect(storage.getItem('key1')).toBe(null);
+			expect(Reflect.deleteProperty(storage, 'setItem')).toBe(true);
+			expect(storage.setItem).toBeTypeOf('function');
+			expect(Reflect.deleteProperty(storage, 'missing')).toBe(true);
+		});
 	});
 });
