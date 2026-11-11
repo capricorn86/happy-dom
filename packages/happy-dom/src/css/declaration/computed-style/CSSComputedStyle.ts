@@ -12,6 +12,7 @@ import type CSSRule from '../../CSSRule.js';
 import type CSSStyleRule from '../../rules/CSSStyleRule.js';
 import CSSComputedStyleElementDefault from './config/CSSComputedStyleElementDefault.js';
 import CSSComputedStyleInheritedProperties from './config/CSSComputedStyleInheritedProperties.js';
+import CSSComputedStyleInitialValues from './config/CSSComputedStyleInitialValues.js';
 import CSSComputedStyleMeasurementProperties from './config/CSSComputedStyleMeasurementProperties.js';
 import CSSTextParser from '../utilities/CSSTextParser.js';
 import QuerySelector from '../../../query-selector/QuerySelector.js';
@@ -303,6 +304,96 @@ export default class CSSComputedStyle {
 		}
 
 		return propertyManager;
+	}
+
+	/**
+	 * Returns the computed value of a property.
+	 *
+	 * A custom property that nothing sets on a connected element has the value of the closest ancestor that sets it.
+	 * Other properties that nothing sets have their initial value when it is listed in "CSSComputedStyleInitialValues".
+	 *
+	 * @param name Property name in kebab case.
+	 * @returns Property value.
+	 */
+	public getPropertyValue(name: string): string {
+		if (name?.[0] === '-' && name[1] === '-') {
+			return this.getCustomPropertyValue(name);
+		}
+
+		const propertyManager = this.getComputedStyle();
+		const value = propertyManager.get(name)?.value;
+
+		if (value) {
+			return value;
+		}
+
+		if (!this.element[PropertySymbol.isConnected]) {
+			return '';
+		}
+
+		const initialValue = CSSComputedStyleInitialValues[name];
+		const properties = propertyManager.properties;
+
+		// The type check ignores names that the config inherits from Object.prototype (e.g. "constructor").
+		if (typeof initialValue?.value !== 'string' || properties['all']) {
+			return '';
+		}
+
+		// The value of the property is unknown when another property that sets it is declared.
+		for (const dependency of initialValue.dependsOn) {
+			if (properties[dependency]) {
+				return '';
+			}
+		}
+
+		return initialValue.value;
+	}
+
+	/**
+	 * Returns the computed value of a custom property.
+	 *
+	 * A custom property is inherited, so the value comes from the closest element that sets it, starting with the element itself.
+	 *
+	 * @param name Property name.
+	 * @returns Property value.
+	 */
+	private getCustomPropertyValue(name: string): string {
+		let node: Node | null = this.element[PropertySymbol.isConnected] ? this.element : null;
+
+		while (node && node[PropertySymbol.nodeType] === NodeTypeEnum.elementNode) {
+			const value = new CSSComputedStyle(<Element>node).getComputedStyle().get(name)?.value;
+
+			if (value) {
+				// A CSS-wide keyword may be surrounded by comments.
+				switch (
+					value
+						.replace(/\/\*[\s\S]*?\*\//g, ' ')
+						.trim()
+						.toLowerCase()
+				) {
+					case 'initial':
+						return '';
+					case 'revert-layer':
+						// This keyword is not resolved: the element that sets it returns the keyword and its descendants an empty string.
+						return node === this.element ? value : '';
+					case 'inherit':
+					case 'unset':
+					case 'revert':
+						// The value is inherited ("revert" included, as no user agent or user style sets a custom property).
+						break;
+					default:
+						return value;
+				}
+			}
+
+			node = node[PropertySymbol.parentNode];
+
+			if (node && node[PropertySymbol.nodeType] === NodeTypeEnum.documentFragmentNode) {
+				node = (<ShadowRoot>node).host;
+			}
+		}
+
+		return '';
 	}
 
 	/**
