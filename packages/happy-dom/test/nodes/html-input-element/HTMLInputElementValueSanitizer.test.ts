@@ -44,7 +44,10 @@ describe('HTMLInputElementValueSanitizer', () => {
 				{ value: '2020-01-01', want: '2020-01-01', attributes: { min: '2020-01-02' } },
 				{ value: '2020-01-01', want: '2020-01-01', attributes: { max: '2019-12-31' } },
 				{ value: '2020-01-02', want: '2020-01-02', attributes: { min: '2020-01-01' } },
-				{ value: '2020-01-01', want: '2020-01-01', attributes: { max: '2020-01-02' } }
+				{ value: '2020-01-01', want: '2020-01-01', attributes: { max: '2020-01-02' } },
+				{ value: '10000-10-15', want: '10000-10-15' },
+				{ value: '275760-09-13', want: '275760-09-13' },
+				{ value: '0000-01-01', want: '' }
 			],
 			'datetime-local': [
 				{ value: '2020-01-01T00:00', want: '2020-01-01T00:00' },
@@ -58,7 +61,10 @@ describe('HTMLInputElementValueSanitizer', () => {
 				{ value: '2020-01-01T00:00:00.010', want: '2020-01-01T00:00:00.01' },
 				{ value: '2020-01-01T00:00:00.100', want: '2020-01-01T00:00:00.1' },
 				{ value: '2020-01-01T00:00:00.000', want: '2020-01-01T00:00' },
-				{ value: '2020-01-01T00:00:00', want: '2020-01-01T00:00' }
+				{ value: '2020-01-01T00:00:00', want: '2020-01-01T00:00' },
+				{ value: '10000-10-15T09:00', want: '10000-10-15T09:00' },
+				{ value: '10000-10-15 09:00', want: '10000-10-15T09:00' },
+				{ value: '10000-10-15T09:00:59.123', want: '10000-10-15T09:00:59.123' }
 			],
 			month: [
 				{ value: '2020-01', want: '2020-01' },
@@ -67,7 +73,9 @@ describe('HTMLInputElementValueSanitizer', () => {
 				{ value: '2020-13', want: '' },
 				{ value: '2020-00', want: '' },
 				{ value: '2020-01', want: '', attributes: { min: '2020-02' } },
-				{ value: '2020-01', want: '', attributes: { max: '2019-12' } }
+				{ value: '2020-01', want: '', attributes: { max: '2019-12' } },
+				{ value: '10000-10', want: '10000-10' },
+				{ value: '0000-10', want: '' }
 			],
 			time: [
 				{ value: '00:00', want: '00:00' },
@@ -91,7 +99,9 @@ describe('HTMLInputElementValueSanitizer', () => {
 				{ value: '2020-W00', want: '' },
 				{ value: '2020-W54', want: '' },
 				{ value: '2020-W01', want: '', attributes: { min: '2020-W02' } },
-				{ value: '2020-W01', want: '', attributes: { max: '2019-W53' } }
+				{ value: '2020-W01', want: '', attributes: { max: '2019-W53' } },
+				{ value: '10000-W10', want: '10000-W10' },
+				{ value: '0000-W10', want: '' }
 			]
 		};
 

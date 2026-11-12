@@ -61,13 +61,15 @@ export default class HTMLInputElementValueSanitizer {
 			case 'datetime-local': {
 				// https://html.spec.whatwg.org/multipage/input.html#local-date-and-time-state-(type=datetime-local):value-sanitization-algorithm
 				const match = value.match(
-					/^(\d\d\d\d)-(\d\d)-(\d\d)[T ](\d\d):(\d\d)(?::(\d\d)(?:\.(\d{1,3}))?)?$/
+					/^(\d{4,})-(\d\d)-(\d\d)[T ](\d\d):(\d\d)(?::(\d\d)(?:\.(\d{1,3}))?)?$/
 				);
 				if (!match) {
 					return '';
 				}
-				const dateString = this.sanitizeDate(value.slice(0, 10));
-				let timeString = this.sanitizeTime(value.slice(11));
+				// The year can have more than four digits, so the date and time are split on the separator instead of at fixed positions.
+				const separatorIndex = value.search(/[T ]/);
+				const dateString = this.sanitizeDate(value.slice(0, separatorIndex));
+				let timeString = this.sanitizeTime(value.slice(separatorIndex + 1));
 				if (!(dateString && timeString)) {
 					return '';
 				}
@@ -83,7 +85,7 @@ export default class HTMLInputElementValueSanitizer {
 			}
 			case 'month':
 				// https://html.spec.whatwg.org/multipage/input.html#month-state-(type=month):value-sanitization-algorithm
-				if (!(value.match(/^(\d\d\d\d)-(\d\d)$/) && this.parseMonthComponent(value))) {
+				if (!(value.match(/^(\d{4,})-(\d\d)$/) && this.parseMonthComponent(value))) {
 					return '';
 				}
 				return this.checkBoundaries(value, input.min, input.max) ? value : '';
@@ -94,7 +96,7 @@ export default class HTMLInputElementValueSanitizer {
 			}
 			case 'week': {
 				// https://html.spec.whatwg.org/multipage/input.html#week-state-(type=week):value-sanitization-algorithm
-				const match = value.match(/^(\d\d\d\d)-W(\d\d)$/);
+				const match = value.match(/^(\d{4,})-W(\d\d)$/);
 				if (!match) {
 					return '';
 				}
@@ -167,11 +169,11 @@ export default class HTMLInputElementValueSanitizer {
 	 * @param value
 	 */
 	private static sanitizeDate(value: string): string {
-		const match = value.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+		const match = value.match(/^(\d{4,})-(\d{2})-(\d{2})$/);
 		if (!match) {
 			return '';
 		}
-		const month = this.parseMonthComponent(value.slice(0, 7));
+		const month = this.parseMonthComponent(`${match[1]}-${match[2]}`);
 		if (!month) {
 			return '';
 		}
