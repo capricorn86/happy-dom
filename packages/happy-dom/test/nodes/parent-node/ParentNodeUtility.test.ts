@@ -299,6 +299,41 @@ describe('ParentNodeUtility', () => {
 			expect(elementsByTagName[1]).toBe(div3);
 		});
 
+		it('Matches the local name of prefixed elements.', () => {
+			const parent = document.createElement('div');
+			const element1 = document.createElementNS('urn:a', 'a:item');
+			const element2 = document.createElementNS('urn:b', 'b:item');
+			const element3 = document.createElementNS('urn:b', 'item');
+
+			parent.appendChild(element1);
+			element1.appendChild(element2);
+			parent.appendChild(element3);
+
+			const elementsByTagName = ParentNodeUtility.getElementsByTagNameNS(parent, 'urn:b', 'item');
+
+			expect(elementsByTagName.length).toBe(2);
+			expect(elementsByTagName[0]).toBe(element2);
+			expect(elementsByTagName[1]).toBe(element3);
+			expect(ParentNodeUtility.getElementsByTagNameNS(parent, 'urn:b', 'b:item').length).toBe(0);
+		});
+
+		it('Returns elements for the requested namespace when called with the same tag name and different namespaces.', () => {
+			const parent = document.createElement('div');
+			const element1 = document.createElementNS('urn:a', 'item');
+			const element2 = document.createElementNS('urn:b', 'item');
+
+			parent.appendChild(element1);
+			parent.appendChild(element2);
+
+			const elementsInA = ParentNodeUtility.getElementsByTagNameNS(parent, 'urn:a', 'item');
+			const elementsInB = ParentNodeUtility.getElementsByTagNameNS(parent, 'urn:b', 'item');
+
+			expect(elementsInA.length).toBe(1);
+			expect(elementsInA[0]).toBe(element1);
+			expect(elementsInB.length).toBe(1);
+			expect(elementsInB[0]).toBe(element2);
+		});
+
 		it('Returns all elements when tag name is *.', () => {
 			const parent = document.createElement('div');
 			const div1 = document.createElementNS(NamespaceURI.svg, 'div');
