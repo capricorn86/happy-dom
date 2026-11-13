@@ -385,6 +385,7 @@ export const addIdentifierToWindow = Symbol('addIdentifierToWindow');
 export const removeIdentifierFromWindow = Symbol('removeIdentifierFromWindow');
 export const onSlotChange = Symbol('onSlotChange');
 export const dispatching = Symbol('dispatching');
+export const clickInProgress = Symbol('clickInProgress');
 export const modules = Symbol('modules');
 export const preloads = Symbol('preloads');
 export const body = Symbol('body');
