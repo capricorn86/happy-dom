@@ -212,6 +212,18 @@ export default class CSSComputedStyle {
 					}
 				}
 
+				// The UA stylesheet renders elements with the "hidden" attribute as "display: none",
+				// except for the "until-found" state and the embed element.
+				const hiddenAttribute = (<Element>parentElement.element).getAttribute('hidden');
+
+				if (
+					hiddenAttribute !== null &&
+					hiddenAttribute.toLowerCase() !== 'until-found' &&
+					(<Element>parentElement.element)[PropertySymbol.tagName] !== 'EMBED'
+				) {
+					elementCSSText += 'display: none;';
+				}
+
 				for (const cssText of parentElement.cssTexts) {
 					elementCSSText += cssText.cssText;
 				}
