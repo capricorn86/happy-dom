@@ -1552,6 +1552,249 @@ describe('BrowserWindow', () => {
 			expect(computedStyle.color).toBe('red');
 		});
 
+		it('Returns the initial value of a property that nothing sets.', () => {
+			const parent = document.createElement('div');
+			const element = document.createElement('div');
+			const computedStyle = window.getComputedStyle(element);
+
+			parent.appendChild(element);
+
+			expect(computedStyle.position).toBe('');
+
+			document.body.appendChild(parent);
+
+			expect(computedStyle.animationName).toBe('none');
+			expect(computedStyle.transform).toBe('none');
+			expect(computedStyle.filter).toBe('none');
+			expect(computedStyle.position).toBe('static');
+			expect(computedStyle.opacity).toBe('1');
+			expect(computedStyle.visibility).toBe('visible');
+			expect(computedStyle.zIndex).toBe('auto');
+			expect(computedStyle.willChange).toBe('auto');
+			expect(computedStyle['z-index']).toBe('auto');
+			expect(computedStyle.getPropertyValue('animation-name')).toBe('none');
+			expect(computedStyle.getPropertyPriority('position')).toBe('');
+			expect(element.style.position).toBe('');
+
+			element.style.position = 'absolute';
+			parent.style.visibility = 'hidden';
+
+			expect(computedStyle.position).toBe('absolute');
+			expect(computedStyle.visibility).toBe('hidden');
+
+			parent.removeChild(element);
+
+			expect(computedStyle.transform).toBe('');
+		});
+
+		it('Returns an empty string for a property that nothing sets when its initial value is not known.', () => {
+			const element = document.createElement('div');
+			const computedStyle = window.getComputedStyle(element);
+
+			document.body.appendChild(element);
+
+			expect(computedStyle.width).toBe('');
+			expect(computedStyle.pointerEvents).toBe('');
+			expect(computedStyle.getPropertyValue('unknown-property')).toBe('');
+			expect(computedStyle.getPropertyValue('constructor')).toBe('');
+			expect(computedStyle.getPropertyValue('__proto__')).toBe('');
+			expect(computedStyle.getPropertyValue(<string>(<unknown>null))).toBe('');
+		});
+
+		it('Does not return the initial value when another property that sets the property is declared.', () => {
+			const element = document.createElement('div');
+			const computedStyle = window.getComputedStyle(element);
+
+			document.body.appendChild(element);
+
+			expect(computedStyle.animationName).toBe('none');
+			expect(computedStyle.marginInlineStart).toBe('0px');
+			expect(computedStyle.marginTop).toBe('0px');
+			expect(computedStyle.overflowX).toBe('visible');
+			expect(computedStyle.rowGap).toBe('normal');
+			expect(computedStyle.breakBefore).toBe('auto');
+			expect(computedStyle.float).toBe('none');
+			expect(computedStyle.opacity).toBe('1');
+
+			// A shorthand that is not split into its longhands.
+			element.style.animation = 'spin 1s';
+			// A legacy alias.
+			element.style.setProperty('grid-row-gap', '10px');
+			// A physical counterpart of "margin-inline-start".
+			element.style.marginLeft = '12px';
+			// The other axis of "overflow-x".
+			element.style.overflowY = 'hidden';
+			// A legacy shorthand of "break-before".
+			element.style.pageBreakBefore = 'always';
+			// The name of "float" in the API.
+			element.style.cssFloat = 'left';
+
+			expect(computedStyle.animationName).not.toBe('none');
+			expect(computedStyle.rowGap).not.toBe('normal');
+			expect(computedStyle.marginInlineStart).not.toBe('0px');
+			expect(computedStyle.overflowX).not.toBe('visible');
+			expect(computedStyle.breakBefore).not.toBe('auto');
+			expect(computedStyle.float).not.toBe('none');
+			expect(computedStyle.marginTop).toBe('0px');
+			expect(computedStyle.opacity).toBe('1');
+
+			element.style.all = 'unset';
+
+			expect(computedStyle.opacity).toBe('');
+		});
+
+		it('Does not return the initial value when a shorthand that is split into its longhands is declared.', () => {
+			const parent = document.createElement('ul');
+			const element = document.createElement('li');
+			const computedStyle = window.getComputedStyle(element);
+
+			parent.appendChild(element);
+			document.body.appendChild(parent);
+
+			expect(computedStyle.marginBlockStart).toBe('0px');
+			expect(computedStyle.borderBlockEndStyle).toBe('none');
+			expect(computedStyle.listStyleType).toBe('disc');
+
+			element.style.margin = '10px';
+			element.style.border = '1px solid';
+			parent.style.listStyle = 'none';
+
+			expect(computedStyle.marginTop).toBe('10px');
+			expect(computedStyle.marginBlockStart).not.toBe('0px');
+			expect(computedStyle.borderBlockEndStyle).not.toBe('none');
+			expect(computedStyle.listStyleType).not.toBe('disc');
+		});
+
+		it('Returns a custom property that is set on an ancestor.', () => {
+			document.body.innerHTML =
+				'<div id="page" style="--size: 800px"><div id="parent"><span id="child"></span></div></div>';
+
+			const parent = <HTMLElement>document.getElementById('parent');
+			const child = <HTMLElement>document.getElementById('child');
+			const computedStyle = window.getComputedStyle(child);
+
+			expect(computedStyle.getPropertyValue('--size')).toBe('800px');
+			expect(computedStyle.getPropertyValue('--unknown')).toBe('');
+
+			parent.style.setProperty('--size', '400px');
+
+			expect(computedStyle.getPropertyValue('--size')).toBe('400px');
+
+			child.style.setProperty('--size', '200px');
+
+			expect(computedStyle.getPropertyValue('--size')).toBe('200px');
+			expect(window.getComputedStyle(parent).getPropertyValue('--size')).toBe('400px');
+
+			document.body.removeChild(<HTMLElement>document.getElementById('page'));
+
+			expect(window.getComputedStyle(parent).getPropertyValue('--size')).toBe('');
+		});
+
+		it('Handles a CSS-wide keyword as the value of a custom property on an ancestor.', () => {
+			document.body.innerHTML =
+				'<div id="page" style="--size: 800px"><div id="parent"><span id="child"></span></div></div>';
+
+			const parent = <HTMLElement>document.getElementById('parent');
+			const child = <HTMLElement>document.getElementById('child');
+			const computedStyle = window.getComputedStyle(child);
+
+			parent.style.setProperty('--size', 'initial');
+
+			expect(computedStyle.getPropertyValue('--size')).toBe('');
+			expect(window.getComputedStyle(parent).getPropertyValue('--size')).toBe('');
+
+			parent.style.setProperty('--size', 'unset');
+
+			expect(computedStyle.getPropertyValue('--size')).toBe('800px');
+			expect(window.getComputedStyle(parent).getPropertyValue('--size')).toBe('800px');
+
+			parent.setAttribute('style', '--size: INHERIT');
+
+			expect(computedStyle.getPropertyValue('--size')).toBe('800px');
+			expect(window.getComputedStyle(parent).getPropertyValue('--size')).toBe('800px');
+
+			parent.style.setProperty('--size', 'revert');
+
+			expect(computedStyle.getPropertyValue('--size')).toBe('800px');
+			expect(window.getComputedStyle(parent).getPropertyValue('--size')).toBe('800px');
+
+			parent.setAttribute('style', '--size: initial/* comment */');
+
+			expect(computedStyle.getPropertyValue('--size')).toBe('');
+			expect(window.getComputedStyle(parent).getPropertyValue('--size')).toBe('');
+
+			// A comment does not join two words to a keyword.
+			parent.setAttribute('style', '--size: in/**/itial');
+
+			expect(computedStyle.getPropertyValue('--size')).not.toBe('');
+
+			// A value that only holds a comment is not a keyword either.
+			parent.setAttribute('style', '--size: /**/');
+
+			expect(computedStyle.getPropertyValue('--size')).not.toBe('800px');
+			expect(window.getComputedStyle(parent).getPropertyValue('--size')).not.toBe('800px');
+		});
+
+		it('Does not resolve "revert-layer" as the value of a custom property.', () => {
+			document.body.innerHTML =
+				'<div id="page" style="--size: 800px"><div id="parent"><span id="child"></span></div></div>';
+
+			const parent = <HTMLElement>document.getElementById('parent');
+			const child = <HTMLElement>document.getElementById('child');
+
+			parent.style.setProperty('--size', 'revert-layer');
+
+			expect(window.getComputedStyle(parent).getPropertyValue('--size')).toBe('revert-layer');
+			expect(window.getComputedStyle(child).getPropertyValue('--size')).toBe('');
+		});
+
+		it('Returns a custom property that is set by a style sheet on an ancestor.', () => {
+			const style = document.createElement('style');
+			const element = document.createElement('div');
+
+			style.textContent = `
+				:root {
+					--size: 800px;
+				}
+				body {
+					--color: var(--undefined, red);
+				}
+			`;
+
+			document.head.appendChild(style);
+			document.body.appendChild(element);
+
+			const computedStyle = window.getComputedStyle(element);
+
+			expect(computedStyle.getPropertyValue('--size')).toBe('800px');
+			expect(computedStyle.getPropertyValue('--color')).toBe('red');
+		});
+
+		it('Returns a custom property that is set on the host of a shadow root.', () => {
+			const host = document.createElement('div');
+			const shadowRoot = host.attachShadow({ mode: 'open' });
+
+			shadowRoot.innerHTML = '<div><span></span></div>';
+			host.style.setProperty('--size', '800px');
+			document.body.appendChild(host);
+
+			expect(
+				window.getComputedStyle(shadowRoot.querySelector('span')!).getPropertyValue('--size')
+			).toBe('800px');
+		});
+
+		it('Returns a custom property that is set by a ":host" rule of a shadow root.', () => {
+			const host = document.createElement('div');
+			const shadowRoot = host.attachShadow({ mode: 'open' });
+
+			shadowRoot.innerHTML = '<style>:host { --size: 800px; }</style><div><span></span></div>';
+			document.body.appendChild(host);
+
+			expect(
+				window.getComputedStyle(shadowRoot.querySelector('span')!).getPropertyValue('--size')
+			).toBe('800px');
+		});
+
 		for (const measurement of [
 			{ value: '100vw', result: '1024px' },
 			{ value: '100vh', result: '768px' },

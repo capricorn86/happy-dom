@@ -311,6 +311,12 @@ export default class CSSStyleDeclaration {
 	 * @returns Property value.
 	 */
 	public getPropertyValue(name: string): string {
+		const element = this[PropertySymbol.element];
+
+		if (element && this[PropertySymbol.computed]) {
+			return new CSSComputedStyle(element).getPropertyValue(name);
+		}
+
 		return this[PropertySymbol.getPropertyManager]().get(name)?.value || '';
 	}
 
