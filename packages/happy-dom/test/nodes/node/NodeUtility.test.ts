@@ -48,6 +48,37 @@ describe('NodeUtility', () => {
 
 			expect(NodeUtility.isInclusiveAncestor(ancestorNode, referenceNode)).toBe(true);
 		});
+
+		it('Does not follow a user-defined "host" property when "includeShadowRoots" is set (e.g. Stencil components proxy an @Element() ref named "host" onto the element itself, which previously caused an infinite loop).', () => {
+			const detachedParent = document.createElement('div');
+			const referenceNode = document.createElement('div');
+			const ancestorParent = document.createElement('div');
+			const ancestorNode = document.createElement('div');
+
+			Object.defineProperty(detachedParent, 'host', {
+				get: () => detachedParent
+			});
+
+			detachedParent.appendChild(referenceNode);
+			ancestorParent.appendChild(ancestorNode);
+			ancestorNode.appendChild(document.createElement('span'));
+
+			expect(NodeUtility.isInclusiveAncestor(ancestorNode, referenceNode, true)).toBe(false);
+		});
+
+		it('Follows the host of a real ShadowRoot when "includeShadowRoots" is set.', () => {
+			const ancestorGrandparent = document.createElement('div');
+			const ancestorNode = document.createElement('div');
+			const host = document.createElement('div');
+			const referenceNode = document.createElement('div');
+
+			ancestorGrandparent.appendChild(ancestorNode);
+			ancestorNode.appendChild(host);
+			const shadowRoot = host.attachShadow({ mode: 'open' });
+			shadowRoot.appendChild(referenceNode);
+
+			expect(NodeUtility.isInclusiveAncestor(ancestorNode, referenceNode, true)).toBe(true);
+		});
 	});
 
 	describe('isFollowing()', () => {
