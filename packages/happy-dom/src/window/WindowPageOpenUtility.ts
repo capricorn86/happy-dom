@@ -120,7 +120,7 @@ export default class WindowPageOpenUtility {
 		}
 
 		if (FetchCORSUtility.isCORS(originURL, targetFrame.url)) {
-			return new CrossOriginBrowserWindow(targetFrame.window, browserFrame.window);
+			return new CrossOriginBrowserWindow(targetFrame.window, { opener: browserFrame.window });
 		}
 
 		return targetFrame.window;

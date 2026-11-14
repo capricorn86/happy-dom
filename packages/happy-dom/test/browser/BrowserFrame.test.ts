@@ -590,6 +590,90 @@ Task #1
 				await browser.close();
 			});
 
+			it("Doesn't give access to the opener of a cross-origin opener when it has a different origin.", async () => {
+				const browser = new Browser();
+				const page = browser.newPage();
+				page.mainFrame.url = 'https://opener.example/';
+				mockFetch(page.mainFrame.window);
+
+				page.mainFrame.window.open('https://opener.example/popup');
+				await browser.waitUntilComplete();
+				const popupFrame = browser.defaultContext.pages[1].mainFrame;
+
+				popupFrame.window.open('https://attacker.example/');
+				await browser.waitUntilComplete();
+				const attackerFrame = browser.defaultContext.pages[2].mainFrame;
+
+				const opener = attackerFrame.window.opener!;
+				expect(opener).toBeInstanceOf(CrossOriginBrowserWindow);
+				expect(opener.opener).toBeInstanceOf(CrossOriginBrowserWindow);
+				expect(opener.opener).toBe(opener.opener);
+				expect(() => opener.opener!.location.href).toThrow();
+				expect((<any>opener.opener)['document']).toBe(undefined);
+
+				await browser.close();
+			});
+
+			it('Gives access to the opener of a cross-origin opener when it has the same origin.', async () => {
+				const browser = new Browser();
+				const page = browser.newPage();
+				page.mainFrame.url = 'https://opener.example/';
+				mockFetch(page.mainFrame.window);
+
+				page.mainFrame.window.open('https://other.example/');
+				await browser.waitUntilComplete();
+				const popupFrame = browser.defaultContext.pages[1].mainFrame;
+
+				popupFrame.window.open('https://opener.example/popup');
+				await browser.waitUntilComplete();
+				const nestedPopupFrame = browser.defaultContext.pages[2].mainFrame;
+
+				const opener = nestedPopupFrame.window.opener!;
+				expect(opener).toBeInstanceOf(CrossOriginBrowserWindow);
+				expect(opener.opener).toBe(page.mainFrame.window);
+
+				await browser.close();
+			});
+
+			it('Removes access to the opener of a cross-origin opener when it navigates.', async () => {
+				const browser = new Browser();
+				const page = browser.newPage();
+				page.mainFrame.url = 'https://opener.example/';
+				mockFetch(page.mainFrame.window);
+
+				page.mainFrame.window.open('https://other.example/');
+				await browser.waitUntilComplete();
+				const popupFrame = browser.defaultContext.pages[1].mainFrame;
+
+				popupFrame.window.open('https://opener.example/popup');
+				await browser.waitUntilComplete();
+				const nestedPopupFrame = browser.defaultContext.pages[2].mainFrame;
+
+				await page.mainFrame.goto('https://opener.example/next');
+
+				expect(nestedPopupFrame.window.opener).toBeInstanceOf(CrossOriginBrowserWindow);
+				expect(nestedPopupFrame.window.opener!.opener).toBe(null);
+
+				await browser.close();
+			});
+
+			it('Returns the window of the accessing frame as opener of a cross-origin popup.', async () => {
+				const browser = new Browser();
+				const page = browser.newPage();
+				page.mainFrame.url = 'https://opener.example/';
+				mockFetch(page.mainFrame.window);
+
+				const popup = page.mainFrame.window.open('https://other.example/');
+				await browser.waitUntilComplete();
+
+				expect(popup).toBeInstanceOf(CrossOriginBrowserWindow);
+				expect(popup?.opener).toBe(page.mainFrame.window);
+				expect(popup?.parent).toBe(popup);
+				expect(popup?.top).toBe(popup);
+
+				await browser.close();
+			});
+
 			it('Keeps the origin of the document when a frame navigates to "about:blank".', async () => {
 				const browser = new Browser();
 				const page = browser.newPage();

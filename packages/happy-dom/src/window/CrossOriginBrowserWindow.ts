@@ -20,6 +20,7 @@ export default class CrossOriginBrowserWindow
 	public [PropertySymbol.self]: CrossOriginBrowserWindow | null = this;
 	public declare [PropertySymbol.top]: BrowserWindow | CrossOriginBrowserWindow | null;
 	public declare [PropertySymbol.parent]: BrowserWindow | CrossOriginBrowserWindow | null;
+	public declare [PropertySymbol.opener]: BrowserWindow | CrossOriginBrowserWindow | null;
 
 	// Private properties
 	#targetWindow: BrowserWindow;
@@ -27,16 +28,27 @@ export default class CrossOriginBrowserWindow
 	/**
 	 * Constructor.
 	 *
+	 * The window references in the options should be restricted based on the origin of the window that is given access to the target window, and not the origin of the target window.
+	 *
 	 * @param target Target window.
 	 * @param [options] Options.
 	 * @param [options.parent] Parent window.
 	 * @param [options.top] Top window.
+	 * @param [options.opener] Opener window.
 	 */
-	constructor(target: BrowserWindow, options?: { parent: BrowserWindow; top: BrowserWindow }) {
+	constructor(
+		target: BrowserWindow,
+		options?: {
+			parent?: BrowserWindow | CrossOriginBrowserWindow;
+			top?: BrowserWindow | CrossOriginBrowserWindow;
+			opener?: BrowserWindow | CrossOriginBrowserWindow | null;
+		}
+	) {
 		super();
 
 		this[PropertySymbol.parent] = options?.parent ?? this;
 		this[PropertySymbol.top] = options?.top ?? this;
+		this[PropertySymbol.opener] = options?.opener ?? null;
 
 		this.location = <Location>new Proxy(
 			{},
@@ -103,7 +115,7 @@ export default class CrossOriginBrowserWindow
 	 * @returns Opener.
 	 */
 	public get opener(): BrowserWindow | CrossOriginBrowserWindow | null {
-		return this.#targetWindow.opener;
+		return this[PropertySymbol.opener];
 	}
 
 	/**
