@@ -68,6 +68,27 @@ export default class BrowserFrameURL {
 	}
 
 	/**
+	 * Returns the serialized origin of the document in a frame.
+	 *
+	 * @param frame Frame.
+	 * @returns Serialized origin.
+	 */
+	public static getSerializedOrigin(frame: IBrowserFrame): string {
+		const documentState = frame[PropertySymbol.history].currentItem.documentState;
+		const url = new URL(documentState.url);
+
+		if (url.origin !== 'null') {
+			return url.origin;
+		}
+
+		if (url.protocol !== 'data:' && documentState.inheritedOrigin !== null) {
+			return new URL(documentState.inheritedOrigin).origin;
+		}
+
+		return 'null';
+	}
+
+	/**
 	 * Returns the origin that a document navigated in the frame can inherit from its opener or parent frame.
 	 *
 	 * @param frame Frame.

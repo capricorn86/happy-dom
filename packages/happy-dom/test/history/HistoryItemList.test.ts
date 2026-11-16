@@ -286,6 +286,56 @@ describe('HistoryItemList', () => {
 			});
 		});
 
+		it('Keeps forward history items when replacing the current item.', () => {
+			const history = new HistoryItemList();
+			const initialItem = history.currentItem;
+			const firstForwardItem = {
+				title: 'Forward 1',
+				url: 'https://forward1.example/',
+				documentState: {
+					url: 'https://forward1.example/',
+					method: 'GET',
+					formData: null,
+					inheritedOrigin: null
+				},
+				state: null,
+				scrollRestoration: HistoryScrollRestorationEnum.auto
+			};
+			const secondForwardItem = {
+				title: 'Forward 2',
+				url: 'https://forward2.example/',
+				documentState: {
+					url: 'https://forward2.example/',
+					method: 'GET',
+					formData: null,
+					inheritedOrigin: null
+				},
+				state: null,
+				scrollRestoration: HistoryScrollRestorationEnum.auto
+			};
+
+			history.push(firstForwardItem);
+			history.push(secondForwardItem);
+			history.currentItem = firstForwardItem;
+
+			const replacementItem = {
+				title: 'Replacement',
+				url: 'https://replacement.example/',
+				documentState: {
+					url: 'https://replacement.example/',
+					method: 'GET',
+					formData: null,
+					inheritedOrigin: null
+				},
+				state: null,
+				scrollRestoration: HistoryScrollRestorationEnum.auto
+			};
+			history.replace(replacementItem);
+
+			expect(history.items).toEqual([initialItem, replacementItem, secondForwardItem]);
+			expect(history.currentItem).toBe(replacementItem);
+		});
+
 		it('Supports a standard source URL', () => {
 			const history = new HistoryItemList();
 			history.replace({

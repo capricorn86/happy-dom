@@ -667,9 +667,10 @@ describe('HTMLIFrameElement', () => {
 			await new Promise((resolve) => setTimeout(resolve, 10));
 
 			expect(element.contentDocument).toBe(null);
-			expect((<MessageEvent>triggeredEvent!).data).toBe(message);
-			expect((<MessageEvent>triggeredEvent!).origin).toBe(documentOrigin);
-			expect((<MessageEvent>triggeredEvent!).source === window).toBe(true);
+			expect(triggeredEvent!.data).toBe(message);
+			expect(triggeredEvent!.origin).toBe(documentOrigin);
+			expect(triggeredEvent!.source).toBeInstanceOf(CrossOriginBrowserWindow);
+			expect((<any>triggeredEvent!.source).document).toBe(undefined);
 			expect((<MessageEvent>triggeredEvent!).lastEventId).toBe('');
 		});
 

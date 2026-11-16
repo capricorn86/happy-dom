@@ -3,6 +3,7 @@ import * as PropertySymbol from '../../PropertySymbol.js';
 import type BrowserWindow from '../../window/BrowserWindow.js';
 import BrowserFrameURL from './BrowserFrameURL.js';
 import CrossOriginBrowserWindow from '../../window/CrossOriginBrowserWindow.js';
+import type IBrowserFrameRelation from '../types/IBrowserFrameRelation.js';
 
 /**
  * Handles cross-origin isolation between a frame and its ancestors.
@@ -23,31 +24,23 @@ export default class BrowserFrameCrossOriginIsolation {
 		// Reset window references
 		frame.window[PropertySymbol.parent] = frame.window;
 		frame.window[PropertySymbol.top] = frame.window;
-		frame[PropertySymbol.contentWindow] = null;
 
-		// Popup frame
 		if (frame[PropertySymbol.opener]) {
-			frame[PropertySymbol.opener].window = frame[PropertySymbol.opener].frame
-				? this.getWindow(frame[PropertySymbol.opener].frame, frame)
-				: null;
-		}
-
-		// Child frame (e.g. iframe)
-		if (frame.parentFrame) {
-			const parentWindow = this.getWindow(frame.parentFrame, frame);
-			const topWindow =
-				frame.page.mainFrame === frame.parentFrame
-					? parentWindow
-					: this.getWindow(frame.page.mainFrame, frame);
-
-			frame.window[PropertySymbol.parent] = <BrowserWindow>parentWindow;
-			frame.window[PropertySymbol.top] = <BrowserWindow>topWindow;
-
-			// HTMLIFrameElement.contentWindow is accessed by the parent frame, and should have access to itself as parent and whatever top access it has.
-			frame[PropertySymbol.contentWindow] = this.getWindow(frame, frame.parentFrame, {
-				parent: frame.parentFrame.window,
-				top: frame.parentFrame.window.top
-			});
+			// Popup frame
+			const relation = frame[PropertySymbol.relations].find(
+				(r) => r.type === 'opener' && r.child.frame === frame
+			);
+			if (relation) {
+				this.updateRelation(relation);
+			}
+		} else if (frame.parentFrame) {
+			// Child frame (e.g. iframe)
+			const relation = frame[PropertySymbol.relations].find(
+				(r) => r.type === 'parent' && r.child.frame === frame
+			);
+			if (relation) {
+				this.updateRelation(relation);
+			}
 		}
 
 		for (const childFrame of frame.childFrames) {
@@ -61,32 +54,31 @@ export default class BrowserFrameCrossOriginIsolation {
 	}
 
 	/**
-	 * Returns the window of a frame as it should be accessed from another frame.
-	 *
-	 * Window references of a cross-origin window (e.g. "opener") are restricted based on the origin of the accessing frame, as the target frame may have access to windows that the accessing frame should not have access to.
+	 * Updates the frame relations.
 	 *
 	 * @see https://html.spec.whatwg.org/multipage/nav-history-apis.html#dom-opener
-	 * @param targetFrame Frame to access.
-	 * @param accessorFrame Frame that accesses the target frame.
-	 * @param [options] Options.
-	 * @param [options.parent] Parent window.
-	 * @param [options.top] Top window.
-	 * @returns Window, or a cross-origin window with limited access.
+	 * @param relation Frame relation containing the target and source frames.
 	 */
-	private static getWindow(
-		targetFrame: IBrowserFrame,
-		accessorFrame: IBrowserFrame,
-		options?: { parent: BrowserWindow; top: BrowserWindow }
-	): BrowserWindow | CrossOriginBrowserWindow {
-		if (BrowserFrameURL.isSameOrigin(targetFrame, accessorFrame)) {
-			return targetFrame.window;
+	private static updateRelation(relation: IBrowserFrameRelation): void {
+		if (BrowserFrameURL.isSameOrigin(relation.parent.frame, relation.child.frame)) {
+			relation.parent.window = relation.parent.frame.window;
+			relation.child.window = relation.child.frame.window;
+			return;
 		}
 
-		const openerFrame = targetFrame[PropertySymbol.opener]?.frame;
+		relation.parent.window = new CrossOriginBrowserWindow(relation.parent.frame.window);
+		relation.child.window = new CrossOriginBrowserWindow(relation.child.frame.window);
+		relation.parent.window[PropertySymbol.source] = relation.parent.frame.window;
+		relation.child.window[PropertySymbol.source] = relation.child.frame.window;
 
-		return new CrossOriginBrowserWindow(targetFrame.window, {
-			...options,
-			opener: openerFrame ? this.getWindow(openerFrame, accessorFrame) : null
-		});
+		switch (relation.type) {
+			case 'opener':
+				relation.child.window[PropertySymbol.opener] = relation.parent.frame.window;
+				break;
+			case 'parent':
+				relation.child.window[PropertySymbol.parent] = relation.parent.frame.window;
+				relation.child.window[PropertySymbol.top] = relation.parent.frame.window.top;
+				break;
+		}
 	}
 }

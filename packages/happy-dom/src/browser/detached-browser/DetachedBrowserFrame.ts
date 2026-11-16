@@ -14,7 +14,7 @@ import type Document from '../../nodes/document/Document.js';
 import type CrossOriginBrowserWindow from '../../window/CrossOriginBrowserWindow.js';
 import HistoryItemList from '../../history/HistoryItemList.js';
 import BrowserFrameCrossOriginIsolation from '../utilities/BrowserFrameCrossOriginIsolation.js';
-import type IBrowserFrameOpener from '../types/IBrowserFrameOpener.js';
+import type IBrowserFrameRelation from '../types/IBrowserFrameRelation.js';
 
 /**
  * Browser frame used when constructing a Window instance without a browser.
@@ -30,10 +30,10 @@ export default class DetachedBrowserFrame implements IBrowserFrame {
 	public [PropertySymbol.asyncTaskManager]: AsyncTaskManager = new AsyncTaskManager(this);
 	public [PropertySymbol.listeners]: { navigation: Array<() => void> } = { navigation: [] };
 	public [PropertySymbol.contentWindow]: BrowserWindow | CrossOriginBrowserWindow | null = null;
-	public [PropertySymbol.opener]: IBrowserFrameOpener | null = null;
-	public [PropertySymbol.openedPages]: DetachedBrowserPage[] = [];
-	public [PropertySymbol.popup]: boolean = false;
 	public [PropertySymbol.history] = new HistoryItemList();
+	public [PropertySymbol.relations]: IBrowserFrameRelation[] = [];
+	public [PropertySymbol.opener]: IBrowserFrame | null = null;
+	public [PropertySymbol.popup]: boolean = false;
 
 	/**
 	 * Constructor.

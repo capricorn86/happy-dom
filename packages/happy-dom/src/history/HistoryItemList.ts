@@ -44,11 +44,6 @@ export default class HistoryItemList {
 	public replace(historyItem: IHistoryItem): void {
 		const index = this.items.indexOf(this.currentItem);
 
-		// If the current item is not the last one, remove all items after it.
-		if (index !== this.items.length - 1) {
-			this.items.length = index + 1;
-		}
-
 		if (index === -1) {
 			throw new Error('Current history item not found');
 		}

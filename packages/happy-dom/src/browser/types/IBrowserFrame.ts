@@ -7,9 +7,8 @@ import type Response from '../../fetch/Response.js';
 import type IGoToOptions from './IGoToOptions.js';
 import type { Script } from 'vm';
 import type IReloadOptions from './IReloadOptions.js';
-import type CrossOriginBrowserWindow from '../../window/CrossOriginBrowserWindow.js';
 import type HistoryItemList from '../../history/HistoryItemList.js';
-import type IBrowserFrameOpener from './IBrowserFrameOpener.js';
+import type IBrowserFrameRelation from './IBrowserFrameRelation.js';
 
 /**
  * Browser frame.
@@ -26,9 +25,8 @@ export default interface IBrowserFrame {
 	[PropertySymbol.history]: HistoryItemList;
 	[PropertySymbol.asyncTaskManager]: AsyncTaskManager;
 	[PropertySymbol.listeners]: { navigation: Array<() => void> };
-	[PropertySymbol.contentWindow]: BrowserWindow | CrossOriginBrowserWindow | null;
-	[PropertySymbol.openedPages]: IBrowserPage[];
-	[PropertySymbol.opener]: IBrowserFrameOpener | null;
+	[PropertySymbol.relations]: IBrowserFrameRelation[];
+	[PropertySymbol.opener]: IBrowserFrame | null;
 	[PropertySymbol.popup]: boolean;
 
 	/**

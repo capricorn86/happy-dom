@@ -6,6 +6,8 @@ import { ReadableStream } from 'stream/web';
 import { URLSearchParams } from 'url';
 import VM from 'vm';
 import * as PropertySymbol from '../PropertySymbol.js';
+import BrowserFrameCrossOriginIsolation from '../browser/utilities/BrowserFrameCrossOriginIsolation.js';
+import BrowserFrameURL from '../browser/utilities/BrowserFrameURL.js';
 import type Animation from '../animation/Animation.js';
 import AnimationTimeline from '../animation/AnimationTimeline.js';
 import DocumentTimeline from '../animation/DocumentTimeline.js';
@@ -2804,16 +2806,25 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	 */
 	public postMessage(message: unknown, targetOrigin = '*', _transfer?: unknown[]): void {
 		// TODO: Implement transfer.
+		this[PropertySymbol.postMessage](message, targetOrigin, this);
+	}
+
+	/**
+	 * Posts a message with an explicit sender window.
+	 *
+	 * @param message Message.
+	 * @param targetOrigin Target origin.
+	 * @param sourceWindow Sender window.
+	 */
+	public [PropertySymbol.postMessage](
+		message: unknown,
+		targetOrigin: string,
+		sourceWindow: BrowserWindow | CrossOriginBrowserWindow
+	): void {
+		// TODO: Implement transfer.
 
 		if (this.closed) {
 			return;
-		}
-
-		if (targetOrigin && targetOrigin !== '*' && this.location.origin !== targetOrigin) {
-			throw new this.DOMException(
-				`Failed to execute 'postMessage' on 'Window': The target origin provided ('${targetOrigin}') does not match the recipient window\'s origin ('${this.location.origin}').`,
-				DOMExceptionNameEnum.securityError
-			);
 		}
 
 		try {
@@ -2825,20 +2836,33 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 			);
 		}
 
-		this.setTimeout(() =>
+		const sourceFrame = new WindowBrowserContext(sourceWindow).getBrowserFrame();
+		const sourceOrigin = sourceFrame
+			? BrowserFrameURL.getSerializedOrigin(sourceFrame)
+			: sourceWindow.location.origin;
+		const source = sourceFrame
+			? BrowserFrameCrossOriginIsolation.getWindow(sourceFrame, this.#browserFrame)
+			: sourceWindow;
+
+		this.setTimeout(() => {
+			if (
+				this.closed ||
+				(targetOrigin &&
+					targetOrigin !== '*' &&
+					BrowserFrameURL.getSerializedOrigin(this.#browserFrame) !== targetOrigin)
+			) {
+				return;
+			}
+
 			this.dispatchEvent(
 				new MessageEvent('message', {
 					data: message,
-					origin: this.#browserFrame.parentFrame
-						? this.#browserFrame.parentFrame.window.location.origin
-						: this.#browserFrame.window.location.origin,
-					source: this.#browserFrame.parentFrame
-						? this.#browserFrame.parentFrame.window
-						: this.#browserFrame.window,
+					origin: sourceOrigin,
+					source,
 					lastEventId: ''
 				})
-			)
-		);
+			);
+		});
 	}
 
 	/**
