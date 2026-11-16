@@ -16,6 +16,48 @@ describe('QuerySelector', () => {
 		document = window.document;
 	});
 
+	describe.each(['ordered_list', 'custom_code_block'])('Tag name "%s" (issue #2619)', (tagName) => {
+		beforeEach(() => {
+			document.body.innerHTML = `
+					<${tagName} class="target"><span></span></${tagName}>
+					<${tagName}></${tagName}>
+					<div></div>
+				`;
+		});
+
+		it('Supports querySelector() with plain, compound and descendant selectors.', () => {
+			const target = document.body.children[0];
+
+			expect(document.querySelector(tagName)).toBe(target);
+			expect(document.body.querySelector(`${tagName}.target`)).toBe(target);
+			expect(document.body.querySelector(`${tagName} > span`)).toBe(target.firstElementChild);
+			expect(document.querySelector(`${tagName}.missing`)).toBeNull();
+		});
+
+		it('Supports querySelectorAll() with tag names containing underscores.', () => {
+			const expected = [document.body.children[0], document.body.children[1]];
+
+			expect(Array.from(document.querySelectorAll(tagName))).toEqual(expected);
+			expect(Array.from(document.body.querySelectorAll(tagName))).toEqual(expected);
+		});
+
+		it('Supports matches() with tag names containing underscores.', () => {
+			const target = document.body.children[0];
+
+			expect(target.matches(tagName)).toBe(true);
+			expect(target.matches(`${tagName}.missing`)).toBe(false);
+			expect(document.body.children[2].matches(tagName)).toBe(false);
+		});
+
+		it('Supports closest() with tag names containing underscores.', () => {
+			const target = document.body.children[0];
+
+			expect(target.firstElementChild!.closest(tagName)).toBe(target);
+			expect(target.closest(tagName)).toBe(target);
+			expect(document.body.children[2].closest(tagName)).toBeNull();
+		});
+	});
+
 	describe('querySelectorAll()', () => {
 		it('Throws an error for invalid selectors.', () => {
 			const container = document.createElement('div');
