@@ -25,18 +25,18 @@ export default class BrowserFrameURL {
 	}
 
 	/**
-	 * Checks if the child frame is same-origin as the parent frame.
+	 * Checks if the source frame is same-origin as the target frame.
 	 *
-	 * @param parentFrame Parent frame.
-	 * @param childFrame Child frame.
+	 * @param sourceFrame Source frame.
+	 * @param targetFrame Target frame.
 	 * @returns True if same-origin.
 	 */
-	public static isSameOrigin(parentFrame: IBrowserFrame, childFrame: IBrowserFrame): boolean {
-		if (parentFrame === childFrame) {
+	public static isSameOrigin(sourceFrame: IBrowserFrame, targetFrame: IBrowserFrame): boolean {
+		if (sourceFrame === targetFrame) {
 			return true;
 		}
 
-		return this.getOrigin(parentFrame) === this.getOrigin(childFrame);
+		return this.getOrigin(sourceFrame) === this.getOrigin(targetFrame);
 	}
 
 	/**
@@ -95,7 +95,7 @@ export default class BrowserFrameURL {
 	 * @returns Origin, or null if there is no opener or parent frame.
 	 */
 	public static getInheritableOrigin(frame: IBrowserFrame): string | null {
-		const sourceFrame = frame[PropertySymbol.opener]?.frame ?? frame.parentFrame;
+		const sourceFrame = frame[PropertySymbol.access].opener?.frame ?? frame.parentFrame;
 		return sourceFrame ? this.getOrigin(sourceFrame) : null;
 	}
 }

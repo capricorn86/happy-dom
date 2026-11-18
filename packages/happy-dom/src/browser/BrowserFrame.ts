@@ -13,8 +13,7 @@ import BrowserFrameNavigator from './utilities/BrowserFrameNavigator.js';
 import type IReloadOptions from './types/IReloadOptions.js';
 import type Document from '../nodes/document/Document.js';
 import HistoryItemList from '../history/HistoryItemList.js';
-import BrowserFrameCrossOriginIsolation from './utilities/BrowserFrameCrossOriginIsolation.js';
-import type IBrowserFrameRelation from './types/IBrowserFrameRelation.js';
+import BrowserFrameAccess from './utilities/BrowserFrameAccess.js';
 
 /**
  * Browser frame.
@@ -29,9 +28,7 @@ export default class BrowserFrame implements IBrowserFrame {
 	public [PropertySymbol.listeners]: { navigation: Array<() => void> } = { navigation: [] };
 	public [PropertySymbol.contentWindow]: BrowserWindow | CrossOriginBrowserWindow | null = null;
 	public [PropertySymbol.history] = new HistoryItemList();
-	public [PropertySymbol.relations]: IBrowserFrameRelation[] = [];
-	public [PropertySymbol.opener]: IBrowserFrame | null = null;
-	public [PropertySymbol.popup]: boolean = false;
+	public [PropertySymbol.access]: BrowserFrameAccess = new BrowserFrameAccess(this);
 
 	/**
 	 * Constructor.
@@ -99,7 +96,7 @@ export default class BrowserFrame implements IBrowserFrame {
 			url: relativeURLHref
 		};
 
-		BrowserFrameCrossOriginIsolation.isolate(this);
+		this[PropertySymbol.access].update();
 	}
 
 	/**

@@ -6,7 +6,6 @@ import { ReadableStream } from 'stream/web';
 import { URLSearchParams } from 'url';
 import VM from 'vm';
 import * as PropertySymbol from '../PropertySymbol.js';
-import BrowserFrameCrossOriginIsolation from '../browser/utilities/BrowserFrameCrossOriginIsolation.js';
 import BrowserFrameURL from '../browser/utilities/BrowserFrameURL.js';
 import type Animation from '../animation/Animation.js';
 import AnimationTimeline from '../animation/AnimationTimeline.js';
@@ -335,6 +334,7 @@ import ImageBitmap from '../canvas/ImageBitmap.js';
 import type ImageData from '../canvas/ImageData.js';
 import type OffscreenCanvas from '../canvas/OffscreenCanvas.js';
 import type SelectorItem from '../query-selector/SelectorItem.js';
+import type IBrowserFrameWindowAccess from '../browser/types/IBrowserFrameWindowAccess.js';
 
 const TIMER = {
 	setTimeout: globalThis.setTimeout.bind(globalThis),
@@ -2095,7 +2095,7 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	 * @returns Opener.
 	 */
 	public get opener(): BrowserWindow | CrossOriginBrowserWindow | null {
-		return this.#browserFrame[PropertySymbol.opener]?.window ?? null;
+		return this.#browserFrame[PropertySymbol.access].opener?.window ?? null;
 	}
 
 	/**
@@ -2397,11 +2397,11 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 		// - Windows opened via web content, such as links (<a target="_blank">) or forms (<form target="_blank">), without user modifier actions
 		if (
 			this.#browserFrame.page.mainFrame === this.#browserFrame &&
-			this.#browserFrame[PropertySymbol.opener]
+			this.#browserFrame[PropertySymbol.access].opener
 		) {
 			this[PropertySymbol.destroy]();
 			this.#browserFrame.page.close();
-		} else if (!this.#browserFrame[PropertySymbol.opener]) {
+		} else if (!this.#browserFrame[PropertySymbol.access].opener) {
 			this.console.warn('Scripts may close only the windows that were opened by them.');
 		}
 	}
@@ -2806,7 +2806,10 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	 */
 	public postMessage(message: unknown, targetOrigin = '*', _transfer?: unknown[]): void {
 		// TODO: Implement transfer.
-		this[PropertySymbol.postMessage](message, targetOrigin, this);
+		this[PropertySymbol.postMessage](message, targetOrigin, {
+			frame: this.#browserFrame,
+			window: this
+		});
 	}
 
 	/**
@@ -2814,12 +2817,12 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	 *
 	 * @param message Message.
 	 * @param targetOrigin Target origin.
-	 * @param sourceWindow Sender window.
+	 * @param source Sender window.
 	 */
 	public [PropertySymbol.postMessage](
 		message: unknown,
 		targetOrigin: string,
-		sourceWindow: BrowserWindow | CrossOriginBrowserWindow
+		source: IBrowserFrameWindowAccess
 	): void {
 		// TODO: Implement transfer.
 
@@ -2836,14 +2839,6 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 			);
 		}
 
-		const sourceFrame = new WindowBrowserContext(sourceWindow).getBrowserFrame();
-		const sourceOrigin = sourceFrame
-			? BrowserFrameURL.getSerializedOrigin(sourceFrame)
-			: sourceWindow.location.origin;
-		const source = sourceFrame
-			? BrowserFrameCrossOriginIsolation.getWindow(sourceFrame, this.#browserFrame)
-			: sourceWindow;
-
 		this.setTimeout(() => {
 			if (
 				this.closed ||
@@ -2857,8 +2852,8 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 			this.dispatchEvent(
 				new MessageEvent('message', {
 					data: message,
-					origin: sourceOrigin,
-					source,
+					origin: BrowserFrameURL.getSerializedOrigin(source.frame),
+					source: source.window,
 					lastEventId: ''
 				})
 			);
@@ -2882,8 +2877,13 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 			);
 		}
 
+		const opener = this.#browserFrame[PropertySymbol.access].opener?.frame;
+		const isPopup = !!opener?.[PropertySymbol.access].popups.find(
+			(popup) => popup.frame === this.#browserFrame
+		);
+
 		// We can only resize the window if it is a popup.
-		if (this.#browserFrame[PropertySymbol.popup]) {
+		if (isPopup) {
 			this.#browserFrame.page.setViewport({ width, height });
 		}
 	}
@@ -2905,8 +2905,13 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 			);
 		}
 
+		const opener = this.#browserFrame[PropertySymbol.access].opener?.frame;
+		const isPopup = !!opener?.[PropertySymbol.access].popups.find(
+			(popup) => popup.frame === this.#browserFrame
+		);
+
 		// We can only resize the window if it is a popup.
-		if (this.#browserFrame[PropertySymbol.popup]) {
+		if (isPopup) {
 			const viewport = this.#browserFrame.page.viewport;
 			this.#browserFrame.page.setViewport({
 				width: viewport.width + width,

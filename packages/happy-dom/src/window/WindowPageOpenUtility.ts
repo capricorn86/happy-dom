@@ -84,7 +84,7 @@ export default class WindowPageOpenUtility {
 			return null;
 		}
 
-		if (features.popup && !!targetFrame[PropertySymbol.opener]) {
+		if (features.popup && !!targetFrame[PropertySymbol.access].opener) {
 			targetFrame[PropertySymbol.popup] = true;
 
 			if (features?.width || features?.height) {

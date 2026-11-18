@@ -70,7 +70,7 @@ export default class BrowserFrameValidator {
 			return false;
 		}
 
-		if (settings.navigation.disableChildPageNavigation && !!frame[PropertySymbol.opener]) {
+		if (settings.navigation.disableChildPageNavigation && !!frame[PropertySymbol.access].opener) {
 			return false;
 		}
 
