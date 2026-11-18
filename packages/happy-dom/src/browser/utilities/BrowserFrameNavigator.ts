@@ -9,9 +9,10 @@ import BrowserFrameValidator from './BrowserFrameValidator.js';
 import AsyncTaskManager from '../../async-task-manager/AsyncTaskManager.js';
 import type FormData from '../../form-data/FormData.js';
 import HistoryScrollRestorationEnum from '../../history/HistoryScrollRestorationEnum.js';
+import type IHistoryItem from '../../history/IHistoryItem.js';
 import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum.js';
 import Fetch from '../../fetch/Fetch.js';
-import CrossOriginBrowserWindow from '../../window/CrossOriginBrowserWindow.js';
+import BrowserFrameCrossOriginIsolation from './BrowserFrameCrossOriginIsolation.js';
 
 /**
  * Browser frame navigation utility.
@@ -28,7 +29,7 @@ export default class BrowserFrameNavigator {
 	 * @param [options.goToOptions] Go to options.
 	 * @param [options.method] Method.
 	 * @param [options.formData] Form data.
-	 * @param [options.disableHistory] Disables adding the navigation to the history.
+	 * @param [options.historyItem] Existing history item to load (reload or traversal) instead of pushing a new one. It becomes the current item only if the navigation is allowed.
 	 * @returns Response.
 	 */
 	public static async navigate(options: {
@@ -41,14 +42,17 @@ export default class BrowserFrameNavigator {
 		goToOptions?: IGoToOptions;
 		method?: string;
 		formData?: FormData | null;
-		disableHistory?: boolean;
+		historyItem?: IHistoryItem;
 	}): Promise<Response | null> {
-		const { windowClass, frame, url, formData, method, goToOptions, disableHistory } = options;
+		const { windowClass, frame, url, formData, method, goToOptions, historyItem } = options;
 		const exceptionObserver = frame.page.context.browser[PropertySymbol.exceptionObserver];
 		const referrer = goToOptions?.referrer || frame.window.location.origin;
 		const targetURL = BrowserFrameURL.getRelativeURL(frame, url);
 		const targetURLWithoutHash = new URL(targetURL.href.split('#')[0]);
 		const currentURLWithoutHash = new URL(frame.url.split('#')[0]);
+		const inheritedOrigin = goToOptions?.inheritOrigin
+			? BrowserFrameURL.getInheritableOrigin(frame)
+			: null;
 		const resolveNavigationListeners = (): void => {
 			const listeners = frame[PropertySymbol.listeners].navigation;
 			frame[PropertySymbol.listeners].navigation = [];
@@ -65,30 +69,25 @@ export default class BrowserFrameNavigator {
 		if (
 			targetURLWithoutHash.href === currentURLWithoutHash.href &&
 			targetURL.hash &&
-			targetURL.hash !== frame.window?.location.hash
+			targetURL.hash !== frame.window?.location.hash &&
+			!historyItem
 		) {
 			const history = frame[PropertySymbol.history];
 
-			if (!disableHistory) {
-				history.currentItem.popState = true;
-
-				history.push({
-					title: '',
-					href: targetURL.href,
-					state: null,
-					popState: true,
-					scrollRestoration: HistoryScrollRestorationEnum.manual,
-					method: method || (formData ? 'POST' : 'GET'),
-					formData: formData || null
-				});
-			}
+			history.push({
+				title: '',
+				url: targetURL.href,
+				documentState: history.currentItem.documentState,
+				state: null,
+				scrollRestoration: HistoryScrollRestorationEnum.manual
+			});
 
 			frame.window.location[PropertySymbol.setURL](frame, targetURL.href);
 
 			return null;
 		}
 
-		// Javascript protocol
+		// Handle "javascript" protocol
 		if (targetURL.protocol === 'javascript:') {
 			if (frame && frame.page.context.browser.settings.enableJavaScriptEvaluation) {
 				const readyStateManager = frame.window[PropertySymbol.readyStateManager];
@@ -128,25 +127,50 @@ export default class BrowserFrameNavigator {
 		}
 
 		if (!BrowserFrameValidator.validateFrameNavigation(frame)) {
-			if (!frame.page.context.browser.settings.navigation.disableFallbackToSetURL) {
+			// We should only fallback to setting the URL if the navigation is disabled inside a detached browser frame.
+			// Detached browser frames can't be navigated normally as they are created directly using "new Window()".
+			// Navigating would destroy the window and reference to it.
+			if (
+				!frame.page.context.browser.settings.navigation.disableFallbackToSetURL &&
+				BrowserFrameValidator.isDetachedBrowserFrame(frame)
+			) {
+				const history = frame[PropertySymbol.history];
+				if (historyItem) {
+					history.currentItem = historyItem;
+				}
 				frame.window.location[PropertySymbol.setURL](frame, targetURL.href);
+				history.currentItem.url = targetURL.href;
+				history.currentItem.documentState = {
+					...history.currentItem.documentState,
+					url: targetURL.href,
+					inheritedOrigin: historyItem ? historyItem.documentState.inheritedOrigin : inheritedOrigin
+				};
+				BrowserFrameCrossOriginIsolation.isolate(frame);
 			}
 
 			return null;
 		}
 
 		// History management.
-		if (!disableHistory) {
-			const history = frame[PropertySymbol.history];
+		const history = frame[PropertySymbol.history];
 
+		if (historyItem) {
+			// The new document is shared by all items of the entry's document state.
+			history.currentItem = historyItem;
+			historyItem.documentState.url = targetURL.href;
+		} else {
+			const navigationMethod = method || (formData ? 'POST' : 'GET');
 			history.push({
 				title: '',
-				href: targetURL.href,
+				url: targetURL.href,
+				documentState: {
+					url: targetURL.href,
+					method: navigationMethod,
+					formData: formData || null,
+					inheritedOrigin
+				},
 				state: null,
-				popState: false,
-				scrollRestoration: HistoryScrollRestorationEnum.auto,
-				method: method || (formData ? 'POST' : 'GET'),
-				formData: formData || null
+				scrollRestoration: HistoryScrollRestorationEnum.auto
 			});
 		}
 
@@ -156,26 +180,13 @@ export default class BrowserFrameNavigator {
 		const width = previousWindow.innerWidth;
 		const height = previousWindow.innerHeight;
 		const devicePixelRatio = previousWindow.devicePixelRatio;
-		const parentWindow = frame.parentFrame ? frame.parentFrame.window : frame.page.mainFrame.window;
-		const topWindow = frame.page.mainFrame.window;
 
 		// Create new Window
 		frame[PropertySymbol.asyncTaskManager] = new AsyncTaskManager(frame);
 		(<BrowserWindow>frame.window) = new windowClass(frame, { url: targetURL.href, width, height });
 		(<number>frame.window.devicePixelRatio) = devicePixelRatio;
 
-		if (BrowserFrameURL.hasOpaqueOrigin(targetURL)) {
-			const opaqueOriginParentWindow = new CrossOriginBrowserWindow(parentWindow);
-			const opaqueOriginTopWindow =
-				parentWindow === topWindow
-					? opaqueOriginParentWindow
-					: new CrossOriginBrowserWindow(topWindow);
-			frame.window[PropertySymbol.parent] = <BrowserWindow>(<unknown>opaqueOriginParentWindow);
-			frame.window[PropertySymbol.top] = <BrowserWindow>(<unknown>opaqueOriginTopWindow);
-		} else {
-			frame.window[PropertySymbol.parent] = parentWindow;
-			frame.window[PropertySymbol.top] = topWindow;
-		}
+		BrowserFrameCrossOriginIsolation.isolate(frame);
 
 		if (exceptionObserver) {
 			exceptionObserver.observe(frame.window);
@@ -206,7 +217,17 @@ export default class BrowserFrameNavigator {
 			destroyWindowAndAsyncTaskManager();
 		}
 
-		// About protocol
+		// Popups should loose their opener references
+		for (const popup of frame[PropertySymbol.openedPages]) {
+			if (popup.mainFrame[PropertySymbol.opener]) {
+				popup.mainFrame[PropertySymbol.opener].window = null;
+				popup.mainFrame[PropertySymbol.opener].frame = null;
+			}
+			BrowserFrameCrossOriginIsolation.isolate(popup.mainFrame);
+		}
+		frame[PropertySymbol.openedPages].length = 0;
+
+		// Handle "about" protocol URL
 		if (targetURL.protocol === 'about:') {
 			if (goToOptions?.beforeContentCallback) {
 				goToOptions.beforeContentCallback(frame.window);
@@ -266,12 +287,13 @@ export default class BrowserFrameNavigator {
 
 		try {
 			response = await fetch.send();
+			const responseURL = new URL(response.url || targetURL.href);
 
 			// Handles the "X-Frame-Options" header for child frames.
 			if (frame.parentFrame) {
-				const originURL = frame.parentFrame.window.location;
 				const xFrameOptions = response.headers?.get('X-Frame-Options')?.toLowerCase();
-				const isSameOrigin = BrowserFrameURL.isSameOrigin(originURL, targetURL);
+				const isSameOrigin =
+					responseURL.origin === frame.parentFrame.window[PropertySymbol.location].origin;
 
 				if (xFrameOptions === 'deny' || (xFrameOptions === 'sameorigin' && !isSameOrigin)) {
 					throw new Error(
@@ -291,8 +313,18 @@ export default class BrowserFrameNavigator {
 			return null;
 		}
 
-		if (response.url) {
+		// A redirect gives only this item a new document state, even if it ends at the original URL.
+		// Other items of the previous document state keep it and load it again when traversed to.
+		// @see https://html.spec.whatwg.org/multipage/browsing-the-web.html#create-navigation-params-by-fetching
+		if (response.url && (response.redirected || response.url !== history.currentItem.url)) {
 			frame.window[PropertySymbol.location][PropertySymbol.setURL](frame, response.url);
+			history.currentItem.url = response.url;
+			history.currentItem.documentState = {
+				...history.currentItem.documentState,
+				url: response.url
+			};
+			history.currentItem.state = null;
+			BrowserFrameCrossOriginIsolation.isolate(frame);
 		}
 
 		if (!response.ok) {
@@ -348,53 +380,10 @@ export default class BrowserFrameNavigator {
 		frame: IBrowserFrame;
 		goToOptions?: IGoToOptions;
 	}): Promise<Response | null> {
-		const { windowClass, frame, goToOptions } = options;
-		const history = frame[PropertySymbol.history];
-		const historyItem = history.items[history.items.indexOf(history.currentItem) - 1];
-
-		if (!historyItem) {
-			return new Promise((resolve) => {
-				frame.window.requestAnimationFrame(() => {
-					const listeners = frame[PropertySymbol.listeners].navigation;
-					frame[PropertySymbol.listeners].navigation = [];
-					for (const listener of listeners) {
-						listener();
-					}
-					resolve(null);
-				});
-			});
-		}
-
-		const fromOrigin = new URL(history.currentItem.href).origin;
-		const toOrigin = new URL(historyItem.href).origin;
-
-		history.currentItem = historyItem;
-
-		if (!historyItem.popState || fromOrigin !== toOrigin) {
-			return BrowserFrameNavigator.navigate({
-				windowClass,
-				frame,
-				goToOptions: {
-					...goToOptions,
-					referrer: frame.url
-				},
-				url: historyItem.href,
-				method: historyItem.method,
-				formData: historyItem.formData,
-				disableHistory: true
-			});
-		}
-
-		frame.window.location[PropertySymbol.setURL](frame, historyItem.href);
-
-		frame.window.dispatchEvent(
-			new frame.window.PopStateEvent('popstate', {
-				state: historyItem.state,
-				hasUAVisualTransition: false
-			})
-		);
-
-		return Promise.resolve(null);
+		return this.navigateSteps({
+			...options,
+			steps: -1
+		});
 	}
 
 	/**
@@ -413,53 +402,10 @@ export default class BrowserFrameNavigator {
 		frame: IBrowserFrame;
 		goToOptions?: IGoToOptions;
 	}): Promise<Response | null> {
-		const { windowClass, frame, goToOptions } = options;
-		const history = frame[PropertySymbol.history];
-		const historyItem = history.items[history.items.indexOf(history.currentItem) + 1];
-
-		if (!historyItem) {
-			return new Promise((resolve) => {
-				frame.window.requestAnimationFrame(() => {
-					const listeners = frame[PropertySymbol.listeners].navigation;
-					frame[PropertySymbol.listeners].navigation = [];
-					for (const listener of listeners) {
-						listener();
-					}
-					resolve(null);
-				});
-			});
-		}
-
-		const fromOrigin = new URL(history.currentItem.href).origin;
-		const toOrigin = new URL(historyItem.href).origin;
-
-		history.currentItem = historyItem;
-
-		if (!historyItem.popState || fromOrigin !== toOrigin) {
-			return BrowserFrameNavigator.navigate({
-				windowClass,
-				frame,
-				goToOptions: {
-					...goToOptions,
-					referrer: frame.url
-				},
-				url: historyItem.href,
-				method: historyItem.method,
-				formData: historyItem.formData,
-				disableHistory: true
-			});
-		}
-
-		frame.window.location[PropertySymbol.setURL](frame, historyItem.href);
-
-		frame.window.dispatchEvent(
-			new frame.window.PopStateEvent('popstate', {
-				state: historyItem.state,
-				hasUAVisualTransition: false
-			})
-		);
-
-		return Promise.resolve(null);
+		return this.navigateSteps({
+			...options,
+			steps: 1
+		});
 	}
 
 	/**
@@ -486,9 +432,7 @@ export default class BrowserFrameNavigator {
 
 		const { windowClass, frame, goToOptions, steps } = options;
 		const history = frame[PropertySymbol.history];
-		const fromIndex = history.items.indexOf(history.currentItem);
-		const toIndex = fromIndex + steps;
-		const historyItem = history.items[toIndex];
+		const historyItem = history.items[history.items.indexOf(history.currentItem) + steps];
 
 		if (!historyItem) {
 			return new Promise((resolve) => {
@@ -503,28 +447,7 @@ export default class BrowserFrameNavigator {
 			});
 		}
 
-		const fromOrigin = new URL(history.currentItem.href).origin;
-		let isPopState = true;
-
-		if (steps < 0) {
-			for (let i = fromIndex; i > toIndex; i--) {
-				if (!history.items[i].popState || fromOrigin !== new URL(history.items[i].href).origin) {
-					isPopState = false;
-					break;
-				}
-			}
-		} else {
-			for (let i = fromIndex; i < toIndex; i++) {
-				if (!history.items[i].popState || fromOrigin !== new URL(history.items[i].href).origin) {
-					isPopState = false;
-					break;
-				}
-			}
-		}
-
-		history.currentItem = historyItem;
-
-		if (!isPopState) {
+		if (historyItem.documentState !== history.currentItem.documentState) {
 			return BrowserFrameNavigator.navigate({
 				windowClass,
 				frame,
@@ -532,14 +455,15 @@ export default class BrowserFrameNavigator {
 					...goToOptions,
 					referrer: frame.url
 				},
-				url: historyItem.href,
-				method: historyItem.method,
-				formData: historyItem.formData,
-				disableHistory: true
+				url: historyItem.url,
+				method: historyItem.documentState.method,
+				formData: historyItem.documentState.formData,
+				historyItem
 			});
 		}
 
-		frame.window.location[PropertySymbol.setURL](frame, historyItem.href);
+		history.currentItem = historyItem;
+		frame.window.location[PropertySymbol.setURL](frame, historyItem.url);
 
 		frame.window.dispatchEvent(
 			new frame.window.PopStateEvent('popstate', {
@@ -577,10 +501,10 @@ export default class BrowserFrameNavigator {
 				...goToOptions,
 				referrer: frame.url
 			},
-			url: history.currentItem.href,
-			method: history.currentItem.method,
-			formData: history.currentItem.formData,
-			disableHistory: true
+			url: history.currentItem.url,
+			method: history.currentItem.documentState.method,
+			formData: history.currentItem.documentState.formData,
+			historyItem: history.currentItem
 		});
 	}
 }

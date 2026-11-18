@@ -43,6 +43,27 @@ describe('SyncFetch', () => {
 	});
 
 	describe('send()', () => {
+		it('Excludes the fragment from a data URL response body.', () => {
+			const response = new SyncFetch({
+				browserFrame,
+				window,
+				url: 'data:text/plain,Hello%23World#fragment'
+			}).send();
+
+			expect(response.body!.toString()).toBe('Hello#World');
+			expect(response.headers.get('Content-Type')).toBe('text/plain');
+		});
+
+		it('Excludes the fragment before decoding a base64 data URL.', () => {
+			const response = new SyncFetch({
+				browserFrame,
+				window,
+				url: 'data:text/plain;base64,SGVsbG8=#fragment'
+			}).send();
+
+			expect(response.body!.toString()).toBe('Hello');
+		});
+
 		it('Rejects with error if url is protocol relative.', () => {
 			const url = '//example.com/';
 			let error: Error | null = null;
@@ -57,7 +78,7 @@ describe('SyncFetch', () => {
 					}
 				}).send();
 			} catch (e) {
-				error = e;
+				error = <Error>e;
 			}
 
 			expect(error).toEqual(
@@ -82,7 +103,7 @@ describe('SyncFetch', () => {
 					}
 				}).send();
 			} catch (e) {
-				error = e;
+				error = <Error>e;
 			}
 
 			expect(error).toEqual(
@@ -107,7 +128,7 @@ describe('SyncFetch', () => {
 					}
 				}).send();
 			} catch (e) {
-				error = e;
+				error = <Error>e;
 			}
 
 			expect(error).toEqual(
@@ -184,7 +205,7 @@ describe('SyncFetch', () => {
 			expect(response.body!.toString()).toBe(responseText);
 			expect(response.headers instanceof Headers).toBe(true);
 
-			const headers = {};
+			const headers: { [k: string]: string } = {};
 			for (const [key, value] of response.headers) {
 				headers[key] = value;
 			}
@@ -321,7 +342,7 @@ describe('SyncFetch', () => {
 			expect(response.body!.toString()).toBe(responseText);
 			expect(response.headers instanceof Headers).toBe(true);
 
-			const headers = {};
+			const headers: { [k: string]: string } = {};
 			for (const [key, value] of response.headers) {
 				headers[key] = value;
 			}
@@ -421,7 +442,7 @@ describe('SyncFetch', () => {
 			expect(response.body!.toString()).toBe('intercepted text');
 			expect(response.headers instanceof Headers).toBe(true);
 
-			const headers = {};
+			const headers: { [k: string]: string } = {};
 			for (const [key, value] of response.headers) {
 				headers[key] = value;
 			}
@@ -515,7 +536,7 @@ describe('SyncFetch', () => {
 			expect(response.body!.toString()).toBe(responseText);
 			expect(response.headers instanceof Headers).toBe(true);
 
-			const headers = {};
+			const headers: { [k: string]: string } = {};
 			for (const [key, value] of response.headers) {
 				headers[key] = value;
 			}
@@ -1327,7 +1348,7 @@ describe('SyncFetch', () => {
 					url: url1
 				}).send();
 			} catch (e) {
-				error = e;
+				error = <Error>e;
 			}
 
 			expect(error).toEqual(
@@ -1497,7 +1518,7 @@ describe('SyncFetch', () => {
 					}
 				}).send();
 			} catch (e) {
-				error = e;
+				error = <Error>e;
 			}
 
 			expect(error).toEqual(
@@ -1535,7 +1556,7 @@ describe('SyncFetch', () => {
 					url
 				}).send();
 			} catch (e) {
-				error = e;
+				error = <Error>e;
 			}
 
 			expect(error).toEqual(
@@ -1745,7 +1766,7 @@ describe('SyncFetch', () => {
 					url
 				}).send();
 			} catch (e) {
-				error = e;
+				error = <Error>e;
 			}
 
 			expect(error).toEqual(
@@ -2040,7 +2061,7 @@ describe('SyncFetch', () => {
 					url
 				}).send();
 			} catch (e) {
-				error = e;
+				error = <Error>e;
 			}
 
 			expect(error).toEqual(
@@ -2328,7 +2349,7 @@ describe('SyncFetch', () => {
 					url
 				}).send();
 			} catch (e) {
-				error = e;
+				error = <Error>e;
 			}
 
 			expect(error).toEqual(
@@ -2360,7 +2381,7 @@ describe('SyncFetch', () => {
 					}
 				}).send();
 			} catch (e) {
-				error = e;
+				error = <Error>e;
 			}
 			expect(error).toEqual(
 				new window.DOMException('signal is aborted without reason', DOMExceptionNameEnum.abortError)
@@ -2388,7 +2409,7 @@ describe('SyncFetch', () => {
 					}
 				}).send();
 			} catch (e) {
-				error = e;
+				error = <Error>e;
 			}
 			expect(error).toBe(1);
 		});
@@ -2835,7 +2856,7 @@ describe('SyncFetch', () => {
 					}
 				}).send();
 			} catch (e) {
-				error = e;
+				error = <Error>e;
 			}
 
 			expect(error).toEqual(
@@ -2992,12 +3013,12 @@ describe('SyncFetch', () => {
 			const response2 = new SyncFetch({ browserFrame, window, url }).send();
 			const text2 = response2.body!.toString();
 
-			const headers1 = {};
+			const headers1: { [k: string]: string } = {};
 			for (const [key, value] of response1.headers) {
 				headers1[key] = value;
 			}
 
-			const headers2 = {};
+			const headers2: { [k: string]: string } = {};
 			for (const [key, value] of response2.headers) {
 				headers2[key] = value;
 			}
@@ -3090,12 +3111,12 @@ describe('SyncFetch', () => {
 			const response2 = new SyncFetch({ browserFrame, window, url }).send();
 			const text2 = response2.body!.toString();
 
-			const headers1 = {};
+			const headers1: { [k: string]: string } = {};
 			for (const [key, value] of response1.headers) {
 				headers1[key] = value;
 			}
 
-			const headers2 = {};
+			const headers2: { [k: string]: string } = {};
 			for (const [key, value] of response2.headers) {
 				headers2[key] = value;
 			}
@@ -3230,17 +3251,17 @@ describe('SyncFetch', () => {
 			const response3 = new SyncFetch({ browserFrame, window, url }).send();
 			const text3 = response3.body!.toString();
 
-			const headers1 = {};
+			const headers1: { [k: string]: string } = {};
 			for (const [key, value] of response1.headers) {
 				headers1[key] = value;
 			}
 
-			const headers2 = {};
+			const headers2: { [k: string]: string } = {};
 			for (const [key, value] of response2.headers) {
 				headers2[key] = value;
 			}
 
-			const headers3 = {};
+			const headers3: { [k: string]: string } = {};
 			for (const [key, value] of response3.headers) {
 				headers3[key] = value;
 			}
@@ -3382,12 +3403,12 @@ describe('SyncFetch', () => {
 			}).send();
 			const text2 = response2.body!.toString();
 
-			const headers1 = {};
+			const headers1: { [k: string]: string } = {};
 			for (const [key, value] of response1.headers) {
 				headers1[key] = value;
 			}
 
-			const headers2 = {};
+			const headers2: { [k: string]: string } = {};
 			for (const [key, value] of response2.headers) {
 				headers2[key] = value;
 			}
@@ -3527,12 +3548,12 @@ describe('SyncFetch', () => {
 			const response2 = new SyncFetch({ browserFrame, window, url }).send();
 			const text2 = response2.body!.toString();
 
-			const headers1 = {};
+			const headers1: { [k: string]: string } = {};
 			for (const [key, value] of response1.headers) {
 				headers1[key] = value;
 			}
 
-			const headers2 = {};
+			const headers2: { [k: string]: string } = {};
 			for (const [key, value] of response2.headers) {
 				headers2[key] = value;
 			}
@@ -3701,22 +3722,22 @@ describe('SyncFetch', () => {
 			}).send();
 			const cachedText2 = cachedResponse2.body!.toString();
 
-			const headers1 = {};
+			const headers1: { [k: string]: string } = {};
 			for (const [key, value] of response1.headers) {
 				headers1[key] = value;
 			}
 
-			const headers2 = {};
+			const headers2: { [k: string]: string } = {};
 			for (const [key, value] of response2.headers) {
 				headers2[key] = value;
 			}
 
-			const cachedHeaders1 = {};
+			const cachedHeaders1: { [k: string]: string } = {};
 			for (const [key, value] of cachedResponse1.headers) {
 				cachedHeaders1[key] = value;
 			}
 
-			const cachedHeaders2 = {};
+			const cachedHeaders2: { [k: string]: string } = {};
 			for (const [key, value] of cachedResponse2.headers) {
 				cachedHeaders2[key] = value;
 			}

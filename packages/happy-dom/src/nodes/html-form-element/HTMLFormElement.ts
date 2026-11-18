@@ -21,6 +21,7 @@ import type HTMLDialogElement from '../html-dialog-element/HTMLDialogElement.js'
 import ElementEventAttributeUtility from '../element/ElementEventAttributeUtility.js';
 import type HTMLTextAreaElement from '../html-text-area-element/HTMLTextAreaElement.js';
 import type HTMLOutputElement from '../html-output-element/HTMLOutputElement.js';
+import BrowserFrameURL from '../../browser/utilities/BrowserFrameURL.js';
 
 /**
  * HTML Form Element.
@@ -631,12 +632,21 @@ export default class HTMLFormElement extends HTMLElement {
 			case '_blank':
 				const newPage = browserFrame.page.context.newPage();
 				targetFrame = newPage.mainFrame;
-				targetFrame[PropertySymbol.openerFrame] = browserFrame;
+				targetFrame[PropertySymbol.opener] = {
+					frame: browserFrame,
+					window: null
+				};
 				break;
 		}
 
+		const url = BrowserFrameURL.getRelativeURL(browserFrame, action);
+
+		if (targetFrame.page.mainFrame === targetFrame && url.protocol === 'data:') {
+			browserFrame.window.console.error('Not allowed to navigate top frame to data URL: ' + url);
+			return;
+		}
+
 		if (method === 'get') {
-			const url = new URL(action);
 			url.search = '';
 
 			for (const [key, value] of formData) {

@@ -83,7 +83,7 @@ export default class FetchRequestHeaderUtility {
 			headers.set(key, value);
 		});
 
-		const originURL = new URL(options.window.location.href);
+		const originURL = new URL(options.window[PropertySymbol.location].href);
 		const isCORS = FetchCORSUtility.isCORS(originURL, options.request[PropertySymbol.url]);
 
 		headers.set('Accept-Encoding', 'gzip, deflate, br');

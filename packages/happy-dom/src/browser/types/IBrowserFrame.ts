@@ -7,8 +7,8 @@ import type Response from '../../fetch/Response.js';
 import type IGoToOptions from './IGoToOptions.js';
 import type { Script } from 'vm';
 import type IReloadOptions from './IReloadOptions.js';
-import type CrossOriginBrowserWindow from '../../window/CrossOriginBrowserWindow.js';
 import type HistoryItemList from '../../history/HistoryItemList.js';
+import type BrowserFrameAccess from '../utilities/BrowserFrameAccess.js';
 
 /**
  * Browser frame.
@@ -25,9 +25,7 @@ export default interface IBrowserFrame {
 	[PropertySymbol.history]: HistoryItemList;
 	[PropertySymbol.asyncTaskManager]: AsyncTaskManager;
 	[PropertySymbol.listeners]: { navigation: Array<() => void> };
-	[PropertySymbol.openerFrame]: IBrowserFrame | null;
-	[PropertySymbol.openerWindow]: BrowserWindow | CrossOriginBrowserWindow | null;
-	[PropertySymbol.popup]: boolean;
+	[PropertySymbol.access]: BrowserFrameAccess;
 
 	/**
 	 * Returns a promise that is resolved when all resources has been loaded, fetch has completed, and all async tasks such as timers are complete.
@@ -108,5 +106,5 @@ export default interface IBrowserFrame {
 	 *
 	 * @param [options] Options.
 	 */
-	reload(options: IReloadOptions): Promise<Response | null>;
+	reload(options?: IReloadOptions): Promise<Response | null>;
 }

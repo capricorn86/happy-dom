@@ -21,7 +21,7 @@ export default class DataURIParser {
 		}
 
 		// Strip newlines
-		uri = uri.replace(/\r?\n/g, '');
+		uri = uri.split('#')[0].replace(/\r?\n/g, '');
 
 		// Split the URI up into the "metadata" and the "data" portions
 		const firstComma = uri.indexOf(',');

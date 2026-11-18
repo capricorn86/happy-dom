@@ -1,12 +1,11 @@
-import type FormData from '../form-data/FormData.js';
 import type HistoryScrollRestorationEnum from './HistoryScrollRestorationEnum.js';
+import type IHistoryDocumentState from './IHistoryDocumentState.js';
 
 export default interface IHistoryItem {
 	title: string | null;
-	href: string;
+	url: string;
 	state: any | null;
-	popState: boolean;
 	scrollRestoration: HistoryScrollRestorationEnum;
-	method: string;
-	formData: FormData | null;
+	// Shared by reference between items of the same document (e.g. pushState() and fragment navigation).
+	documentState: IHistoryDocumentState;
 }
