@@ -381,5 +381,27 @@ describe('ParentNodeUtility', () => {
 
 			expect(ParentNodeUtility.getElementById(parent, <string>(<unknown>12345))).toEqual(div);
 		});
+
+		it('Returns the tree-order-first element when multiple elements share the same id, going through Document.getElementById() (elementIdMap fast path).', () => {
+			const laterContainer = document.createElement('div');
+			const earlierContainer = document.createElement('main');
+			const laterInTree = document.createElement('span');
+			const earlierInTree = document.createElement('span');
+
+			// elementIdMap is insertion-ordered: here the later-in-tree duplicate is
+			// registered first, so getElementById must still resolve to the tree-first one.
+			document.body.appendChild(earlierContainer);
+			document.body.appendChild(laterContainer);
+
+			laterContainer.appendChild(laterInTree);
+			laterInTree.id = 'dup';
+			laterInTree.textContent = 'later in tree';
+
+			earlierContainer.appendChild(earlierInTree);
+			earlierInTree.id = 'dup';
+			earlierInTree.textContent = 'earlier in tree';
+
+			expect(document.getElementById('dup')?.textContent).toBe('earlier in tree');
+		});
 	});
 });
