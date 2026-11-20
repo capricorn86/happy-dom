@@ -518,6 +518,54 @@ describe('HTMLSelectElement', () => {
 			expect(element.options[1] === option3).toBe(true);
 			expect(element.options[2] === option2).toBe(true);
 		});
+
+		it('Appends the option when the index is out of range.', () => {
+			const option1 = <HTMLOptionElement>document.createElement('option');
+			const option2 = <HTMLOptionElement>document.createElement('option');
+
+			element.add(option1);
+			element.add(option2, 2);
+
+			expect(element.length).toBe(2);
+			expect(element.children.length).toBe(2);
+			expect(element.options.length).toBe(2);
+			expect(element[0] === option1).toBe(true);
+			expect(element[1] === option2).toBe(true);
+			expect(element.children[0] === option1).toBe(true);
+			expect(element.children[1] === option2).toBe(true);
+			expect(element.options[0] === option1).toBe(true);
+			expect(element.options[1] === option2).toBe(true);
+		});
+
+		it('Appends the option when the index is negative.', () => {
+			const option1 = <HTMLOptionElement>document.createElement('option');
+			const option2 = <HTMLOptionElement>document.createElement('option');
+
+			element.add(option1);
+			element.add(option2, -1);
+
+			expect(element.options.length).toBe(2);
+			expect(element.options[0] === option1).toBe(true);
+			expect(element.options[1] === option2).toBe(true);
+		});
+
+		it('Appends the option when the index is out of range and the select is empty.', () => {
+			const option1 = <HTMLOptionElement>document.createElement('option');
+
+			element.add(option1, 0);
+
+			expect(element.options.length).toBe(1);
+			expect(element.options[0] === option1).toBe(true);
+		});
+
+		it('Throws an exception when the option element to insert before is not a child of the select element.', () => {
+			const option1 = <HTMLOptionElement>document.createElement('option');
+			const option2 = <HTMLOptionElement>document.createElement('option');
+
+			expect(() => element.add(option1, option2)).toThrow(
+				"Failed to execute 'add' on 'HTMLFormElement': The node before which the new node is to be inserted before is not a child of this node."
+			);
+		});
 	});
 
 	describe(`item()`, () => {
