@@ -1,6 +1,7 @@
 import type BrowserWindow from '../../window/BrowserWindow.js';
 import type Document from '../document/Document.js';
 import HTMLElement from '../html-element/HTMLElement.js';
+import HTMLFormControlElementUtility from '../html-element/HTMLFormControlElementUtility.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
 import type HTMLFormElement from '../html-form-element/HTMLFormElement.js';
 import ValidityState from '../../validity-state/ValidityState.js';
@@ -66,14 +67,7 @@ export default class HTMLObjectElement extends HTMLElement {
 	 * @returns Form.
 	 */
 	public get form(): HTMLFormElement | null {
-		if (this[PropertySymbol.formNode]) {
-			return this[PropertySymbol.formNode];
-		}
-		const id = this.getAttribute('form');
-		if (!id || !this[PropertySymbol.isConnected]) {
-			return null;
-		}
-		return <HTMLFormElement>this[PropertySymbol.ownerDocument].getElementById(id);
+		return HTMLFormControlElementUtility.getFormOwner(this);
 	}
 
 	/**

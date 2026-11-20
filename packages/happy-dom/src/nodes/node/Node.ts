@@ -75,6 +75,9 @@ export default class Node extends EventTarget {
 	public declare [PropertySymbol.rootNode]: Node | null;
 	public declare [PropertySymbol.styleNode]: HTMLStyleElement | SVGStyleElement | null;
 	public declare [PropertySymbol.textAreaNode]: HTMLTextAreaElement | null;
+	// Nearest ancestor <form> only, not the form owner. A "form" attribute is resolved
+	// separately by HTMLFormControlElementUtility.getFormOwner(); an attribute-resolved owner
+	// must never be stored here, or it would propagate to descendants that have no "form" attribute.
 	public declare [PropertySymbol.formNode]: HTMLFormElement | null;
 	public declare [PropertySymbol.selectNode]: HTMLSelectElement | null;
 	public declare [PropertySymbol.mutationListeners]: IMutationListener[];
@@ -994,6 +997,8 @@ export default class Node extends EventTarget {
 				this[PropertySymbol.textAreaNode] = parentNode[PropertySymbol.textAreaNode];
 			}
 
+			// Safe to inherit: the nearest ancestor <form> is a tree property. The "form"
+			// attribute is per-element and must not be resolved here (see the formNode declaration).
 			if (parentNode[PropertySymbol.formNode] && tagName !== 'FORM') {
 				this[PropertySymbol.formNode] = parentNode[PropertySymbol.formNode];
 			}

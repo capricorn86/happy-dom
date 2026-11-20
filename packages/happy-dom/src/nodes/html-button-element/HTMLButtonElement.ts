@@ -3,6 +3,7 @@ import * as PropertySymbol from '../../PropertySymbol.js';
 import EventPhaseEnum from '../../event/EventPhaseEnum.js';
 import ValidityState from '../../validity-state/ValidityState.js';
 import HTMLElement from '../html-element/HTMLElement.js';
+import HTMLFormControlElementUtility from '../html-element/HTMLFormControlElementUtility.js';
 import type HTMLFormElement from '../html-form-element/HTMLFormElement.js';
 import HTMLLabelElementUtility from '../html-label-element/HTMLLabelElementUtility.js';
 import type HTMLLabelElement from '../html-label-element/HTMLLabelElement.js';
@@ -249,14 +250,7 @@ export default class HTMLButtonElement extends HTMLElement {
 	 * @returns Form.
 	 */
 	public get form(): HTMLFormElement | null {
-		if (this[PropertySymbol.formNode]) {
-			return this[PropertySymbol.formNode];
-		}
-		const id = this.getAttribute('form');
-		if (!id || !this[PropertySymbol.isConnected]) {
-			return null;
-		}
-		return <HTMLFormElement>this[PropertySymbol.ownerDocument].getElementById(id);
+		return HTMLFormControlElementUtility.getFormOwner(this);
 	}
 
 	/**
