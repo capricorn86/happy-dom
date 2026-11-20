@@ -154,7 +154,18 @@ export default class EventTarget {
 			event[PropertySymbol.dispatching] = true;
 			event[PropertySymbol.target] = (<any>this)[PropertySymbol.proxy] || this;
 
-			this.#goThroughDispatchEventPhases(event);
+			const window = this[PropertySymbol.window];
+			const previousEvent = window ? window.event : undefined;
+			if (window) {
+				window.event = event;
+			}
+			try {
+				this.#goThroughDispatchEventPhases(event);
+			} finally {
+				if (window) {
+					window.event = previousEvent;
+				}
+			}
 
 			event[PropertySymbol.dispatching] = false;
 

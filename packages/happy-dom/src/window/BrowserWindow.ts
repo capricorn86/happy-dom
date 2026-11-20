@@ -778,6 +778,10 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	public readonly closed = false;
 	public console: IConsole;
 	public name = '';
+	// Legacy "current event" global (https://html.spec.whatwg.org/multipage/webappapis.html#getting-the-current-event),
+	// set by EventTarget for the duration of each dispatchEvent() call and restored to
+	// the outer value afterwards. Real browsers expose it as undefined (not null) when idle.
+	public event: Event | undefined = undefined;
 
 	// Node.js Globals (populated by VMGlobalPropertyScript)
 	public declare Array: typeof Array;
