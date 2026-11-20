@@ -8,6 +8,7 @@ import ChildNodeUtility from '../child-node/ChildNodeUtility.js';
 import ParentNodeUtility from '../parent-node/ParentNodeUtility.js';
 import NonDocumentChildNodeUtility from '../child-node/NonDocumentChildNodeUtility.js';
 import HTMLCollection from './HTMLCollection.js';
+import type HTMLTemplateElement from '../html-template-element/HTMLTemplateElement.js';
 import type Text from '../text/Text.js';
 import DOMRectList from '../../dom/DOMRectList.js';
 import type Attr from '../attr/Attr.js';
@@ -40,6 +41,36 @@ import type {
 } from '../../animation/KeyframeEffect.js';
 
 type InsertAdjacentPosition = 'beforebegin' | 'afterbegin' | 'beforeend' | 'afterend';
+
+/**
+ * Resolves an "insert adjacent" position to the node it inserts into and the child to insert
+ * before (a null anchor means append). Shared by insertAdjacentElement() and insertAdjacentHTML()
+ * so the position semantics live in one place. A free function rather than a private method
+ * because Element instances are re-used when upgrading custom elements, which would re-run a
+ * private method's brand initialisation.
+ *
+ * @param element Reference element.
+ * @param position Position, matched ASCII case-insensitively.
+ * @returns Container (null when the position needs a parent the element doesn't have) and anchor,
+ * or null when the position is not one of the four valid keywords.
+ */
+function resolveAdjacentLocation(
+	element: Element,
+	position: string
+): { container: Element | null; anchor: Node | null } | null {
+	switch (String(position).toLowerCase()) {
+		case 'beforebegin':
+			return { container: element.parentElement, anchor: element };
+		case 'afterbegin':
+			return { container: element, anchor: element.firstChild };
+		case 'beforeend':
+			return { container: element, anchor: null };
+		case 'afterend':
+			return { container: element.parentElement, anchor: element.nextSibling };
+		default:
+			return null;
+	}
+}
 
 /**
  * Element.
@@ -678,23 +709,13 @@ export default class Element
 	 * @returns Inserted node or null if couldn't insert.
 	 */
 	public insertAdjacentElement(position: InsertAdjacentPosition, element: Node): Node | null {
-		if (position === 'beforebegin') {
-			if (!this.parentElement) {
-				return null;
-			}
+		const location = resolveAdjacentLocation(this, position);
 
-			this.parentElement.insertBefore(element, this);
-		} else if (position === 'afterbegin') {
-			this.insertBefore(element, this.firstChild);
-		} else if (position === 'beforeend') {
-			this.appendChild(element);
-		} else if (position === 'afterend') {
-			if (!this.parentElement) {
-				return null;
-			}
-
-			this.parentElement.insertBefore(element, this.nextSibling);
+		if (!location || !location.container) {
+			return null;
 		}
+
+		location.container.insertBefore(element, location.anchor);
 
 		return element;
 	}
@@ -702,15 +723,45 @@ export default class Element
 	/**
 	 * Inserts an HTML string to the given position.
 	 *
-	 * @param position Position to insert text.
+	 * @param position Position to insert the HTML at.
 	 * @param text HTML string to insert.
 	 */
 	public insertAdjacentHTML(position: InsertAdjacentPosition, text: string): void {
-		const childNodes = new HTMLParser(this[PropertySymbol.window]).parse(text)[
-			PropertySymbol.nodeArray
-		];
+		const location = resolveAdjacentLocation(this, position);
+
+		if (!location) {
+			throw new this[PropertySymbol.window].DOMException(
+				`The value provided ('${<string>position}') is not a valid enum value of type InsertPosition.`,
+				DOMExceptionNameEnum.syntaxError
+			);
+		}
+
+		const { container, anchor } = location;
+
+		if (!container) {
+			throw new this[PropertySymbol.window].DOMException(
+				`Failed to execute 'insertAdjacentHTML' on 'Element': The element has no parent.`,
+				DOMExceptionNameEnum.noModificationAllowedError
+			);
+		}
+
+		// The fragment parser needs a context element to pick the right insertion mode (e.g. "in
+		// table"). A <body> stands in when the context would be <html>, which HTMLParser would
+		// otherwise wipe and refill with a fresh head and body.
+		const contextTagName =
+			container === this[PropertySymbol.ownerDocument].documentElement ? 'body' : container.tagName;
+		const contextElement = this[PropertySymbol.ownerDocument].createElement(contextTagName);
+
+		new HTMLParser(this[PropertySymbol.window]).parse(text, contextElement);
+
+		// A <template> context receives the parsed nodes in its content fragment, not its own
+		// child list.
+		const parsed = (<HTMLTemplateElement>contextElement)[PropertySymbol.content] ?? contextElement;
+		const childNodes = (<Node>parsed)[PropertySymbol.nodeArray];
+
+		// insertBefore reparents childNodes[0] out of this live array, shifting the next node down.
 		while (childNodes.length) {
-			this.insertAdjacentElement(position, childNodes[0]);
+			container.insertBefore(childNodes[0], anchor);
 		}
 	}
 
