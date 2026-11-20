@@ -161,6 +161,7 @@ describe('XMLHttpRequest', () => {
 				request.open('GET', REQUEST_URL, true);
 
 				request.addEventListener('load', () => {
+					expect(request.response instanceof ArrayBuffer).toBe(true);
 					expect(responseText).toBe(new TextDecoder().decode(<ArrayBuffer>request.response));
 					resolve(null);
 				});

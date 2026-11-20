@@ -33,7 +33,7 @@ export default class XMLHttpRequestResponseDataParser {
 				const newAB = new ArrayBuffer(options.data.length);
 				const view = new Uint8Array(newAB);
 				view.set(options.data);
-				return view;
+				return newAB;
 			case XMLHttpResponseTypeEnum.blob:
 				try {
 					return new options.window.Blob([new Uint8Array(options.data)], {
