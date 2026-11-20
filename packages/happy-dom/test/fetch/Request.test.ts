@@ -54,6 +54,7 @@ describe('Request', () => {
 			expect(request.credentials).toBe('same-origin');
 			expect(request.referrer).toBe('about:client');
 			expect(request.mode).toBe('cors');
+			expect(request.destination).toBe('');
 		});
 
 		it('Supports URL as string from Request object.', () => {
