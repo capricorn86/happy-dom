@@ -4,6 +4,7 @@ import type Document from '../../src/nodes/document/Document.js';
 import QuerySelectorHTML from './data/QuerySelectorHTML.js';
 import QuerySelectorNthChildHTML from './data/QuerySelectorNthChildHTML.js';
 import type HTMLInputElement from '../../src/nodes/html-input-element/HTMLInputElement.js';
+import type HTMLOptionElement from '../../src/nodes/html-option-element/HTMLOptionElement.js';
 import { beforeEach, describe, it, expect } from 'vitest';
 import QuerySelector from '../../src/query-selector/QuerySelector.js';
 
@@ -968,6 +969,30 @@ describe('QuerySelector', () => {
 			expect(elements.length).toBe(1);
 			expect(elements[0] === container.children[0].children[1]).toBe(true);
 			expect((<HTMLInputElement>elements[0]).value).toBe('two');
+		});
+
+		it('Returns all option elements matching "option:checked".', () => {
+			const container = document.createElement('div');
+			container.innerHTML = `
+			<select id="s">
+				<option value="a">a</option>
+				<option value="b">b</option>
+			</select>
+			`;
+			document.body.appendChild(container);
+
+			const optionB = <HTMLOptionElement>container.querySelectorAll('option')[1];
+
+			// Warms the cache for this exact selector string while nothing is selected.
+			expect(container.querySelectorAll("option[value='b']:checked").length).toBe(0);
+
+			optionB.setAttribute('selected', '');
+
+			// Same selector string as above - must reflect the new selection, not a stale cached result.
+			const elements = container.querySelectorAll("option[value='b']:checked");
+
+			expect(elements.length).toBe(1);
+			expect((<HTMLOptionElement>elements[0]).value).toBe('b');
 		});
 
 		it('Returns all elements matching ":disabled".', () => {
