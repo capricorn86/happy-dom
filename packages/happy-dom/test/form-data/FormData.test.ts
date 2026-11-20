@@ -427,6 +427,20 @@ describe('FormData', () => {
 			expect(formData.getAll('key1')).toEqual(['value2']);
 			expect(formData.getAll('key2')).toEqual(['value3']);
 		});
+
+		it('Removes entries added after the first one with the same key.', () => {
+			const formData = new window.FormData();
+
+			formData.append('key1', 'value1');
+			formData.append('key1', 'value2');
+			formData.append('key1', 'value3');
+			formData.append('key2', 'value4');
+
+			formData.set('key1', 'value5');
+
+			expect(formData.getAll('key1')).toEqual(['value5']);
+			expect(formData.getAll('key2')).toEqual(['value4']);
+		});
 	});
 
 	describe('keys()', () => {
