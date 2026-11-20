@@ -54,7 +54,6 @@ describe('Window', () => {
 	});
 
 	afterEach(() => {
-		resetMockedModules();
 		vi.restoreAllMocks();
 	});
 

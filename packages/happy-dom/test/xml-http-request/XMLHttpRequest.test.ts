@@ -6,6 +6,7 @@ import type ProgressEvent from '../../src/event/events/ProgressEvent.js';
 import Blob from '../../src/file/Blob.js';
 import type Document from '../../src/nodes/document/Document.js';
 import type { IncomingMessage } from 'http';
+import HTTPS from 'https';
 import Stream from 'stream';
 import { beforeEach, afterEach, describe, it, expect, vi } from 'vitest';
 import SyncFetch from '../../src/fetch/SyncFetch.js';
@@ -1116,38 +1117,36 @@ describe('XMLHttpRequest', () => {
 				let postRequestHeaders: { [k: string]: string } | null = null;
 				let optionsRequestHeaders: { [k: string]: string } | null = null;
 
-				mockModule('https', {
-					request: (url, options) => {
-						requestedUrl = url;
-						if (options.method === 'OPTIONS') {
-							optionsRequestHeaders = options.headers;
-						} else if (options.method === 'POST') {
-							postRequestHeaders = options.headers;
-						}
-
-						return {
-							end: () => {},
-							on: (event: string, callback: (response: IncomingMessage) => void) => {
-								if (event === 'response') {
-									const response = <IncomingMessage>Stream.Readable.from(responseText);
-									const baseHeaders = ['Access-Control-Allow-Origin', WINDOW_ORIGIN];
-									const headers = [
-										...baseHeaders,
-										...(options.method === 'POST'
-											? ['Content-Length', `${responseText.length}`, 'Content-Type', 'text/html']
-											: [])
-									];
-
-									response.headers = {};
-									response.rawHeaders = headers;
-
-									callback(response);
-								}
-							},
-							setTimeout: () => {}
-						};
+				vi.spyOn(HTTPS, 'request').mockImplementation(<any>((url: any, options: any) => {
+					requestedUrl = url;
+					if (options.method === 'OPTIONS') {
+						optionsRequestHeaders = options.headers;
+					} else if (options.method === 'POST') {
+						postRequestHeaders = options.headers;
 					}
-				});
+
+					return {
+						end: () => {},
+						on: (event: string, callback: (response: IncomingMessage) => void) => {
+							if (event === 'response') {
+								const response = <IncomingMessage>Stream.Readable.from(responseText);
+								const baseHeaders = ['Access-Control-Allow-Origin', WINDOW_ORIGIN];
+								const headers = [
+									...baseHeaders,
+									...(options.method === 'POST'
+										? ['Content-Length', `${responseText.length}`, 'Content-Type', 'text/html']
+										: [])
+								];
+
+								response.headers = {};
+								response.rawHeaders = headers;
+
+								callback(response);
+							}
+						},
+						setTimeout: () => {}
+					};
+				}));
 
 				request.open('POST', CORS_REQUEST_URL, true);
 				request.setRequestHeader('Content-Type', 'application/json');

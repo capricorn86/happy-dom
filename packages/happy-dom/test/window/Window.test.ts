@@ -10,7 +10,6 @@ import VirtualConsolePrinter from '../../src/console/VirtualConsolePrinter.js';
 import PackageVersion from '../../src/version.js';
 import type HTMLIFrameElement from '../../src/nodes/html-iframe-element/HTMLIFrameElement.js';
 import DetachedWindowAPI from '../../src/window/DetachedWindowAPI.js';
-import '../types.d.js';
 import BrowserErrorCaptureEnum from '../../src/browser/enums/BrowserErrorCaptureEnum.js';
 import * as PropertySymbol from '../../src/PropertySymbol.js';
 
@@ -32,7 +31,6 @@ describe('Window', () => {
 	});
 
 	afterEach(() => {
-		resetMockedModules();
 		vi.restoreAllMocks();
 	});
 

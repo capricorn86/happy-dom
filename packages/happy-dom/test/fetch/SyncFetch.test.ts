@@ -14,7 +14,7 @@ import type IBrowserFrame from '../../src/browser/types/IBrowserFrame.js';
 import Browser from '../../src/browser/Browser.js';
 import FS from 'fs';
 import Path from 'path';
-import '../types.d.js';
+import ChildProcess from 'child_process';
 import { fail } from 'node:assert';
 import { PropertySymbol } from '../../src/index.js';
 
@@ -38,7 +38,6 @@ describe('SyncFetch', () => {
 	});
 
 	afterEach(() => {
-		resetMockedModules();
 		vi.restoreAllMocks();
 	});
 
@@ -124,48 +123,46 @@ describe('SyncFetch', () => {
 			const url = 'https://localhost:8080/some/path';
 			const responseText = 'some text';
 
-			mockModule('child_process', {
-				execFileSync: (
-					command: string,
-					args: string[],
-					options: { encoding: string; maxBuffer: number }
-				) => {
-					expect(command).toEqual(process.argv[0]);
-					expect(args[0]).toBe('-e');
-					expect(args[1]).toBe(
-						SyncFetchScriptBuilder.getScript({
-							url: new URL(url),
-							method: 'GET',
-							headers: {
-								Accept: '*/*',
-								Connection: 'close',
-								Referer: 'https://localhost:8080/',
-								'User-Agent': window.navigator.userAgent,
-								'Accept-Encoding': 'gzip, deflate, br'
-							},
-							body: null
-						})
-					);
-					expect(options).toEqual({
-						encoding: 'buffer',
-						maxBuffer: 1024 * 1024 * 1024
-					});
-					return JSON.stringify({
-						error: null,
-						incomingMessage: {
-							statusCode: 200,
-							statusMessage: 'OK',
-							rawHeaders: [
-								'content-type',
-								'text/html',
-								'content-length',
-								String(responseText.length)
-							],
-							data: Buffer.from(responseText).toString('base64')
-						}
-					});
-				}
-			});
+			vi.spyOn(ChildProcess, 'execFileSync').mockImplementation(<any>((
+				command: string,
+				args: string[],
+				options: { encoding: string; maxBuffer: number }
+			) => {
+				expect(command).toEqual(process.argv[0]);
+				expect(args[0]).toBe('-e');
+				expect(args[1]).toBe(
+					SyncFetchScriptBuilder.getScript({
+						url: new URL(url),
+						method: 'GET',
+						headers: {
+							Accept: '*/*',
+							Connection: 'close',
+							Referer: 'https://localhost:8080/',
+							'User-Agent': window.navigator.userAgent,
+							'Accept-Encoding': 'gzip, deflate, br'
+						},
+						body: null
+					})
+				);
+				expect(options).toEqual({
+					encoding: 'buffer',
+					maxBuffer: 1024 * 1024 * 1024
+				});
+				return JSON.stringify({
+					error: null,
+					incomingMessage: {
+						statusCode: 200,
+						statusMessage: 'OK',
+						rawHeaders: [
+							'content-type',
+							'text/html',
+							'content-length',
+							String(responseText.length)
+						],
+						data: Buffer.from(responseText).toString('base64')
+					}
+				});
+			}));
 
 			const response = new SyncFetch({
 				browserFrame,
@@ -222,11 +219,9 @@ describe('SyncFetch', () => {
 			const window = page.mainFrame.window;
 			browserFrame.url = 'https://localhost:8080/';
 
-			mockModule('child_process', {
-				execFileSync: () => {
-					fail('No request should be made when beforeSyncRequest returns a response');
-				}
-			});
+			vi.spyOn(ChildProcess, 'execFileSync').mockImplementation(<any>(() => {
+				fail('No request should be made when beforeSyncRequest returns a response');
+			}));
 
 			const response = new SyncFetch({
 				browserFrame,
@@ -261,48 +256,46 @@ describe('SyncFetch', () => {
 
 			const responseText = 'some text';
 
-			mockModule('child_process', {
-				execFileSync: (
-					command: string,
-					args: string[],
-					options: { encoding: string; maxBuffer: number }
-				) => {
-					expect(command).toEqual(process.argv[0]);
-					expect(args[0]).toBe('-e');
-					expect(args[1]).toBe(
-						SyncFetchScriptBuilder.getScript({
-							url: new URL(url),
-							method: 'GET',
-							headers: {
-								Accept: '*/*',
-								Connection: 'close',
-								Referer: 'https://localhost:8080/',
-								'User-Agent': window.navigator.userAgent,
-								'Accept-Encoding': 'gzip, deflate, br'
-							},
-							body: null
-						})
-					);
-					expect(options).toEqual({
-						encoding: 'buffer',
-						maxBuffer: 1024 * 1024 * 1024
-					});
-					return JSON.stringify({
-						error: null,
-						incomingMessage: {
-							statusCode: 200,
-							statusMessage: 'OK',
-							rawHeaders: [
-								'content-type',
-								'text/html',
-								'content-length',
-								String(responseText.length)
-							],
-							data: Buffer.from(responseText).toString('base64')
-						}
-					});
-				}
-			});
+			vi.spyOn(ChildProcess, 'execFileSync').mockImplementation(<any>((
+				command: string,
+				args: string[],
+				options: { encoding: string; maxBuffer: number }
+			) => {
+				expect(command).toEqual(process.argv[0]);
+				expect(args[0]).toBe('-e');
+				expect(args[1]).toBe(
+					SyncFetchScriptBuilder.getScript({
+						url: new URL(url),
+						method: 'GET',
+						headers: {
+							Accept: '*/*',
+							Connection: 'close',
+							Referer: 'https://localhost:8080/',
+							'User-Agent': window.navigator.userAgent,
+							'Accept-Encoding': 'gzip, deflate, br'
+						},
+						body: null
+					})
+				);
+				expect(options).toEqual({
+					encoding: 'buffer',
+					maxBuffer: 1024 * 1024 * 1024
+				});
+				return JSON.stringify({
+					error: null,
+					incomingMessage: {
+						statusCode: 200,
+						statusMessage: 'OK',
+						rawHeaders: [
+							'content-type',
+							'text/html',
+							'content-length',
+							String(responseText.length)
+						],
+						data: Buffer.from(responseText).toString('base64')
+					}
+				});
+			}));
 
 			const response = new SyncFetch({
 				browserFrame,
@@ -361,48 +354,46 @@ describe('SyncFetch', () => {
 
 			const responseText = 'some text';
 
-			mockModule('child_process', {
-				execFileSync: (
-					command: string,
-					args: string[],
-					options: { encoding: string; maxBuffer: number }
-				) => {
-					expect(command).toEqual(process.argv[0]);
-					expect(args[0]).toBe('-e');
-					expect(args[1]).toBe(
-						SyncFetchScriptBuilder.getScript({
-							url: new URL(url),
-							method: 'GET',
-							headers: {
-								Accept: '*/*',
-								Connection: 'close',
-								Referer: 'https://localhost:8080/',
-								'User-Agent': window.navigator.userAgent,
-								'Accept-Encoding': 'gzip, deflate, br'
-							},
-							body: null
-						})
-					);
-					expect(options).toEqual({
-						encoding: 'buffer',
-						maxBuffer: 1024 * 1024 * 1024
-					});
-					return JSON.stringify({
-						error: null,
-						incomingMessage: {
-							statusCode: 200,
-							statusMessage: 'OK',
-							rawHeaders: [
-								'content-type',
-								'text/plain',
-								'content-length',
-								String(responseText.length)
-							],
-							data: Buffer.from(responseText).toString('base64')
-						}
-					});
-				}
-			});
+			vi.spyOn(ChildProcess, 'execFileSync').mockImplementation(<any>((
+				command: string,
+				args: string[],
+				options: { encoding: string; maxBuffer: number }
+			) => {
+				expect(command).toEqual(process.argv[0]);
+				expect(args[0]).toBe('-e');
+				expect(args[1]).toBe(
+					SyncFetchScriptBuilder.getScript({
+						url: new URL(url),
+						method: 'GET',
+						headers: {
+							Accept: '*/*',
+							Connection: 'close',
+							Referer: 'https://localhost:8080/',
+							'User-Agent': window.navigator.userAgent,
+							'Accept-Encoding': 'gzip, deflate, br'
+						},
+						body: null
+					})
+				);
+				expect(options).toEqual({
+					encoding: 'buffer',
+					maxBuffer: 1024 * 1024 * 1024
+				});
+				return JSON.stringify({
+					error: null,
+					incomingMessage: {
+						statusCode: 200,
+						statusMessage: 'OK',
+						rawHeaders: [
+							'content-type',
+							'text/plain',
+							'content-length',
+							String(responseText.length)
+						],
+						data: Buffer.from(responseText).toString('base64')
+					}
+				});
+			}));
 
 			const response = new SyncFetch({
 				browserFrame,
@@ -455,48 +446,46 @@ describe('SyncFetch', () => {
 
 			const responseText = 'some text';
 
-			mockModule('child_process', {
-				execFileSync: (
-					command: string,
-					args: string[],
-					options: { encoding: string; maxBuffer: number }
-				) => {
-					expect(command).toEqual(process.argv[0]);
-					expect(args[0]).toBe('-e');
-					expect(args[1]).toBe(
-						SyncFetchScriptBuilder.getScript({
-							url: new URL(url),
-							method: 'GET',
-							headers: {
-								Accept: '*/*',
-								Connection: 'close',
-								Referer: 'https://localhost:8080/',
-								'User-Agent': window.navigator.userAgent,
-								'Accept-Encoding': 'gzip, deflate, br'
-							},
-							body: null
-						})
-					);
-					expect(options).toEqual({
-						encoding: 'buffer',
-						maxBuffer: 1024 * 1024 * 1024
-					});
-					return JSON.stringify({
-						error: null,
-						incomingMessage: {
-							statusCode: 200,
-							statusMessage: 'OK',
-							rawHeaders: [
-								'content-type',
-								'text/html',
-								'content-length',
-								String(responseText.length)
-							],
-							data: Buffer.from(responseText).toString('base64')
-						}
-					});
-				}
-			});
+			vi.spyOn(ChildProcess, 'execFileSync').mockImplementation(<any>((
+				command: string,
+				args: string[],
+				options: { encoding: string; maxBuffer: number }
+			) => {
+				expect(command).toEqual(process.argv[0]);
+				expect(args[0]).toBe('-e');
+				expect(args[1]).toBe(
+					SyncFetchScriptBuilder.getScript({
+						url: new URL(url),
+						method: 'GET',
+						headers: {
+							Accept: '*/*',
+							Connection: 'close',
+							Referer: 'https://localhost:8080/',
+							'User-Agent': window.navigator.userAgent,
+							'Accept-Encoding': 'gzip, deflate, br'
+						},
+						body: null
+					})
+				);
+				expect(options).toEqual({
+					encoding: 'buffer',
+					maxBuffer: 1024 * 1024 * 1024
+				});
+				return JSON.stringify({
+					error: null,
+					incomingMessage: {
+						statusCode: 200,
+						statusMessage: 'OK',
+						rawHeaders: [
+							'content-type',
+							'text/html',
+							'content-length',
+							String(responseText.length)
+						],
+						data: Buffer.from(responseText).toString('base64')
+					}
+				});
+			}));
 
 			const response = new SyncFetch({
 				browserFrame,
@@ -559,35 +548,36 @@ describe('SyncFetch', () => {
 			const window = page.mainFrame.window;
 			browserFrame.url = 'https://localhost:8080/';
 
-			mockModule('child_process', {
-				execFileSync: (_command: string, args: string[]) => {
-					expect(args[1]).toBe(
-						SyncFetchScriptBuilder.getScript({
-							url: new URL('https://localhost:8080/some/path'),
-							method: 'GET',
-							headers: {
-								Accept: '*/*',
-								Connection: 'close',
-								'User-Agent': window.navigator.userAgent,
-								'Accept-Encoding': 'gzip, deflate, br',
-								Referer: 'https://localhost:8080/',
-								'x-test-1': '1',
-								'x-test-2': '2'
-							},
-							body: null
-						})
-					);
-					return JSON.stringify({
-						error: null,
-						incomingMessage: {
-							statusCode: 200,
-							statusMessage: 'OK',
-							rawHeaders: [],
-							data: Buffer.from('test').toString('base64')
-						}
-					});
-				}
-			});
+			vi.spyOn(ChildProcess, 'execFileSync').mockImplementation(<any>((
+				_command: string,
+				args: string[]
+			) => {
+				expect(args[1]).toBe(
+					SyncFetchScriptBuilder.getScript({
+						url: new URL('https://localhost:8080/some/path'),
+						method: 'GET',
+						headers: {
+							Accept: '*/*',
+							Connection: 'close',
+							'User-Agent': window.navigator.userAgent,
+							'Accept-Encoding': 'gzip, deflate, br',
+							Referer: 'https://localhost:8080/',
+							'x-test-1': '1',
+							'x-test-2': '2'
+						},
+						body: null
+					})
+				);
+				return JSON.stringify({
+					error: null,
+					incomingMessage: {
+						statusCode: 200,
+						statusMessage: 'OK',
+						rawHeaders: [],
+						data: Buffer.from('test').toString('base64')
+					}
+				});
+			}));
 
 			const response = new SyncFetch({
 				browserFrame,
@@ -609,43 +599,41 @@ describe('SyncFetch', () => {
 			const path = 'some/path';
 			const responseText = 'test';
 
-			mockModule('child_process', {
-				execFileSync: (
-					command: string,
-					args: string[],
-					options: { encoding: string; maxBuffer: number }
-				) => {
-					expect(command).toEqual(process.argv[0]);
-					expect(args[0]).toBe('-e');
-					expect(args[1]).toBe(
-						SyncFetchScriptBuilder.getScript({
-							url: new URL(baseUrl + path),
-							method: 'GET',
-							headers: {
-								Accept: '*/*',
-								Connection: 'close',
-								'User-Agent': window.navigator.userAgent,
-								'Accept-Encoding': 'gzip, deflate, br',
-								Referer: baseUrl
-							},
-							body: null
-						})
-					);
-					expect(options).toEqual({
-						encoding: 'buffer',
-						maxBuffer: 1024 * 1024 * 1024
-					});
-					return JSON.stringify({
-						error: null,
-						incomingMessage: {
-							statusCode: 200,
-							statusMessage: 'OK',
-							rawHeaders: [],
-							data: Buffer.from(responseText).toString('base64')
-						}
-					});
-				}
-			});
+			vi.spyOn(ChildProcess, 'execFileSync').mockImplementation(<any>((
+				command: string,
+				args: string[],
+				options: { encoding: string; maxBuffer: number }
+			) => {
+				expect(command).toEqual(process.argv[0]);
+				expect(args[0]).toBe('-e');
+				expect(args[1]).toBe(
+					SyncFetchScriptBuilder.getScript({
+						url: new URL(baseUrl + path),
+						method: 'GET',
+						headers: {
+							Accept: '*/*',
+							Connection: 'close',
+							'User-Agent': window.navigator.userAgent,
+							'Accept-Encoding': 'gzip, deflate, br',
+							Referer: baseUrl
+						},
+						body: null
+					})
+				);
+				expect(options).toEqual({
+					encoding: 'buffer',
+					maxBuffer: 1024 * 1024 * 1024
+				});
+				return JSON.stringify({
+					error: null,
+					incomingMessage: {
+						statusCode: 200,
+						statusMessage: 'OK',
+						rawHeaders: [],
+						data: Buffer.from(responseText).toString('base64')
+					}
+				});
+			}));
 
 			const response = new SyncFetch({
 				browserFrame,
@@ -665,50 +653,48 @@ describe('SyncFetch', () => {
 			const url = `https://localhost:8080/\`+require('child_process').execSync('id')+\`/'+require('child_process').execSync('id')+'/?key="+require('child_process').execSync('id')+"`;
 			const responseText = 'test';
 
-			mockModule('child_process', {
-				execFileSync: (
-					command: string,
-					args: string[],
-					options: { encoding: string; maxBuffer: number }
-				) => {
-					expect(command).toEqual(process.argv[0]);
-					expect(args[0]).toBe('-e');
-					expect(args[1]).toBe(
-						SyncFetchScriptBuilder.getScript({
-							url: new URL(
-								`https://localhost:8080/\`+require('child_process').execSync('id')+\`/'+require('child_process').execSync('id')+'/?key="+require('child_process').execSync('id')+"`
-							),
-							method: 'GET',
-							headers: {
-								Accept: '*/*',
-								Connection: 'close',
-								Referer: 'https://localhost:8080/',
-								'User-Agent': window.navigator.userAgent,
-								'Accept-Encoding': 'gzip, deflate, br'
-							},
-							body: null
-						})
-					);
-					expect(
-						args[1].includes(
-							`"https://localhost:8080/%60+require('child_process').execSync('id')+%60/'+require('child_process').execSync('id')+'/?key=%22+require(%27child_process%27).execSync(%27id%27)+%22"`
-						)
-					).toBe(true);
-					expect(options).toEqual({
-						encoding: 'buffer',
-						maxBuffer: 1024 * 1024 * 1024
-					});
-					return JSON.stringify({
-						error: null,
-						incomingMessage: {
-							statusCode: 200,
-							statusMessage: 'OK',
-							rawHeaders: [],
-							data: Buffer.from(responseText).toString('base64')
-						}
-					});
-				}
-			});
+			vi.spyOn(ChildProcess, 'execFileSync').mockImplementation(<any>((
+				command: string,
+				args: string[],
+				options: { encoding: string; maxBuffer: number }
+			) => {
+				expect(command).toEqual(process.argv[0]);
+				expect(args[0]).toBe('-e');
+				expect(args[1]).toBe(
+					SyncFetchScriptBuilder.getScript({
+						url: new URL(
+							`https://localhost:8080/\`+require('child_process').execSync('id')+\`/'+require('child_process').execSync('id')+'/?key="+require('child_process').execSync('id')+"`
+						),
+						method: 'GET',
+						headers: {
+							Accept: '*/*',
+							Connection: 'close',
+							Referer: 'https://localhost:8080/',
+							'User-Agent': window.navigator.userAgent,
+							'Accept-Encoding': 'gzip, deflate, br'
+						},
+						body: null
+					})
+				);
+				expect(
+					args[1].includes(
+						`"https://localhost:8080/%60+require('child_process').execSync('id')+%60/'+require('child_process').execSync('id')+'/?key=%22+require(%27child_process%27).execSync(%27id%27)+%22"`
+					)
+				).toBe(true);
+				expect(options).toEqual({
+					encoding: 'buffer',
+					maxBuffer: 1024 * 1024 * 1024
+				});
+				return JSON.stringify({
+					error: null,
+					incomingMessage: {
+						statusCode: 200,
+						statusMessage: 'OK',
+						rawHeaders: [],
+						data: Buffer.from(responseText).toString('base64')
+					}
+				});
+			}));
 
 			const response = new SyncFetch({
 				browserFrame,
@@ -728,45 +714,43 @@ describe('SyncFetch', () => {
 			const url = 'https://localhost:8080/some/path';
 			const responseText = 'test';
 
-			mockModule('child_process', {
-				execFileSync: (
-					command: string,
-					args: string[],
-					options: { encoding: string; maxBuffer: number }
-				) => {
-					expect(command).toEqual(process.argv[0]);
-					expect(args[0]).toBe('-e');
-					expect(args[1]).toBe(
-						SyncFetchScriptBuilder.getScript({
-							url: new URL(url),
-							method: 'GET',
-							headers: {
-								key1: 'value1',
-								KeY2: 'Value2',
-								Accept: '*/*',
-								Connection: 'close',
-								Referer: 'https://localhost:8080/',
-								'User-Agent': window.navigator.userAgent,
-								'Accept-Encoding': 'gzip, deflate, br'
-							},
-							body: null
-						})
-					);
-					expect(options).toEqual({
-						encoding: 'buffer',
-						maxBuffer: 1024 * 1024 * 1024
-					});
-					return JSON.stringify({
-						error: null,
-						incomingMessage: {
-							statusCode: 200,
-							statusMessage: 'OK',
-							rawHeaders: [],
-							data: Buffer.from(responseText).toString('base64')
-						}
-					});
-				}
-			});
+			vi.spyOn(ChildProcess, 'execFileSync').mockImplementation(<any>((
+				command: string,
+				args: string[],
+				options: { encoding: string; maxBuffer: number }
+			) => {
+				expect(command).toEqual(process.argv[0]);
+				expect(args[0]).toBe('-e');
+				expect(args[1]).toBe(
+					SyncFetchScriptBuilder.getScript({
+						url: new URL(url),
+						method: 'GET',
+						headers: {
+							key1: 'value1',
+							KeY2: 'Value2',
+							Accept: '*/*',
+							Connection: 'close',
+							Referer: 'https://localhost:8080/',
+							'User-Agent': window.navigator.userAgent,
+							'Accept-Encoding': 'gzip, deflate, br'
+						},
+						body: null
+					})
+				);
+				expect(options).toEqual({
+					encoding: 'buffer',
+					maxBuffer: 1024 * 1024 * 1024
+				});
+				return JSON.stringify({
+					error: null,
+					incomingMessage: {
+						statusCode: 200,
+						statusMessage: 'OK',
+						rawHeaders: [],
+						data: Buffer.from(responseText).toString('base64')
+					}
+				});
+			}));
 
 			const response = new SyncFetch({
 				browserFrame,
@@ -789,46 +773,44 @@ describe('SyncFetch', () => {
 			const url = 'https://localhost:8080/some/path';
 			const responseText = 'test';
 
-			mockModule('child_process', {
-				execFileSync: (
-					command: string,
-					args: string[],
-					options: { encoding: string; maxBuffer: number }
-				) => {
-					expect(command).toEqual(process.argv[0]);
-					expect(args[0]).toBe('-e');
-					expect(args[1]).toBe(
-						SyncFetchScriptBuilder.getScript({
-							url: new URL(url),
-							method: 'GET',
-							headers: {
-								key1: 'value1',
-								KeY2: 'Value2',
-								key3: 'value3, value4',
-								Accept: '*/*',
-								Connection: 'close',
-								Referer: 'https://localhost:8080/',
-								'User-Agent': window.navigator.userAgent,
-								'Accept-Encoding': 'gzip, deflate, br'
-							},
-							body: null
-						})
-					);
-					expect(options).toEqual({
-						encoding: 'buffer',
-						maxBuffer: 1024 * 1024 * 1024
-					});
-					return JSON.stringify({
-						error: null,
-						incomingMessage: {
-							statusCode: 200,
-							statusMessage: 'OK',
-							rawHeaders: [],
-							data: Buffer.from(responseText).toString('base64')
-						}
-					});
-				}
-			});
+			vi.spyOn(ChildProcess, 'execFileSync').mockImplementation(<any>((
+				command: string,
+				args: string[],
+				options: { encoding: string; maxBuffer: number }
+			) => {
+				expect(command).toEqual(process.argv[0]);
+				expect(args[0]).toBe('-e');
+				expect(args[1]).toBe(
+					SyncFetchScriptBuilder.getScript({
+						url: new URL(url),
+						method: 'GET',
+						headers: {
+							key1: 'value1',
+							KeY2: 'Value2',
+							key3: 'value3, value4',
+							Accept: '*/*',
+							Connection: 'close',
+							Referer: 'https://localhost:8080/',
+							'User-Agent': window.navigator.userAgent,
+							'Accept-Encoding': 'gzip, deflate, br'
+						},
+						body: null
+					})
+				);
+				expect(options).toEqual({
+					encoding: 'buffer',
+					maxBuffer: 1024 * 1024 * 1024
+				});
+				return JSON.stringify({
+					error: null,
+					incomingMessage: {
+						statusCode: 200,
+						statusMessage: 'OK',
+						rawHeaders: [],
+						data: Buffer.from(responseText).toString('base64')
+					}
+				});
+			}));
 
 			const headers = new Headers({
 				key1: 'value1',
@@ -858,20 +840,21 @@ describe('SyncFetch', () => {
 
 			const requestArgs: string[] = [];
 
-			mockModule('child_process', {
-				execFileSync: (_command: string, args: string[]) => {
-					requestArgs.push(args[1]);
-					return JSON.stringify({
-						error: null,
-						incomingMessage: {
-							statusCode: 200,
-							statusMessage: 'OK',
-							rawHeaders: ['Access-Control-Allow-Origin', '*'],
-							data: ''
-						}
-					});
-				}
-			});
+			vi.spyOn(ChildProcess, 'execFileSync').mockImplementation(<any>((
+				_command: string,
+				args: string[]
+			) => {
+				requestArgs.push(args[1]);
+				return JSON.stringify({
+					error: null,
+					incomingMessage: {
+						statusCode: 200,
+						statusMessage: 'OK',
+						rawHeaders: ['Access-Control-Allow-Origin', '*'],
+						data: ''
+					}
+				});
+			}));
 
 			new SyncFetch({
 				browserFrame,
@@ -940,20 +923,21 @@ describe('SyncFetch', () => {
 
 			const requestArgs: string[] = [];
 
-			mockModule('child_process', {
-				execFileSync: (_command: string, args: string[]) => {
-					requestArgs.push(args[1]);
-					return JSON.stringify({
-						error: null,
-						incomingMessage: {
-							statusCode: 200,
-							statusMessage: 'OK',
-							rawHeaders: ['Access-Control-Allow-Origin', '*'],
-							data: ''
-						}
-					});
-				}
-			});
+			vi.spyOn(ChildProcess, 'execFileSync').mockImplementation(<any>((
+				_command: string,
+				args: string[]
+			) => {
+				requestArgs.push(args[1]);
+				return JSON.stringify({
+					error: null,
+					incomingMessage: {
+						statusCode: 200,
+						statusMessage: 'OK',
+						rawHeaders: ['Access-Control-Allow-Origin', '*'],
+						data: ''
+					}
+				});
+			}));
 
 			new SyncFetch({
 				browserFrame,
@@ -1001,20 +985,21 @@ describe('SyncFetch', () => {
 
 			const requestArgs: string[] = [];
 
-			mockModule('child_process', {
-				execFileSync: (_command: string, args: string[]) => {
-					requestArgs.push(args[1]);
-					return JSON.stringify({
-						error: null,
-						incomingMessage: {
-							statusCode: 200,
-							statusMessage: 'OK',
-							rawHeaders: [],
-							data: ''
-						}
-					});
-				}
-			});
+			vi.spyOn(ChildProcess, 'execFileSync').mockImplementation(<any>((
+				_command: string,
+				args: string[]
+			) => {
+				requestArgs.push(args[1]);
+				return JSON.stringify({
+					error: null,
+					incomingMessage: {
+						statusCode: 200,
+						statusMessage: 'OK',
+						rawHeaders: [],
+						data: ''
+					}
+				});
+			}));
 
 			new SyncFetch({
 				browserFrame,
@@ -1053,36 +1038,34 @@ describe('SyncFetch', () => {
 					const responseText = '{ "key1": "value1" }';
 					const requestArgs: string[] = [];
 
-					mockModule('child_process', {
-						execFileSync: (
-							command: string,
-							args: string[],
-							options: { encoding: string; maxBuffer: number }
-						) => {
-							expect(command).toEqual(process.argv[0]);
-							expect(args[0]).toBe('-e');
-							expect(options).toEqual({
-								encoding: 'buffer',
-								maxBuffer: 1024 * 1024 * 1024
-							});
-							requestArgs.push(args[1]);
+					vi.spyOn(ChildProcess, 'execFileSync').mockImplementation(<any>((
+						command: string,
+						args: string[],
+						options: { encoding: string; maxBuffer: number }
+					) => {
+						expect(command).toEqual(process.argv[0]);
+						expect(args[0]).toBe('-e');
+						expect(options).toEqual({
+							encoding: 'buffer',
+							maxBuffer: 1024 * 1024 * 1024
+						});
+						requestArgs.push(args[1]);
 
-							let rawHeaders: string[] = [];
-							if (requestArgs.length === 1) {
-								rawHeaders = ['Location', redirectURL2];
-							} else if (requestArgs.length === 2) {
-								rawHeaders = ['Location', targetPath];
-							}
-							return JSON.stringify({
-								error: null,
-								incomingMessage: {
-									statusCode: requestArgs.length > 2 ? 200 : httpCode,
-									rawHeaders,
-									data: requestArgs.length > 2 ? Buffer.from(responseText).toString('base64') : ''
-								}
-							});
+						let rawHeaders: string[] = [];
+						if (requestArgs.length === 1) {
+							rawHeaders = ['Location', redirectURL2];
+						} else if (requestArgs.length === 2) {
+							rawHeaders = ['Location', targetPath];
 						}
-					});
+						return JSON.stringify({
+							error: null,
+							incomingMessage: {
+								statusCode: requestArgs.length > 2 ? 200 : httpCode,
+								rawHeaders,
+								data: requestArgs.length > 2 ? Buffer.from(responseText).toString('base64') : ''
+							}
+						});
+					}));
 
 					const response = new SyncFetch({
 						browserFrame,
@@ -1280,45 +1263,43 @@ describe('SyncFetch', () => {
 			let error: Error | null = null;
 			let tryCount = 0;
 
-			mockModule('child_process', {
-				execFileSync: (
-					command: string,
-					args: string[],
-					options: { encoding: string; maxBuffer: number }
-				) => {
-					tryCount++;
-					const isEvenTry = tryCount % 2 == 0;
-					expect(command).toEqual(process.argv[0]);
-					expect(args[0]).toBe('-e');
-					expect(args[1]).toBe(
-						SyncFetchScriptBuilder.getScript({
-							url: new URL(isEvenTry ? url2 : url1),
-							method: 'GET',
-							headers: {
-								Accept: '*/*',
-								Connection: 'close',
-								Referer: 'https://localhost:8080/',
-								'User-Agent': window.navigator.userAgent,
-								'Accept-Encoding': 'gzip, deflate, br'
-							},
-							body: null
-						})
-					);
-					expect(options).toEqual({
-						encoding: 'buffer',
-						maxBuffer: 1024 * 1024 * 1024
-					});
-					return JSON.stringify({
-						error: null,
-						incomingMessage: {
-							statusCode: 301,
-							statusMessage: 'OK',
-							rawHeaders: isEvenTry ? ['Location', url1] : ['Location', url2],
-							data: ''
-						}
-					});
-				}
-			});
+			vi.spyOn(ChildProcess, 'execFileSync').mockImplementation(<any>((
+				command: string,
+				args: string[],
+				options: { encoding: string; maxBuffer: number }
+			) => {
+				tryCount++;
+				const isEvenTry = tryCount % 2 == 0;
+				expect(command).toEqual(process.argv[0]);
+				expect(args[0]).toBe('-e');
+				expect(args[1]).toBe(
+					SyncFetchScriptBuilder.getScript({
+						url: new URL(isEvenTry ? url2 : url1),
+						method: 'GET',
+						headers: {
+							Accept: '*/*',
+							Connection: 'close',
+							Referer: 'https://localhost:8080/',
+							'User-Agent': window.navigator.userAgent,
+							'Accept-Encoding': 'gzip, deflate, br'
+						},
+						body: null
+					})
+				);
+				expect(options).toEqual({
+					encoding: 'buffer',
+					maxBuffer: 1024 * 1024 * 1024
+				});
+				return JSON.stringify({
+					error: null,
+					incomingMessage: {
+						statusCode: 301,
+						statusMessage: 'OK',
+						rawHeaders: isEvenTry ? ['Location', url1] : ['Location', url2],
+						data: ''
+					}
+				});
+			}));
 
 			try {
 				new SyncFetch({
@@ -1347,18 +1328,16 @@ describe('SyncFetch', () => {
 			const url = 'https://localhost:8080/test/';
 			const redirectURL = 'https://localhost:8080/redirect/';
 
-			mockModule('child_process', {
-				execFileSync: () => {
-					return JSON.stringify({
-						error: null,
-						incomingMessage: {
-							statusCode: 301,
-							rawHeaders: ['Location', redirectURL],
-							data: ''
-						}
-					});
-				}
-			});
+			vi.spyOn(ChildProcess, 'execFileSync').mockImplementation(<any>(() => {
+				return JSON.stringify({
+					error: null,
+					incomingMessage: {
+						statusCode: 301,
+						rawHeaders: ['Location', redirectURL],
+						data: ''
+					}
+				});
+			}));
 
 			const response = new SyncFetch({
 				browserFrame,
@@ -1379,18 +1358,16 @@ describe('SyncFetch', () => {
 			const url = 'https://localhost:8080/test/';
 			const redirectURL = '<>';
 
-			mockModule('child_process', {
-				execFileSync: () => {
-					return JSON.stringify({
-						error: null,
-						incomingMessage: {
-							statusCode: 301,
-							rawHeaders: ['Location', redirectURL],
-							data: ''
-						}
-					});
-				}
-			});
+			vi.spyOn(ChildProcess, 'execFileSync').mockImplementation(<any>(() => {
+				return JSON.stringify({
+					error: null,
+					incomingMessage: {
+						statusCode: 301,
+						rawHeaders: ['Location', redirectURL],
+						data: ''
+					}
+				});
+			}));
 
 			const response = new SyncFetch({
 				browserFrame,
@@ -1411,18 +1388,16 @@ describe('SyncFetch', () => {
 			const url = 'https://localhost:8080/test/';
 			const redirectURL = 'https://example.com/redirect/';
 
-			mockModule('child_process', {
-				execFileSync: () => {
-					return JSON.stringify({
-						error: null,
-						incomingMessage: {
-							statusCode: 301,
-							rawHeaders: ['Location', redirectURL],
-							data: ''
-						}
-					});
-				}
-			});
+			vi.spyOn(ChildProcess, 'execFileSync').mockImplementation(<any>(() => {
+				return JSON.stringify({
+					error: null,
+					incomingMessage: {
+						statusCode: 301,
+						rawHeaders: ['Location', redirectURL],
+						data: ''
+					}
+				});
+			}));
 
 			const response = new SyncFetch({
 				browserFrame,
@@ -1442,18 +1417,16 @@ describe('SyncFetch', () => {
 
 			const url = 'https://localhost:8080/test/';
 
-			mockModule('child_process', {
-				execFileSync: () => {
-					return JSON.stringify({
-						error: null,
-						incomingMessage: {
-							statusCode: 301,
-							rawHeaders: [],
-							data: ''
-						}
-					});
-				}
-			});
+			vi.spyOn(ChildProcess, 'execFileSync').mockImplementation(<any>(() => {
+				return JSON.stringify({
+					error: null,
+					incomingMessage: {
+						statusCode: 301,
+						rawHeaders: [],
+						data: ''
+					}
+				});
+			}));
 
 			const response = new SyncFetch({
 				browserFrame,
@@ -1474,18 +1447,16 @@ describe('SyncFetch', () => {
 			const redirectURL = 'https://localhost:8080/redirect/';
 			let error: Error | null = null;
 
-			mockModule('child_process', {
-				execFileSync: () => {
-					return JSON.stringify({
-						error: null,
-						incomingMessage: {
-							statusCode: 301,
-							rawHeaders: ['Location', redirectURL],
-							data: ''
-						}
-					});
-				}
-			});
+			vi.spyOn(ChildProcess, 'execFileSync').mockImplementation(<any>(() => {
+				return JSON.stringify({
+					error: null,
+					incomingMessage: {
+						statusCode: 301,
+						rawHeaders: ['Location', redirectURL],
+						data: ''
+					}
+				});
+			}));
 
 			try {
 				new SyncFetch({
@@ -1515,18 +1486,16 @@ describe('SyncFetch', () => {
 			const redirectURL = '//super:invalid:url%/';
 			let error: Error | null = null;
 
-			mockModule('child_process', {
-				execFileSync: () => {
-					return JSON.stringify({
-						error: null,
-						incomingMessage: {
-							statusCode: 301,
-							rawHeaders: ['Location', redirectURL],
-							data: ''
-						}
-					});
-				}
-			});
+			vi.spyOn(ChildProcess, 'execFileSync').mockImplementation(<any>(() => {
+				return JSON.stringify({
+					error: null,
+					incomingMessage: {
+						statusCode: 301,
+						rawHeaders: ['Location', redirectURL],
+						data: ''
+					}
+				});
+			}));
 
 			try {
 				new SyncFetch({
@@ -1552,20 +1521,21 @@ describe('SyncFetch', () => {
 			const url = 'https://localhost:8080/some/path';
 			let requestArgs: string | null = null;
 
-			mockModule('child_process', {
-				execFileSync: (_command: string, args: string[]) => {
-					requestArgs = args[1];
-					return JSON.stringify({
-						error: null,
-						incomingMessage: {
-							statusCode: 200,
-							statusMessage: 'OK',
-							rawHeaders: [],
-							data: ''
-						}
-					});
-				}
-			});
+			vi.spyOn(ChildProcess, 'execFileSync').mockImplementation(<any>((
+				_command: string,
+				args: string[]
+			) => {
+				requestArgs = args[1];
+				return JSON.stringify({
+					error: null,
+					incomingMessage: {
+						statusCode: 200,
+						statusMessage: 'OK',
+						rawHeaders: [],
+						data: ''
+					}
+				});
+			}));
 
 			new SyncFetch({
 				browserFrame,
@@ -1625,20 +1595,21 @@ describe('SyncFetch', () => {
 
 			window.document.cookie = 'test=cookie';
 
-			mockModule('child_process', {
-				execFileSync: (_command: string, args: string[]) => {
-					requestArgs = args[1];
-					return JSON.stringify({
-						error: null,
-						incomingMessage: {
-							statusCode: 200,
-							statusMessage: 'OK',
-							rawHeaders: [],
-							data: ''
-						}
-					});
-				}
-			});
+			vi.spyOn(ChildProcess, 'execFileSync').mockImplementation(<any>((
+				_command: string,
+				args: string[]
+			) => {
+				requestArgs = args[1];
+				return JSON.stringify({
+					error: null,
+					incomingMessage: {
+						statusCode: 200,
+						statusMessage: 'OK',
+						rawHeaders: [],
+						data: ''
+					}
+				});
+			}));
 
 			new SyncFetch({
 				browserFrame,
@@ -1681,22 +1652,23 @@ describe('SyncFetch', () => {
 
 			window.document.cookie = 'test=cookie';
 
-			mockModule('child_process', {
-				execFileSync: (_command: string, args: string[]) => {
-					requestArgs = args[1];
-					return JSON.stringify({
-						error: null,
-						incomingMessage: {
-							statusCode: 200,
-							statusMessage: 'OK',
-							rawHeaders: args[1].includes('"method": "OPTIONS"')
-								? ['Access-Control-Allow-Origin', '*']
-								: [],
-							data: ''
-						}
-					});
-				}
-			});
+			vi.spyOn(ChildProcess, 'execFileSync').mockImplementation(<any>((
+				_command: string,
+				args: string[]
+			) => {
+				requestArgs = args[1];
+				return JSON.stringify({
+					error: null,
+					incomingMessage: {
+						statusCode: 200,
+						statusMessage: 'OK',
+						rawHeaders: args[1].includes('"method": "OPTIONS"')
+							? ['Access-Control-Allow-Origin', '*']
+							: [],
+						data: ''
+					}
+				});
+			}));
 
 			new SyncFetch({
 				browserFrame,
@@ -1769,20 +1741,21 @@ describe('SyncFetch', () => {
 				window.document.cookie = cookie.trim();
 			}
 
-			mockModule('child_process', {
-				execFileSync: (_command: string, args: string[]) => {
-					requestArgs = args[1];
-					return JSON.stringify({
-						error: null,
-						incomingMessage: {
-							statusCode: 200,
-							statusMessage: 'OK',
-							rawHeaders: [],
-							data: ''
-						}
-					});
-				}
-			});
+			vi.spyOn(ChildProcess, 'execFileSync').mockImplementation(<any>((
+				_command: string,
+				args: string[]
+			) => {
+				requestArgs = args[1];
+				return JSON.stringify({
+					error: null,
+					incomingMessage: {
+						statusCode: 200,
+						statusMessage: 'OK',
+						rawHeaders: [],
+						data: ''
+					}
+				});
+			}));
 
 			new SyncFetch({
 				browserFrame,
@@ -1840,22 +1813,23 @@ describe('SyncFetch', () => {
 				}
 			]);
 
-			mockModule('child_process', {
-				execFileSync: (_command: string, args: string[]) => {
-					requestArgs.push(args[1]);
-					return JSON.stringify({
-						error: null,
-						incomingMessage: {
-							statusCode: 200,
-							statusMessage: 'OK',
-							rawHeaders: args[1].includes('"method": "OPTIONS"')
-								? ['Access-Control-Allow-Origin', '*']
-								: [],
-							data: ''
-						}
-					});
-				}
-			});
+			vi.spyOn(ChildProcess, 'execFileSync').mockImplementation(<any>((
+				_command: string,
+				args: string[]
+			) => {
+				requestArgs.push(args[1]);
+				return JSON.stringify({
+					error: null,
+					incomingMessage: {
+						statusCode: 200,
+						statusMessage: 'OK',
+						rawHeaders: args[1].includes('"method": "OPTIONS"')
+							? ['Access-Control-Allow-Origin', '*']
+							: [],
+						data: ''
+					}
+				});
+			}));
 
 			new SyncFetch({
 				browserFrame,
@@ -1908,19 +1882,17 @@ describe('SyncFetch', () => {
 		it('Sets document cookie string if the response contains a "Set-Cookie" header if request credentials are set to "include".', () => {
 			browserFrame.url = 'https://localhost:8080/';
 
-			mockModule('child_process', {
-				execFileSync: () => {
-					return JSON.stringify({
-						error: null,
-						incomingMessage: {
-							statusCode: 200,
-							statusMessage: 'OK',
-							rawHeaders: ['Set-Cookie', 'key1=value1', 'Set-Cookie', 'key2=value2'],
-							data: ''
-						}
-					});
-				}
-			});
+			vi.spyOn(ChildProcess, 'execFileSync').mockImplementation(<any>(() => {
+				return JSON.stringify({
+					error: null,
+					incomingMessage: {
+						statusCode: 200,
+						statusMessage: 'OK',
+						rawHeaders: ['Set-Cookie', 'key1=value1', 'Set-Cookie', 'key2=value2'],
+						data: ''
+					}
+				});
+			}));
 
 			const response = new SyncFetch({
 				browserFrame,
@@ -1941,20 +1913,21 @@ describe('SyncFetch', () => {
 			const url = 'https://localhost:8080/test/';
 			let requestArgs: string | null = null;
 
-			mockModule('child_process', {
-				execFileSync: (_command: string, args: string[]) => {
-					requestArgs = args[1];
-					return JSON.stringify({
-						error: null,
-						incomingMessage: {
-							statusCode: 200,
-							statusMessage: 'OK',
-							rawHeaders: [],
-							data: ''
-						}
-					});
-				}
-			});
+			vi.spyOn(ChildProcess, 'execFileSync').mockImplementation(<any>((
+				_command: string,
+				args: string[]
+			) => {
+				requestArgs = args[1];
+				return JSON.stringify({
+					error: null,
+					incomingMessage: {
+						statusCode: 200,
+						statusMessage: 'OK',
+						rawHeaders: [],
+						data: ''
+					}
+				});
+			}));
 
 			new SyncFetch({
 				browserFrame,
@@ -1990,19 +1963,17 @@ describe('SyncFetch', () => {
 
 				const responseText = 'some response text';
 
-				mockModule('child_process', {
-					execFileSync: () => {
-						return JSON.stringify({
-							error: null,
-							incomingMessage: {
-								statusCode: errorCode,
-								statusMessage: 'Bad Request',
-								rawHeaders: ['Content-Type', 'text/plain'],
-								data: Buffer.from(responseText).toString('base64')
-							}
-						});
-					}
-				});
+				vi.spyOn(ChildProcess, 'execFileSync').mockImplementation(<any>(() => {
+					return JSON.stringify({
+						error: null,
+						incomingMessage: {
+							statusCode: errorCode,
+							statusMessage: 'Bad Request',
+							rawHeaders: ['Content-Type', 'text/plain'],
+							data: Buffer.from(responseText).toString('base64')
+						}
+					});
+				}));
 
 				const response = new SyncFetch({
 					browserFrame,
@@ -2024,14 +1995,12 @@ describe('SyncFetch', () => {
 			const url = 'https://localhost:8080/some/path';
 			let error: Error | null = null;
 
-			mockModule('child_process', {
-				execFileSync: () => {
-					return JSON.stringify({
-						error: 'connect ECONNREFUSED ::1:8080',
-						data: null
-					});
-				}
-			});
+			vi.spyOn(ChildProcess, 'execFileSync').mockImplementation(<any>(() => {
+				return JSON.stringify({
+					error: 'connect ECONNREFUSED ::1:8080',
+					data: null
+				});
+			}));
 
 			try {
 				new SyncFetch({
@@ -2056,19 +2025,17 @@ describe('SyncFetch', () => {
 
 			const url = 'https://localhost:8080/test/';
 
-			mockModule('child_process', {
-				execFileSync: () => {
-					return JSON.stringify({
-						error: null,
-						incomingMessage: {
-							statusCode: 200,
-							statusMessage: 'OK',
-							rawHeaders: ['Content-Encoding', 'gzip'],
-							data: ''
-						}
-					});
-				}
-			});
+			vi.spyOn(ChildProcess, 'execFileSync').mockImplementation(<any>(() => {
+				return JSON.stringify({
+					error: null,
+					incomingMessage: {
+						statusCode: 200,
+						statusMessage: 'OK',
+						rawHeaders: ['Content-Encoding', 'gzip'],
+						data: ''
+					}
+				});
+			}));
 
 			const response = new SyncFetch({
 				browserFrame,
@@ -2085,19 +2052,17 @@ describe('SyncFetch', () => {
 			const url = 'https://localhost:8080/test/';
 			const responseText = 'some response text';
 
-			mockModule('child_process', {
-				execFileSync: () => {
-					return JSON.stringify({
-						error: null,
-						incomingMessage: {
-							statusCode: 200,
-							statusMessage: 'OK',
-							rawHeaders: ['Content-Encoding', 'gzip'],
-							data: Zlib.gzipSync(Buffer.from(responseText)).toString('base64')
-						}
-					});
-				}
-			});
+			vi.spyOn(ChildProcess, 'execFileSync').mockImplementation(<any>(() => {
+				return JSON.stringify({
+					error: null,
+					incomingMessage: {
+						statusCode: 200,
+						statusMessage: 'OK',
+						rawHeaders: ['Content-Encoding', 'gzip'],
+						data: Zlib.gzipSync(Buffer.from(responseText)).toString('base64')
+					}
+				});
+			}));
 
 			const response = new SyncFetch({
 				browserFrame,
@@ -2113,19 +2078,17 @@ describe('SyncFetch', () => {
 			const url = 'https://localhost:8080/test/';
 			const responseText = 'some response text';
 
-			mockModule('child_process', {
-				execFileSync: () => {
-					return JSON.stringify({
-						error: null,
-						incomingMessage: {
-							statusCode: 200,
-							statusMessage: 'OK',
-							rawHeaders: ['Content-Encoding', 'gzip'],
-							data: Zlib.gzipSync(Buffer.from(responseText)).slice(0, -8).toString('base64')
-						}
-					});
-				}
-			});
+			vi.spyOn(ChildProcess, 'execFileSync').mockImplementation(<any>(() => {
+				return JSON.stringify({
+					error: null,
+					incomingMessage: {
+						statusCode: 200,
+						statusMessage: 'OK',
+						rawHeaders: ['Content-Encoding', 'gzip'],
+						data: Zlib.gzipSync(Buffer.from(responseText)).slice(0, -8).toString('base64')
+					}
+				});
+			}));
 
 			const response = new SyncFetch({
 				browserFrame,
@@ -2140,19 +2103,17 @@ describe('SyncFetch', () => {
 
 			const url = 'https://localhost:8080/test/';
 
-			mockModule('child_process', {
-				execFileSync: () => {
-					return JSON.stringify({
-						error: null,
-						incomingMessage: {
-							statusCode: 204,
-							statusMessage: 'OK',
-							rawHeaders: ['Content-Encoding', 'gzip'],
-							data: ''
-						}
-					});
-				}
-			});
+			vi.spyOn(ChildProcess, 'execFileSync').mockImplementation(<any>(() => {
+				return JSON.stringify({
+					error: null,
+					incomingMessage: {
+						statusCode: 204,
+						statusMessage: 'OK',
+						rawHeaders: ['Content-Encoding', 'gzip'],
+						data: ''
+					}
+				});
+			}));
 
 			const response = new SyncFetch({
 				browserFrame,
@@ -2168,19 +2129,17 @@ describe('SyncFetch', () => {
 			const url = 'https://localhost:8080/test/';
 			const responseText = 'some response text';
 
-			mockModule('child_process', {
-				execFileSync: () => {
-					return JSON.stringify({
-						error: null,
-						incomingMessage: {
-							statusCode: 200,
-							statusMessage: 'OK',
-							rawHeaders: ['Content-Encoding', 'deflate'],
-							data: Zlib.deflateSync(Buffer.from(responseText)).toString('base64')
-						}
-					});
-				}
-			});
+			vi.spyOn(ChildProcess, 'execFileSync').mockImplementation(<any>(() => {
+				return JSON.stringify({
+					error: null,
+					incomingMessage: {
+						statusCode: 200,
+						statusMessage: 'OK',
+						rawHeaders: ['Content-Encoding', 'deflate'],
+						data: Zlib.deflateSync(Buffer.from(responseText)).toString('base64')
+					}
+				});
+			}));
 
 			const response = new SyncFetch({
 				browserFrame,
@@ -2195,19 +2154,17 @@ describe('SyncFetch', () => {
 
 			const url = 'https://localhost:8080/test/';
 
-			mockModule('child_process', {
-				execFileSync: () => {
-					return JSON.stringify({
-						error: null,
-						incomingMessage: {
-							statusCode: 204,
-							statusMessage: 'OK',
-							rawHeaders: ['Content-Encoding', 'deflate'],
-							data: ''
-						}
-					});
-				}
-			});
+			vi.spyOn(ChildProcess, 'execFileSync').mockImplementation(<any>(() => {
+				return JSON.stringify({
+					error: null,
+					incomingMessage: {
+						statusCode: 204,
+						statusMessage: 'OK',
+						rawHeaders: ['Content-Encoding', 'deflate'],
+						data: ''
+					}
+				});
+			}));
 
 			const response = new SyncFetch({
 				browserFrame,
@@ -2223,19 +2180,17 @@ describe('SyncFetch', () => {
 			const url = 'https://localhost:8080/test/';
 			const responseText = 'some response text';
 
-			mockModule('child_process', {
-				execFileSync: () => {
-					return JSON.stringify({
-						error: null,
-						incomingMessage: {
-							statusCode: 200,
-							statusMessage: 'OK',
-							rawHeaders: ['Content-Encoding', 'br'],
-							data: Zlib.brotliCompressSync(Buffer.from(responseText)).toString('base64')
-						}
-					});
-				}
-			});
+			vi.spyOn(ChildProcess, 'execFileSync').mockImplementation(<any>(() => {
+				return JSON.stringify({
+					error: null,
+					incomingMessage: {
+						statusCode: 200,
+						statusMessage: 'OK',
+						rawHeaders: ['Content-Encoding', 'br'],
+						data: Zlib.brotliCompressSync(Buffer.from(responseText)).toString('base64')
+					}
+				});
+			}));
 
 			const response = new SyncFetch({
 				browserFrame,
@@ -2250,19 +2205,17 @@ describe('SyncFetch', () => {
 
 			const url = 'https://localhost:8080/test/';
 
-			mockModule('child_process', {
-				execFileSync: () => {
-					return JSON.stringify({
-						error: null,
-						incomingMessage: {
-							statusCode: 204,
-							statusMessage: 'OK',
-							rawHeaders: ['Content-Encoding', 'br'],
-							data: ''
-						}
-					});
-				}
-			});
+			vi.spyOn(ChildProcess, 'execFileSync').mockImplementation(<any>(() => {
+				return JSON.stringify({
+					error: null,
+					incomingMessage: {
+						statusCode: 204,
+						statusMessage: 'OK',
+						rawHeaders: ['Content-Encoding', 'br'],
+						data: ''
+					}
+				});
+			}));
 
 			const response = new SyncFetch({
 				browserFrame,
@@ -2278,19 +2231,17 @@ describe('SyncFetch', () => {
 			const url = 'https://localhost:8080/test/';
 			const responseText = 'some response text';
 
-			mockModule('child_process', {
-				execFileSync: () => {
-					return JSON.stringify({
-						error: null,
-						incomingMessage: {
-							statusCode: 200,
-							statusMessage: 'OK',
-							rawHeaders: ['Content-Encoding', 'unsupported-encoding'],
-							data: Buffer.from(responseText).toString('base64')
-						}
-					});
-				}
-			});
+			vi.spyOn(ChildProcess, 'execFileSync').mockImplementation(<any>(() => {
+				return JSON.stringify({
+					error: null,
+					incomingMessage: {
+						statusCode: 200,
+						statusMessage: 'OK',
+						rawHeaders: ['Content-Encoding', 'unsupported-encoding'],
+						data: Buffer.from(responseText).toString('base64')
+					}
+				});
+			}));
 
 			const response = new SyncFetch({
 				browserFrame,
@@ -2305,19 +2256,17 @@ describe('SyncFetch', () => {
 
 			const url = 'https://localhost:8080/test/';
 
-			mockModule('child_process', {
-				execFileSync: () => {
-					return JSON.stringify({
-						error: null,
-						incomingMessage: {
-							statusCode: 200,
-							statusMessage: 'OK',
-							rawHeaders: ['Content-Encoding', 'gzip'],
-							data: Buffer.from('invalid').toString('base64')
-						}
-					});
-				}
-			});
+			vi.spyOn(ChildProcess, 'execFileSync').mockImplementation(<any>(() => {
+				return JSON.stringify({
+					error: null,
+					incomingMessage: {
+						statusCode: 200,
+						statusMessage: 'OK',
+						rawHeaders: ['Content-Encoding', 'gzip'],
+						data: Buffer.from('invalid').toString('base64')
+					}
+				});
+			}));
 
 			let error: Error | null = null;
 
@@ -2400,20 +2349,21 @@ describe('SyncFetch', () => {
 			const body = 'Hello, world!\n';
 			let requestArgs: string | null = null;
 
-			mockModule('child_process', {
-				execFileSync: (_command: string, args: string[]) => {
-					requestArgs = args[1];
-					return JSON.stringify({
-						error: null,
-						incomingMessage: {
-							statusCode: 200,
-							statusMessage: 'OK',
-							rawHeaders: [],
-							data: ''
-						}
-					});
-				}
-			});
+			vi.spyOn(ChildProcess, 'execFileSync').mockImplementation(<any>((
+				_command: string,
+				args: string[]
+			) => {
+				requestArgs = args[1];
+				return JSON.stringify({
+					error: null,
+					incomingMessage: {
+						statusCode: 200,
+						statusMessage: 'OK',
+						rawHeaders: [],
+						data: ''
+					}
+				});
+			}));
 
 			const response = new SyncFetch({
 				browserFrame,
@@ -2451,20 +2401,21 @@ describe('SyncFetch', () => {
 			const body = { key: 'value' };
 			let requestArgs: string | null = null;
 
-			mockModule('child_process', {
-				execFileSync: (_command: string, args: string[]) => {
-					requestArgs = args[1];
-					return JSON.stringify({
-						error: null,
-						incomingMessage: {
-							statusCode: 200,
-							statusMessage: 'OK',
-							rawHeaders: [],
-							data: ''
-						}
-					});
-				}
-			});
+			vi.spyOn(ChildProcess, 'execFileSync').mockImplementation(<any>((
+				_command: string,
+				args: string[]
+			) => {
+				requestArgs = args[1];
+				return JSON.stringify({
+					error: null,
+					incomingMessage: {
+						statusCode: 200,
+						statusMessage: 'OK',
+						rawHeaders: [],
+						data: ''
+					}
+				});
+			}));
 
 			const response = new SyncFetch({
 				browserFrame,
@@ -2502,20 +2453,21 @@ describe('SyncFetch', () => {
 			const body = 'Hello, world!\n';
 			let requestArgs: string | null = null;
 
-			mockModule('child_process', {
-				execFileSync: (_command: string, args: string[]) => {
-					requestArgs = args[1];
-					return JSON.stringify({
-						error: null,
-						incomingMessage: {
-							statusCode: 200,
-							statusMessage: 'OK',
-							rawHeaders: [],
-							data: ''
-						}
-					});
-				}
-			});
+			vi.spyOn(ChildProcess, 'execFileSync').mockImplementation(<any>((
+				_command: string,
+				args: string[]
+			) => {
+				requestArgs = args[1];
+				return JSON.stringify({
+					error: null,
+					incomingMessage: {
+						statusCode: 200,
+						statusMessage: 'OK',
+						rawHeaders: [],
+						data: ''
+					}
+				});
+			}));
 
 			const response = new SyncFetch({
 				browserFrame,
@@ -2552,20 +2504,21 @@ describe('SyncFetch', () => {
 			const body = 'Hello, world!\n';
 			let requestArgs: string | null = null;
 
-			mockModule('child_process', {
-				execFileSync: (_command: string, args: string[]) => {
-					requestArgs = args[1];
-					return JSON.stringify({
-						error: null,
-						incomingMessage: {
-							statusCode: 200,
-							statusMessage: 'OK',
-							rawHeaders: [],
-							data: ''
-						}
-					});
-				}
-			});
+			vi.spyOn(ChildProcess, 'execFileSync').mockImplementation(<any>((
+				_command: string,
+				args: string[]
+			) => {
+				requestArgs = args[1];
+				return JSON.stringify({
+					error: null,
+					incomingMessage: {
+						statusCode: 200,
+						statusMessage: 'OK',
+						rawHeaders: [],
+						data: ''
+					}
+				});
+			}));
 
 			const response = new SyncFetch({
 				browserFrame,
@@ -2602,20 +2555,21 @@ describe('SyncFetch', () => {
 			const body = 'Hello, world!\n';
 			let requestArgs: string | null = null;
 
-			mockModule('child_process', {
-				execFileSync: (_command: string, args: string[]) => {
-					requestArgs = args[1];
-					return JSON.stringify({
-						error: null,
-						incomingMessage: {
-							statusCode: 200,
-							statusMessage: 'OK',
-							rawHeaders: [],
-							data: ''
-						}
-					});
-				}
-			});
+			vi.spyOn(ChildProcess, 'execFileSync').mockImplementation(<any>((
+				_command: string,
+				args: string[]
+			) => {
+				requestArgs = args[1];
+				return JSON.stringify({
+					error: null,
+					incomingMessage: {
+						statusCode: 200,
+						statusMessage: 'OK',
+						rawHeaders: [],
+						data: ''
+					}
+				});
+			}));
 
 			const response = new SyncFetch({
 				browserFrame,
@@ -2652,20 +2606,21 @@ describe('SyncFetch', () => {
 			const body = 'Hello, world!\n';
 			let requestArgs: string | null = null;
 
-			mockModule('child_process', {
-				execFileSync: (_command: string, args: string[]) => {
-					requestArgs = args[1];
-					return JSON.stringify({
-						error: null,
-						incomingMessage: {
-							statusCode: 200,
-							statusMessage: 'OK',
-							rawHeaders: [],
-							data: ''
-						}
-					});
-				}
-			});
+			vi.spyOn(ChildProcess, 'execFileSync').mockImplementation(<any>((
+				_command: string,
+				args: string[]
+			) => {
+				requestArgs = args[1];
+				return JSON.stringify({
+					error: null,
+					incomingMessage: {
+						statusCode: 200,
+						statusMessage: 'OK',
+						rawHeaders: [],
+						data: ''
+					}
+				});
+			}));
 
 			const response = new SyncFetch({
 				browserFrame,
@@ -2702,20 +2657,21 @@ describe('SyncFetch', () => {
 			const body = 'key1=value1&key2=value2';
 			let requestArgs: string | null = null;
 
-			mockModule('child_process', {
-				execFileSync: (_command: string, args: string[]) => {
-					requestArgs = args[1];
-					return JSON.stringify({
-						error: null,
-						incomingMessage: {
-							statusCode: 200,
-							statusMessage: 'OK',
-							rawHeaders: [],
-							data: ''
-						}
-					});
-				}
-			});
+			vi.spyOn(ChildProcess, 'execFileSync').mockImplementation(<any>((
+				_command: string,
+				args: string[]
+			) => {
+				requestArgs = args[1];
+				return JSON.stringify({
+					error: null,
+					incomingMessage: {
+						statusCode: 200,
+						statusMessage: 'OK',
+						rawHeaders: [],
+						data: ''
+					}
+				});
+			}));
 
 			const response = new SyncFetch({
 				browserFrame,
@@ -2752,20 +2708,21 @@ describe('SyncFetch', () => {
 			const body = 'key1=value1&key2=value2';
 			let requestArgs: string | null = null;
 
-			mockModule('child_process', {
-				execFileSync: (_command: string, args: string[]) => {
-					requestArgs = args[1];
-					return JSON.stringify({
-						error: null,
-						incomingMessage: {
-							statusCode: 200,
-							statusMessage: 'OK',
-							rawHeaders: [],
-							data: ''
-						}
-					});
-				}
-			});
+			vi.spyOn(ChildProcess, 'execFileSync').mockImplementation(<any>((
+				_command: string,
+				args: string[]
+			) => {
+				requestArgs = args[1];
+				return JSON.stringify({
+					error: null,
+					incomingMessage: {
+						statusCode: 200,
+						statusMessage: 'OK',
+						rawHeaders: [],
+						data: ''
+					}
+				});
+			}));
 
 			const response = new SyncFetch({
 				browserFrame,
@@ -2803,19 +2760,20 @@ describe('SyncFetch', () => {
 		it('Rejects with error if body is Stream.Readable.', () => {
 			browserFrame.url = 'https://localhost:8080/';
 
-			mockModule('child_process', {
-				execFileSync: (_command: string, args: string[]) => {
-					return JSON.stringify({
-						error: null,
-						incomingMessage: {
-							statusCode: 200,
-							statusMessage: 'OK',
-							rawHeaders: [],
-							data: ''
-						}
-					});
-				}
-			});
+			vi.spyOn(ChildProcess, 'execFileSync').mockImplementation(<any>((
+				_command: string,
+				args: string[]
+			) => {
+				return JSON.stringify({
+					error: null,
+					incomingMessage: {
+						statusCode: 200,
+						statusMessage: 'OK',
+						rawHeaders: [],
+						data: ''
+					}
+				});
+			}));
 
 			let error: Error | null = null;
 
@@ -2859,20 +2817,21 @@ describe('SyncFetch', () => {
 			formData.set('key1', 'value1');
 			formData.set('key2', 'value2');
 
-			mockModule('child_process', {
-				execFileSync: (_command: string, args: string[]) => {
-					requestArgs = args[1];
-					return JSON.stringify({
-						error: null,
-						incomingMessage: {
-							statusCode: 200,
-							statusMessage: 'OK',
-							rawHeaders: [],
-							data: ''
-						}
-					});
-				}
-			});
+			vi.spyOn(ChildProcess, 'execFileSync').mockImplementation(<any>((
+				_command: string,
+				args: string[]
+			) => {
+				requestArgs = args[1];
+				return JSON.stringify({
+					error: null,
+					incomingMessage: {
+						statusCode: 200,
+						statusMessage: 'OK',
+						rawHeaders: [],
+						data: ''
+					}
+				});
+			}));
 
 			const response = new SyncFetch({
 				browserFrame,
@@ -2912,20 +2871,21 @@ describe('SyncFetch', () => {
 			const urlSearchParams = new URLSearchParams(body);
 			let requestArgs: string | null = null;
 
-			mockModule('child_process', {
-				execFileSync: (_command: string, args: string[]) => {
-					requestArgs = args[1];
-					return JSON.stringify({
-						error: null,
-						incomingMessage: {
-							statusCode: 200,
-							statusMessage: 'OK',
-							rawHeaders: [],
-							data: ''
-						}
-					});
-				}
-			});
+			vi.spyOn(ChildProcess, 'execFileSync').mockImplementation(<any>((
+				_command: string,
+				args: string[]
+			) => {
+				requestArgs = args[1];
+				return JSON.stringify({
+					error: null,
+					incomingMessage: {
+						statusCode: 200,
+						statusMessage: 'OK',
+						rawHeaders: [],
+						data: ''
+					}
+				});
+			}));
 
 			const response = new SyncFetch({
 				browserFrame,
@@ -2964,27 +2924,25 @@ describe('SyncFetch', () => {
 			const responseText = 'some text';
 			let requestCount = 0;
 
-			mockModule('child_process', {
-				execFileSync: () => {
-					requestCount++;
-					return JSON.stringify({
-						error: null,
-						incomingMessage: {
-							statusCode: 200,
-							statusMessage: 'OK',
-							rawHeaders: [
-								'content-type',
-								'text/html',
-								'content-length',
-								String(responseText.length),
-								'cache-control',
-								`max-age=60`
-							],
-							data: Buffer.from(responseText).toString('base64')
-						}
-					});
-				}
-			});
+			vi.spyOn(ChildProcess, 'execFileSync').mockImplementation(<any>(() => {
+				requestCount++;
+				return JSON.stringify({
+					error: null,
+					incomingMessage: {
+						statusCode: 200,
+						statusMessage: 'OK',
+						rawHeaders: [
+							'content-type',
+							'text/html',
+							'content-length',
+							String(responseText.length),
+							'cache-control',
+							`max-age=60`
+						],
+						data: Buffer.from(responseText).toString('base64')
+					}
+				});
+			}));
 
 			const response1 = new SyncFetch({ browserFrame, window, url }).send();
 			const text1 = response1.body!.toString();
@@ -3032,46 +2990,47 @@ describe('SyncFetch', () => {
 			const responseText = 'some text';
 			const requestArgs: string[] = [];
 
-			mockModule('child_process', {
-				execFileSync: (_command: string, args: string[]) => {
-					requestArgs.push(args[1]);
+			vi.spyOn(ChildProcess, 'execFileSync').mockImplementation(<any>((
+				_command: string,
+				args: string[]
+			) => {
+				requestArgs.push(args[1]);
 
-					if (args[1].includes('If-Modified-Since')) {
-						return JSON.stringify({
-							error: null,
-							incomingMessage: {
-								statusCode: 304,
-								statusMessage: 'Not Modified',
-								rawHeaders: [
-									'last-modified',
-									'Mon, 11 Dec 2023 02:00:00 GMT',
-									'cache-control',
-									'max-age=1'
-								],
-								data: ''
-							}
-						});
-					}
+				if (args[1].includes('If-Modified-Since')) {
 					return JSON.stringify({
 						error: null,
 						incomingMessage: {
-							statusCode: 200,
-							statusMessage: 'OK',
+							statusCode: 304,
+							statusMessage: 'Not Modified',
 							rawHeaders: [
-								'content-type',
-								'text/html',
-								'content-length',
-								String(responseText.length),
-								'cache-control',
-								'max-age=0.0001',
 								'last-modified',
-								'Mon, 11 Dec 2023 01:00:00 GMT'
+								'Mon, 11 Dec 2023 02:00:00 GMT',
+								'cache-control',
+								'max-age=1'
 							],
-							data: Buffer.from(responseText).toString('base64')
+							data: ''
 						}
 					});
 				}
-			});
+				return JSON.stringify({
+					error: null,
+					incomingMessage: {
+						statusCode: 200,
+						statusMessage: 'OK',
+						rawHeaders: [
+							'content-type',
+							'text/html',
+							'content-length',
+							String(responseText.length),
+							'cache-control',
+							'max-age=0.0001',
+							'last-modified',
+							'Mon, 11 Dec 2023 01:00:00 GMT'
+						],
+						data: Buffer.from(responseText).toString('base64')
+					}
+				});
+			}));
 
 			const response1 = new SyncFetch({
 				browserFrame,
@@ -3165,30 +3124,13 @@ describe('SyncFetch', () => {
 			const responseText2 = 'some new text';
 			const requestArgs: string[] = [];
 
-			mockModule('child_process', {
-				execFileSync: (_command: string, args: string[]) => {
-					requestArgs.push(args[1]);
+			vi.spyOn(ChildProcess, 'execFileSync').mockImplementation(<any>((
+				_command: string,
+				args: string[]
+			) => {
+				requestArgs.push(args[1]);
 
-					if (args[1].includes('If-Modified-Since')) {
-						return JSON.stringify({
-							error: null,
-							incomingMessage: {
-								statusCode: 200,
-								statusMessage: 'OK',
-								rawHeaders: [
-									'content-type',
-									'text/html',
-									'content-length',
-									String(responseText2.length),
-									'cache-control',
-									'max-age=1',
-									'last-modified',
-									'Mon, 11 Dec 2023 02:00:00 GMT'
-								],
-								data: Buffer.from(responseText2).toString('base64')
-							}
-						});
-					}
+				if (args[1].includes('If-Modified-Since')) {
 					return JSON.stringify({
 						error: null,
 						incomingMessage: {
@@ -3198,17 +3140,35 @@ describe('SyncFetch', () => {
 								'content-type',
 								'text/html',
 								'content-length',
-								String(responseText1.length),
+								String(responseText2.length),
 								'cache-control',
-								'max-age=0.0001',
+								'max-age=1',
 								'last-modified',
-								'Mon, 11 Dec 2023 01:00:00 GMT'
+								'Mon, 11 Dec 2023 02:00:00 GMT'
 							],
-							data: Buffer.from(responseText1).toString('base64')
+							data: Buffer.from(responseText2).toString('base64')
 						}
 					});
 				}
-			});
+				return JSON.stringify({
+					error: null,
+					incomingMessage: {
+						statusCode: 200,
+						statusMessage: 'OK',
+						rawHeaders: [
+							'content-type',
+							'text/html',
+							'content-length',
+							String(responseText1.length),
+							'cache-control',
+							'max-age=0.0001',
+							'last-modified',
+							'Mon, 11 Dec 2023 01:00:00 GMT'
+						],
+						data: Buffer.from(responseText1).toString('base64')
+					}
+				});
+			}));
 
 			const response1 = new SyncFetch({
 				browserFrame,
@@ -3319,43 +3279,44 @@ describe('SyncFetch', () => {
 			const responseText = 'some text';
 			const requestArgs: string[] = [];
 
-			mockModule('child_process', {
-				execFileSync: (_command: string, args: string[]) => {
-					requestArgs.push(args[1]);
+			vi.spyOn(ChildProcess, 'execFileSync').mockImplementation(<any>((
+				_command: string,
+				args: string[]
+			) => {
+				requestArgs.push(args[1]);
 
-					if (args[1].includes('If-None-Match')) {
-						return JSON.stringify({
-							error: null,
-							incomingMessage: {
-								statusCode: 304,
-								statusMessage: 'Not Modified',
-								rawHeaders: ['etag', etag2, 'last-modified', 'Mon, 11 Dec 2023 02:00:00 GMT'],
-								data: ''
-							}
-						});
-					}
+				if (args[1].includes('If-None-Match')) {
 					return JSON.stringify({
 						error: null,
 						incomingMessage: {
-							statusCode: 200,
-							statusMessage: 'OK',
-							rawHeaders: [
-								'content-type',
-								'text/html',
-								'content-length',
-								String(responseText.length),
-								'cache-control',
-								'max-age=0.0001',
-								'last-modified',
-								'Mon, 11 Dec 2023 01:00:00 GMT',
-								'etag',
-								etag1
-							],
-							data: Buffer.from(responseText).toString('base64')
+							statusCode: 304,
+							statusMessage: 'Not Modified',
+							rawHeaders: ['etag', etag2, 'last-modified', 'Mon, 11 Dec 2023 02:00:00 GMT'],
+							data: ''
 						}
 					});
 				}
-			});
+				return JSON.stringify({
+					error: null,
+					incomingMessage: {
+						statusCode: 200,
+						statusMessage: 'OK',
+						rawHeaders: [
+							'content-type',
+							'text/html',
+							'content-length',
+							String(responseText.length),
+							'cache-control',
+							'max-age=0.0001',
+							'last-modified',
+							'Mon, 11 Dec 2023 01:00:00 GMT',
+							'etag',
+							etag1
+						],
+						data: Buffer.from(responseText).toString('base64')
+					}
+				});
+			}));
 
 			const response1 = new SyncFetch({
 				browserFrame,
@@ -3461,32 +3422,13 @@ describe('SyncFetch', () => {
 			const responseText2 = 'some new text';
 			const requestArgs: string[] = [];
 
-			mockModule('child_process', {
-				execFileSync: (_command: string, args: string[]) => {
-					requestArgs.push(args[1]);
+			vi.spyOn(ChildProcess, 'execFileSync').mockImplementation(<any>((
+				_command: string,
+				args: string[]
+			) => {
+				requestArgs.push(args[1]);
 
-					if (args[1].includes('If-None-Match')) {
-						return JSON.stringify({
-							error: null,
-							incomingMessage: {
-								statusCode: 200,
-								statusMessage: 'OK',
-								rawHeaders: [
-									'content-type',
-									'text/html',
-									'content-length',
-									String(responseText2.length),
-									'cache-control',
-									'max-age=1',
-									'last-modified',
-									'Mon, 11 Dec 2023 02:00:00 GMT',
-									'etag',
-									etag2
-								],
-								data: Buffer.from(responseText2).toString('base64')
-							}
-						});
-					}
+				if (args[1].includes('If-None-Match')) {
 					return JSON.stringify({
 						error: null,
 						incomingMessage: {
@@ -3496,19 +3438,39 @@ describe('SyncFetch', () => {
 								'content-type',
 								'text/html',
 								'content-length',
-								String(responseText1.length),
+								String(responseText2.length),
 								'cache-control',
-								'max-age=0.0001',
+								'max-age=1',
 								'last-modified',
-								'Mon, 11 Dec 2023 01:00:00 GMT',
+								'Mon, 11 Dec 2023 02:00:00 GMT',
 								'etag',
-								etag1
+								etag2
 							],
-							data: Buffer.from(responseText1).toString('base64')
+							data: Buffer.from(responseText2).toString('base64')
 						}
 					});
 				}
-			});
+				return JSON.stringify({
+					error: null,
+					incomingMessage: {
+						statusCode: 200,
+						statusMessage: 'OK',
+						rawHeaders: [
+							'content-type',
+							'text/html',
+							'content-length',
+							String(responseText1.length),
+							'cache-control',
+							'max-age=0.0001',
+							'last-modified',
+							'Mon, 11 Dec 2023 01:00:00 GMT',
+							'etag',
+							etag1
+						],
+						data: Buffer.from(responseText1).toString('base64')
+					}
+				});
+			}));
 
 			const response1 = new SyncFetch({
 				browserFrame,
@@ -3604,32 +3566,13 @@ describe('SyncFetch', () => {
 			const responseText2 = 'vary 2';
 			const requestArgs: string[] = [];
 
-			mockModule('child_process', {
-				execFileSync: (_command: string, args: string[]) => {
-					requestArgs.push(args[1]);
+			vi.spyOn(ChildProcess, 'execFileSync').mockImplementation(<any>((
+				_command: string,
+				args: string[]
+			) => {
+				requestArgs.push(args[1]);
 
-					if (args[1].includes('"vary-header": "vary1"')) {
-						return JSON.stringify({
-							error: null,
-							incomingMessage: {
-								statusCode: 200,
-								statusMessage: 'OK',
-								rawHeaders: [
-									'content-type',
-									'text/html',
-									'content-length',
-									String(responseText1.length),
-									'cache-control',
-									'max-age=60',
-									'last-modified',
-									'Mon, 11 Dec 2023 01:00:00 GMT',
-									'vary',
-									'vary-header'
-								],
-								data: Buffer.from(responseText1).toString('base64')
-							}
-						});
-					}
+				if (args[1].includes('"vary-header": "vary1"')) {
 					return JSON.stringify({
 						error: null,
 						incomingMessage: {
@@ -3639,19 +3582,39 @@ describe('SyncFetch', () => {
 								'content-type',
 								'text/html',
 								'content-length',
-								String(responseText2.length),
+								String(responseText1.length),
 								'cache-control',
 								'max-age=60',
 								'last-modified',
-								'Mon, 11 Dec 2023 02:00:00 GMT',
+								'Mon, 11 Dec 2023 01:00:00 GMT',
 								'vary',
 								'vary-header'
 							],
-							data: Buffer.from(responseText2).toString('base64')
+							data: Buffer.from(responseText1).toString('base64')
 						}
 					});
 				}
-			});
+				return JSON.stringify({
+					error: null,
+					incomingMessage: {
+						statusCode: 200,
+						statusMessage: 'OK',
+						rawHeaders: [
+							'content-type',
+							'text/html',
+							'content-length',
+							String(responseText2.length),
+							'cache-control',
+							'max-age=60',
+							'last-modified',
+							'Mon, 11 Dec 2023 02:00:00 GMT',
+							'vary',
+							'vary-header'
+						],
+						data: Buffer.from(responseText2).toString('base64')
+					}
+				});
+			}));
 
 			const response1 = new SyncFetch({
 				browserFrame,
@@ -3867,19 +3830,17 @@ describe('SyncFetch', () => {
 				'<html><head><title>Happy DOM Virtual Server - 404 Not Found</title></head><body><h1>Happy DOM Virtual Server - 404 Not Found</h1></body></html>'
 			);
 
-			mockModule('child_process', {
-				execFileSync: () => {
-					return JSON.stringify({
-						error: null,
-						incomingMessage: {
-							statusCode: 404,
-							statusMessage: 'Not Found',
-							rawHeaders: [],
-							data: Buffer.from('404 not found').toString('base64')
-						}
-					});
-				}
-			});
+			vi.spyOn(ChildProcess, 'execFileSync').mockImplementation(<any>(() => {
+				return JSON.stringify({
+					error: null,
+					incomingMessage: {
+						statusCode: 404,
+						statusMessage: 'Not Found',
+						rawHeaders: [],
+						data: Buffer.from('404 not found').toString('base64')
+					}
+				});
+			}));
 
 			const response6 = new SyncFetch({
 				browserFrame: page.mainFrame,
@@ -4055,19 +4016,17 @@ describe('SyncFetch', () => {
 				'<html><head><title>Happy DOM Virtual Server - 404 Not Found</title></head><body><h1>Happy DOM Virtual Server - 404 Not Found</h1></body></html>'
 			);
 
-			mockModule('child_process', {
-				execFileSync: () => {
-					return JSON.stringify({
-						error: null,
-						incomingMessage: {
-							statusCode: 404,
-							statusMessage: 'Not Found',
-							rawHeaders: [],
-							data: Buffer.from('404 not found').toString('base64')
-						}
-					});
-				}
-			});
+			vi.spyOn(ChildProcess, 'execFileSync').mockImplementation(<any>(() => {
+				return JSON.stringify({
+					error: null,
+					incomingMessage: {
+						statusCode: 404,
+						statusMessage: 'Not Found',
+						rawHeaders: [],
+						data: Buffer.from('404 not found').toString('base64')
+					}
+				});
+			}));
 
 			const response6 = new SyncFetch({
 				browserFrame: page.mainFrame,
