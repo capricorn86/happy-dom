@@ -86,6 +86,23 @@ describe('HTMLFieldSetElement', () => {
 	});
 
 	describe('get elements()', () => {
+		it('Includes nested fieldset, object and output elements.', () => {
+			element.innerHTML = `
+                <fieldset name="nested"><input name="inner"></fieldset>
+                <object name="object1"></object>
+                <output name="output1"></output>
+                <input name="outer">
+            `;
+
+			expect(Array.from(element.elements).map((el) => el.name)).toEqual([
+				'nested',
+				'inner',
+				'object1',
+				'output1',
+				'outer'
+			]);
+		});
+
 		it('Returns elements.', () => {
 			const form = document.createElement('form');
 
