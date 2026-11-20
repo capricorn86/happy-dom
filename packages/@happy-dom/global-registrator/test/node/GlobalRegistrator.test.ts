@@ -114,6 +114,22 @@ describe('GlobalRegistrator', () => {
 		});
 	});
 
+	it('Exposes named element properties on the global object', () => {
+		GlobalRegistrator.register();
+
+		document.body.innerHTML = `<button id="foo"></button><div id="baz"></div>`;
+
+		assert.strictEqual(typeof (<any>globalThis).foo, 'object');
+		assert.strictEqual((<any>globalThis).foo, document.getElementById('foo'));
+		assert.strictEqual((<any>globalThis).baz instanceof <any>globalThis.HTMLElement, true);
+
+		// Removing the element should drop the named property from the global object.
+		(<any>globalThis).baz.remove();
+		assert.strictEqual(typeof (<any>globalThis).baz, 'undefined');
+
+		GlobalRegistrator.unregister();
+	});
+
 	describe('unregister()', () => {
 		it('Restores properties and getters after unregistering', () => {
 			GlobalRegistrator.register();

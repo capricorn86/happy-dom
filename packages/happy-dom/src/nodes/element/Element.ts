@@ -1743,6 +1743,13 @@ export default class Element
 		// To make sure we use the proxy we can check for the proxy property
 		const element = this[PropertySymbol.proxy] || this;
 
+		// When the window is registered globally (e.g. via @happy-dom/global-registrator), the
+		// global object itself should also expose named properties, like a browser does. We
+		// detect this by checking that the window's own `window` property points to the global
+		// object (which the GlobalRegistrator sets up).
+		const globalTarget =
+			<any>window !== globalThis && (<any>window).window === globalThis ? globalThis : null;
+
 		entry.elements.push(element);
 
 		if (entry.elements.length > 1) {
@@ -1761,6 +1768,12 @@ export default class Element
 			(entry.htmlCollection !== null && (<any>window)[id] === entry.htmlCollection)
 		) {
 			(<any>window)[id] = element;
+		}
+
+		// Mirror the named property onto the global object so that bare identifiers and
+		// `window.foo` resolve to the element, like in a browser.
+		if (globalTarget) {
+			(<any>globalTarget)[id] = (<any>window)[id];
 		}
 	}
 
@@ -1791,6 +1804,11 @@ export default class Element
 		// HTMLFormElement and HTMLSelectElement can be a proxy, but the scope can be the target and not the actual proxy
 		// To make sure we use the proxy we can check for the proxy property
 		const element = this[PropertySymbol.proxy] || this;
+
+		// Same global detection as in addIdentifierToWindow.
+		const globalTarget =
+			<any>window !== globalThis && (<any>window).window === globalThis ? globalThis : null;
+
 		const index = entry.elements.indexOf(element);
 
 		if (index !== -1) {
@@ -1808,6 +1826,15 @@ export default class Element
 
 			if ((<any>window)[id] === element || (<any>window)[id] === entry.htmlCollection) {
 				delete (<any>window)[id];
+			}
+		}
+
+		// Mirror the removal back onto the global object.
+		if (globalTarget) {
+			if ((<any>window)[id] !== undefined) {
+				(<any>globalTarget)[id] = (<any>window)[id];
+			} else {
+				delete (<any>globalTarget)[id];
 			}
 		}
 	}
