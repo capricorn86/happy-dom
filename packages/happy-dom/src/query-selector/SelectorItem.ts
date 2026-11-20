@@ -277,6 +277,10 @@ export default class SelectorItem {
 				return 'disabled' in element && element.hasAttribute('disabled')
 					? { priorityWeight: 10 }
 					: null;
+			case 'required':
+				return 'required' in element && element.hasAttribute('required')
+					? { priorityWeight: 10 }
+					: null;
 			case 'empty':
 				return !(<Element>element)[PropertySymbol.elementArray].length
 					? { priorityWeight: 10 }

@@ -1009,6 +1009,22 @@ describe('QuerySelector', () => {
 			expect(elements2[4] === container.children[0].children[5]).toBe(true);
 		});
 
+		it('Returns all elements matching the ":required" pseudo-class.', () => {
+			const container = document.createElement('div');
+			container.innerHTML = `
+				<input id="a" required>
+				<input id="b">
+				<select id="c" required></select>
+				<textarea id="d" required></textarea>
+			`;
+			const elements = container.querySelectorAll(':required');
+
+			expect(elements.length).toBe(3);
+			expect(elements[0].id).toBe('a');
+			expect(elements[1].id).toBe('c');
+			expect(elements[2].id).toBe('d');
+		});
+
 		it('Returns all elements matching "span:not([type=hidden])".', () => {
 			const container = document.createElement('div');
 			container.innerHTML = QuerySelectorHTML;
