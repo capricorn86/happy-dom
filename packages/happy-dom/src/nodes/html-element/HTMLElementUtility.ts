@@ -2,6 +2,7 @@ import FocusEvent from '../../event/events/FocusEvent.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
 import type HTMLElement from '../html-element/HTMLElement.js';
 import type SVGElement from '../svg-element/SVGElement.js';
+import type Element from '../element/Element.js';
 
 /**
  * HTMLElement utility.
@@ -96,6 +97,31 @@ export default class HTMLElementUtility {
 				composed: true
 			})
 		);
+	}
+
+	/**
+	 * Returns whether an element is disabled per the HTML "concept of disabled": its own
+	 * `disabled` attribute, or being a descendant of a disabled <fieldset>, except inside
+	 * that fieldset's first <legend> child.
+	 *
+	 * @param element Element to check.
+	 * @returns True if the element is effectively disabled.
+	 */
+	public static isEffectivelyDisabled(element: Element): boolean {
+		if (element.hasAttribute('disabled')) {
+			return true;
+		}
+		let ancestor = element.parentElement;
+		while (ancestor) {
+			if (ancestor[PropertySymbol.tagName] === 'FIELDSET' && ancestor.hasAttribute('disabled')) {
+				const legend = ancestor[PropertySymbol.elementArray].find(
+					(child) => child[PropertySymbol.tagName] === 'LEGEND'
+				);
+				return !legend || !legend.contains(element);
+			}
+			ancestor = ancestor.parentElement;
+		}
+		return false;
 	}
 
 	/**

@@ -5,6 +5,7 @@ import type HTMLElement from '../../../src/nodes/html-element/HTMLElement.js';
 import Window from '../../../src/window/Window.js';
 import { beforeEach, describe, it, expect } from 'vitest';
 import type EventTarget from '../../../src/event/EventTarget.js';
+import HTMLElementUtility from '../../../src/nodes/html-element/HTMLElementUtility.js';
 
 describe('HTMLElementUtility', () => {
 	let window: Window;
@@ -216,6 +217,53 @@ describe('HTMLElementUtility', () => {
 				expect(target).toBe(previousElement);
 				expect(currentTarget).toBe(previousElement);
 			}
+		});
+	});
+
+	describe('isEffectivelyDisabled()', () => {
+		it('Returns true for an element with its own "disabled" attribute.', () => {
+			document.body.innerHTML = `<input id="a" disabled>`;
+			const element = <HTMLElement>document.getElementById('a');
+
+			expect(HTMLElementUtility.isEffectivelyDisabled(element)).toBe(true);
+		});
+
+		it('Returns true for a descendant of a disabled <fieldset>.', () => {
+			document.body.innerHTML = `
+				<fieldset disabled>
+					<input id="inFieldset">
+					<div><input id="nestedInFieldset"></div>
+				</fieldset>
+			`;
+
+			expect(
+				HTMLElementUtility.isEffectivelyDisabled(<HTMLElement>document.getElementById('inFieldset'))
+			).toBe(true);
+			expect(
+				HTMLElementUtility.isEffectivelyDisabled(
+					<HTMLElement>document.getElementById('nestedInFieldset')
+				)
+			).toBe(true);
+		});
+
+		it("Returns false for a descendant inside the disabled <fieldset>'s first <legend>.", () => {
+			document.body.innerHTML = `
+				<fieldset disabled>
+					<legend><input id="inLegend"></legend>
+				</fieldset>
+			`;
+
+			expect(
+				HTMLElementUtility.isEffectivelyDisabled(<HTMLElement>document.getElementById('inLegend'))
+			).toBe(false);
+		});
+
+		it('Returns false for a descendant of a <fieldset> without the disabled attribute.', () => {
+			document.body.innerHTML = `<fieldset><input id="a"></fieldset>`;
+
+			expect(
+				HTMLElementUtility.isEffectivelyDisabled(<HTMLElement>document.getElementById('a'))
+			).toBe(false);
 		});
 	});
 
