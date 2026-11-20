@@ -650,6 +650,19 @@ describe('HTMLScriptElement', () => {
 			expect((<any>window)['test']).toBe(undefined);
 		});
 
+		it('Makes "var" and function declarations reach the global object, as according to spec.', () => {
+			const element = document.createElement('script');
+			element.text = `
+                var test = 'test';
+                function testFunction() {
+                    return 'testFunction';
+                }
+            `;
+			document.body.appendChild(element);
+			expect((<any>window)['test']).toBe('test');
+			expect((<any>window)['testFunction']()).toBe('testFunction');
+		});
+
 		it('Loads and evaluates an external script when "src" attribute has been set, but does not evaluate text content.', () => {
 			const element = document.createElement('script');
 
@@ -860,8 +873,8 @@ describe('HTMLScriptElement', () => {
 			const consoleOutput = window.happyDOM?.virtualConsolePrinter.readAsString() || '';
 			expect(
 				consoleOutput.startsWith(`https://localhost:8080/base/path/to/script/:1
-(function anonymous($happy_dom) {try {globalThis.test = /;} catch (error) { $happy_dom.dispatchError(error); }})
-                                                        ^
+try {globalThis.test = /;} catch (error) { $happy_dom.dispatchError(error); }
+                       ^
 
 SyntaxError: Invalid regular expression: missing /`)
 			).toBe(true);
@@ -889,8 +902,8 @@ SyntaxError: Invalid regular expression: missing /`)
 			const consoleOutput = window.happyDOM?.virtualConsolePrinter.readAsString() || '';
 			expect(
 				consoleOutput.startsWith(`https://localhost:8080/base/path/to/script/:1
-(function anonymous($happy_dom) {try {globalThis.test = /;} catch (error) { $happy_dom.dispatchError(error); }})
-                                                        ^
+try {globalThis.test = /;} catch (error) { $happy_dom.dispatchError(error); }
+                       ^
 
 SyntaxError: Invalid regular expression: missing /`)
 			).toBe(true);
@@ -913,8 +926,8 @@ SyntaxError: Invalid regular expression: missing /`)
 			const consoleOutput = window.happyDOM?.virtualConsolePrinter.readAsString() || '';
 			expect(
 				consoleOutput.startsWith(`about:blank:1
-(function anonymous($happy_dom) {try {globalThis.test = /;} catch (error) { $happy_dom.dispatchError(error); }})
-                                                        ^
+try {globalThis.test = /;} catch (error) { $happy_dom.dispatchError(error); }
+                       ^
 
 SyntaxError: Invalid regular expression: missing /`)
 			).toBe(true);
