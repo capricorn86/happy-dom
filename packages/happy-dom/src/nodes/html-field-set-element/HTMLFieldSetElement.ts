@@ -1,18 +1,9 @@
 import HTMLElement from '../html-element/HTMLElement.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
 import HTMLCollection from '../element/HTMLCollection.js';
-import type HTMLInputElement from '../html-input-element/HTMLInputElement.js';
-import type HTMLTextAreaElement from '../html-text-area-element/HTMLTextAreaElement.js';
-import type HTMLSelectElement from '../html-select-element/HTMLSelectElement.js';
-import type HTMLButtonElement from '../html-button-element/HTMLButtonElement.js';
 import type HTMLFormElement from '../html-form-element/HTMLFormElement.js';
+import type { THTMLFormControlElement as THTMLFieldSetElement } from '../html-form-element/THTMLFormControlElement.js';
 import QuerySelector from '../../query-selector/QuerySelector.js';
-
-type THTMLFieldSetElement =
-	| HTMLInputElement
-	| HTMLButtonElement
-	| HTMLTextAreaElement
-	| HTMLSelectElement;
 
 /**
  * HTMLFieldSetElement
@@ -38,9 +29,10 @@ export default class HTMLFieldSetElement extends HTMLElement {
 				PropertySymbol.illegalConstructor,
 				() =>
 					<THTMLFieldSetElement[]>(
-						QuerySelector.querySelectorAll(this, 'input,button,textarea,select')[
-							PropertySymbol.items
-						]
+						QuerySelector.querySelectorAll(
+							this,
+							'input,select,textarea,button,fieldset,object,output'
+						)[PropertySymbol.items]
 					)
 			);
 		}
