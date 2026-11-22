@@ -3157,6 +3157,67 @@ describe('SyncFetch', () => {
 			]);
 		});
 
+		for (const clock of ['advancing', 'frozen']) {
+			it(`Revalidates cache with a "If-Modified-Since" request for a GET response with "Cache-Control" set to "max-age=0" when the clock is ${clock}.`, () => {
+				browserFrame.url = 'https://localhost:8080/';
+
+				const url = 'https://localhost:8080/some/path';
+				const responseText = 'some text';
+				const requestArgs: string[] = [];
+				let now = Date.now();
+
+				// An advancing clock crosses a millisecond boundary while the response is cached, and a frozen clock makes the next request happen in the same millisecond.
+				vi.spyOn(Date, 'now').mockImplementation(() => (clock === 'advancing' ? now++ : now));
+
+				mockModule('child_process', {
+					execFileSync: (_command: string, args: string[]) => {
+						requestArgs.push(args[1]);
+
+						if (args[1].includes('If-Modified-Since')) {
+							return JSON.stringify({
+								error: null,
+								incomingMessage: {
+									statusCode: 304,
+									statusMessage: 'Not Modified',
+									rawHeaders: [],
+									data: ''
+								}
+							});
+						}
+						return JSON.stringify({
+							error: null,
+							incomingMessage: {
+								statusCode: 200,
+								statusMessage: 'OK',
+								rawHeaders: [
+									'content-type',
+									'text/html',
+									'content-length',
+									String(responseText.length),
+									'cache-control',
+									'max-age=0',
+									'last-modified',
+									'Mon, 11 Dec 2023 01:00:00 GMT'
+								],
+								data: Buffer.from(responseText).toString('base64')
+							}
+						});
+					}
+				});
+
+				const response1 = new SyncFetch({ browserFrame, window, url }).send();
+				const response2 = new SyncFetch({ browserFrame, window, url }).send();
+
+				expect(response1.body!.toString()).toBe(responseText);
+				expect(response2.status).toBe(200);
+				expect(response2.body!.toString()).toBe(responseText);
+				expect(requestArgs.map((script) => script.includes('If-Modified-Since'))).toEqual([
+					false,
+					true
+				]);
+			});
+		}
+
 		it('Updates cache after a failed revalidation with a "If-Modified-Since" request for a GET response with "Cache-Control" set to a "max-age".', async () => {
 			browserFrame.url = 'https://localhost:8080/';
 
