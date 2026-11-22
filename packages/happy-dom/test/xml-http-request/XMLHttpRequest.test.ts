@@ -1107,6 +1107,62 @@ describe('XMLHttpRequest', () => {
 			});
 		});
 
+		it('Keeps the content length of the body for an asynchronous DELETE request.', async () => {
+			const body = '{"foo": "bar"}';
+			let requestArgs: { method: string; contentLength: number | null; body: string } | null = null;
+
+			await new Promise((resolve) => {
+				vi.spyOn(Fetch.prototype, 'send').mockImplementation(async function () {
+					requestArgs = {
+						method: this.request.method,
+						contentLength: this.request[PropertySymbol.contentLength],
+						body: await this.request.text()
+					};
+					return <Response>{
+						headers: <Headers>new Headers(),
+						body: new ReadableStream({
+							start(controller) {
+								controller.close();
+							}
+						})
+					};
+				});
+
+				request.open('DELETE', REQUEST_URL, true);
+
+				request.addEventListener('load', () => resolve(null));
+
+				request.send(body);
+			});
+
+			expect(requestArgs).toEqual({
+				method: 'DELETE',
+				contentLength: body.length,
+				body
+			});
+		});
+
+		it('Keeps the content length of the body for a synchronous DELETE request.', () => {
+			const body = '{"foo": "bar"}';
+			let requestArgs: { method: string; contentLength: number | null } | null = null;
+
+			vi.spyOn(SyncFetch.prototype, 'send').mockImplementation(function () {
+				requestArgs = {
+					method: this.request.method,
+					contentLength: this.request[PropertySymbol.contentLength]
+				};
+				return <ISyncResponse>{ headers: <Headers>new Headers(), body: Buffer.from('') };
+			});
+
+			request.open('DELETE', REQUEST_URL, false);
+			request.send(body);
+
+			expect(requestArgs).toEqual({
+				method: 'DELETE',
+				contentLength: body.length
+			});
+		});
+
 		it('Performs an asynchronous cross-origin POST request with the HTTPS protocol.', async () => {
 			await new Promise((resolve) => {
 				const body = '{"foo": "bar"}';
@@ -1178,6 +1234,7 @@ describe('XMLHttpRequest', () => {
 					expect(postRequestHeaders).toEqual({
 						Accept: '*/*',
 						Connection: 'close',
+						'Content-Length': String(body.length),
 						'Content-Type': 'application/json',
 						'User-Agent': window.navigator.userAgent,
 						'Accept-Encoding': 'gzip, deflate, br',
