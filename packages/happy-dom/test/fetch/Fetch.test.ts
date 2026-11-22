@@ -4001,6 +4001,77 @@ describe('Fetch', () => {
 			]);
 		});
 
+		for (const clock of ['advancing', 'frozen']) {
+			it(`Revalidates cache with a "If-Modified-Since" request for a GET response with "Cache-Control" set to "max-age=0" when the clock is ${clock}.`, async () => {
+				const window = new Window({ url: 'https://localhost:8080/' });
+				const url = 'https://localhost:8080/some/path';
+				const responseText = 'some text';
+				const ifModifiedSince: Array<string | undefined> = [];
+				let now = Date.now();
+
+				// An advancing clock crosses a millisecond boundary while the response is cached, and a frozen clock makes the next request happen in the same millisecond.
+				vi.spyOn(Date, 'now').mockImplementation(() => (clock === 'advancing' ? now++ : now));
+
+				mockModule('https', {
+					request: (_url, options) => {
+						ifModifiedSince.push(options.headers['If-Modified-Since']);
+
+						return {
+							end: () => {},
+							on: (event: string, callback: (response: HTTP.IncomingMessage) => void) => {
+								if (event === 'response') {
+									if (options.headers['If-Modified-Since']) {
+										const response = <HTTP.IncomingMessage>Stream.Readable.from([]);
+
+										response.statusCode = 304;
+										response.statusMessage = 'Not Modified';
+										response.headers = {};
+										response.rawHeaders = [];
+
+										callback(response);
+									} else {
+										async function* generate(): AsyncGenerator<string> {
+											yield responseText;
+										}
+
+										const response = <HTTP.IncomingMessage>Stream.Readable.from(generate());
+
+										response.statusCode = 200;
+										response.statusMessage = 'OK';
+										response.headers = {};
+										response.rawHeaders = [
+											'content-type',
+											'text/html',
+											'content-length',
+											String(responseText.length),
+											'cache-control',
+											'max-age=0',
+											'last-modified',
+											'Mon, 11 Dec 2023 01:00:00 GMT'
+										];
+
+										callback(response);
+									}
+								}
+							},
+							setTimeout: () => {}
+						};
+					}
+				});
+
+				const response1 = await window.fetch(url);
+				const text1 = await response1.text();
+
+				const response2 = await window.fetch(url);
+				const text2 = await response2.text();
+
+				expect(text1).toBe(responseText);
+				expect(response2.status).toBe(200);
+				expect(text2).toBe(responseText);
+				expect(ifModifiedSince).toEqual([undefined, 'Mon, 11 Dec 2023 01:00:00 GMT']);
+			});
+		}
+
 		it('Updates cache after a failed revalidation with a "If-Modified-Since" request for a GET response with "Cache-Control" set to a "max-age".', async () => {
 			const window = new Window({ url: 'https://localhost:8080/' });
 			const url = '/some/path';
