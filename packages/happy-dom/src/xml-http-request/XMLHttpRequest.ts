@@ -424,8 +424,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 		const fetch = new Fetch({
 			browserFrame: browserFrame,
 			window: window,
-			url: this.#request!.url,
-			init: this.#request!
+			url: this.#request!
 		});
 
 		try {
@@ -521,8 +520,7 @@ export default class XMLHttpRequest extends XMLHttpRequestEventTarget {
 		const fetch = new SyncFetch({
 			browserFrame,
 			window: window,
-			url: this.#request!.url,
-			init: this.#request!
+			url: this.#request!
 		});
 
 		try {
