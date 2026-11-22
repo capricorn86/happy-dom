@@ -709,6 +709,29 @@ describe('BrowserWindow', () => {
 			expect(computedStyle.color).toBe('green');
 		});
 
+		it('Applies style sheet rules where the selector spans multiple lines.', () => {
+			for (const lineBreak of ['\n', '\r\n']) {
+				document.head.innerHTML = `<style>${[
+					'.a,',
+					'.b > .c,',
+					'.d:not(.x,',
+					'.y) {',
+					'  display: none;',
+					'}'
+				].join(lineBreak)}</style>`;
+				document.body.innerHTML =
+					'<div id="a" class="a"></div><div class="b"><span id="c" class="c"></span></div><div id="d" class="d"></div><div id="e" class="e"></div>';
+
+				const display = (id: string): string =>
+					window.getComputedStyle(document.getElementById(id)!).display;
+
+				expect(display('a')).toBe('none');
+				expect(display('c')).toBe('none');
+				expect(display('d')).toBe('none');
+				expect(display('e')).toBe('block');
+			}
+		});
+
 		it('Updates inherited values in the whole subtree when an ancestor is changed.', () => {
 			document.head.innerHTML = '<style>.red { color: rgb(255, 0, 0); }</style>';
 			document.body.innerHTML =

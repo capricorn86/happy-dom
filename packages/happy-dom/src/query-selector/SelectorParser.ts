@@ -45,7 +45,7 @@ const SELECTOR_GROUP_REGEXP = /(\s*[\s,+>~]\s*)|([\[\]\(\)"'])/g;
  * Group 23: Pseudo element (e.g. "::after", "::-webkit-inner-spin-button").
  */
 const SELECTOR_REGEXP =
-	/(\*)|([a-zA-Z0-9\u00A0-\uFFFF-]+)|#(([a-zA-Z0-9\u00A0-\uFFFF_-]|\\.)+)|\.(([a-zA-Z0-9\u00A0-\uFFFF_-]|\\.)+)|\[(([a-zA-Z0-9-_]|\\.)+)\]|\[(([a-zA-Z0-9-_]|\\.)+)\s*([~|^$*]{0,1})\s*=\s*("([^"]*)"|'([^']*)')\s*(s|i){0,1}\]|\[(([a-zA-Z0-9-_]|\\.)+)\s*([~|^$*]{0,1})\s*=\s*(([a-zA-Z0-9\u00A0-\uFFFF_¤£-]|\\.)+)\]|:([a-zA-Z-]+)\s*\(.+\)|:([a-zA-Z-]+)|::([a-zA-Z-]+)/g;
+	/(\*)|([a-zA-Z0-9\u00A0-\uFFFF-]+)|#(([a-zA-Z0-9\u00A0-\uFFFF_-]|\\.)+)|\.(([a-zA-Z0-9\u00A0-\uFFFF_-]|\\.)+)|\[(([a-zA-Z0-9-_]|\\.)+)\]|\[(([a-zA-Z0-9-_]|\\.)+)\s*([~|^$*]{0,1})\s*=\s*("([^"]*)"|'([^']*)')\s*(s|i){0,1}\]|\[(([a-zA-Z0-9-_]|\\.)+)\s*([~|^$*]{0,1})\s*=\s*(([a-zA-Z0-9\u00A0-\uFFFF_¤£-]|\\.)+)\]|:([a-zA-Z-]+)\s*\([\s\S]+\)|:([a-zA-Z-]+)|::([a-zA-Z-]+)/g;
 
 /**
  * Selector pseudo RegExp.
@@ -85,7 +85,14 @@ const NTH_FUNCTION = {
 /**
  * Space RegExp.
  */
-const SPACE_REGEXP = / /g;
+const SPACE_REGEXP = /\s/g;
+
+/**
+ * Nth "of" RegExp.
+ *
+ * Matches the "of" separating the "An+B" part from the selector in "nth-child(2n+1 of .class)".
+ */
+const NTH_OF_REGEXP = /\sof\s/;
 
 /**
  * Utility for parsing a selection string.
@@ -546,10 +553,11 @@ export default class SelectorParser {
 		switch (lowerName) {
 			case 'nth-last-child':
 			case 'nth-child':
-				const nthOfIndex = args.indexOf(' of ');
-				const nthFunction = nthOfIndex !== -1 ? args.substring(0, nthOfIndex) : args;
-				const selectorItem =
-					nthOfIndex !== -1 ? this.getSelectorItem(args.substring(nthOfIndex + 4).trim()) : null;
+				const nthOf = NTH_OF_REGEXP.exec(args);
+				const nthFunction = nthOf ? args.substring(0, nthOf.index) : args;
+				const selectorItem = nthOf
+					? this.getSelectorItem(args.substring(nthOf.index + nthOf[0].length).trim())
+					: null;
 				return {
 					name: lowerName,
 					arguments: args,
