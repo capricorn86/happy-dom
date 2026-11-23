@@ -152,15 +152,17 @@ describe('BrowserFrame', () => {
 			const childFrame = BrowserFrameFactory.createChildFrame(page.mainFrame);
 
 			expect(childFrame.window.parent === page.mainFrame.window).toBe(true);
-			expect(childFrame[PropertySymbol.contentWindow] === childFrame.window).toBe(true);
+			expect(page.mainFrame[PropertySymbol.access].children[0].window === childFrame.window).toBe(
+				true
+			);
 
 			childFrame.url = 'https://other.example/';
 
 			expect(childFrame.window.parent instanceof CrossOriginBrowserWindow).toBe(true);
 			expect(childFrame.window.top instanceof CrossOriginBrowserWindow).toBe(true);
-			expect(childFrame[PropertySymbol.contentWindow] instanceof CrossOriginBrowserWindow).toBe(
-				true
-			);
+			expect(
+				page.mainFrame[PropertySymbol.access].children[0].window instanceof CrossOriginBrowserWindow
+			).toBe(true);
 		});
 	});
 
@@ -999,10 +1001,16 @@ Task #1
 			});
 			const page = browser.newPage();
 			const childPage = browser.newPage();
-			childPage.mainFrame[PropertySymbol.opener] = {
+			childPage.mainFrame[PropertySymbol.access].opener = {
 				frame: page.mainFrame,
 				window: null
 			};
+			page.mainFrame[PropertySymbol.access].pages = [
+				{
+					frame: childPage.mainFrame,
+					window: null
+				}
+			];
 			const oldWindow = childPage.mainFrame.window;
 
 			page.mainFrame.url = 'https://github.com';
@@ -1031,10 +1039,16 @@ Task #1
 			});
 			const page = browser.newPage();
 			const childPage = browser.newPage();
-			childPage.mainFrame[PropertySymbol.opener] = {
+			childPage.mainFrame[PropertySymbol.access].opener = {
 				frame: page.mainFrame,
 				window: null
 			};
+			page.mainFrame[PropertySymbol.access].pages = [
+				{
+					frame: childPage.mainFrame,
+					window: null
+				}
+			];
 			const oldWindow = childPage.mainFrame.window;
 
 			page.mainFrame.url = 'https://github.com';
@@ -1086,10 +1100,16 @@ Task #1
 			});
 			const page = browser.newPage();
 			const childPage = browser.newPage();
-			childPage.mainFrame[PropertySymbol.opener] = {
+			childPage.mainFrame[PropertySymbol.access].opener = {
 				frame: page.mainFrame,
 				window: null
 			};
+			page.mainFrame[PropertySymbol.access].pages = [
+				{
+					frame: childPage.mainFrame,
+					window: null
+				}
+			];
 			const oldWindow = childPage.mainFrame.window;
 
 			page.mainFrame.url = 'http://github.com';
@@ -1117,10 +1137,16 @@ Task #1
 			});
 			const page = browser.newPage();
 			const childPage = browser.newPage();
-			childPage.mainFrame[PropertySymbol.opener] = {
+			childPage.mainFrame[PropertySymbol.access].opener = {
 				frame: page.mainFrame,
 				window: null
 			};
+			page.mainFrame[PropertySymbol.access].pages = [
+				{
+					frame: childPage.mainFrame,
+					window: null
+				}
+			];
 			const oldWindow = childPage.mainFrame.window;
 
 			page.mainFrame.url = 'https://github.com';
@@ -1148,10 +1174,16 @@ Task #1
 			});
 			const page = browser.newPage();
 			const childPage = browser.newPage();
-			childPage.mainFrame[PropertySymbol.opener] = {
+			childPage.mainFrame[PropertySymbol.access].opener = {
 				frame: page.mainFrame,
 				window: null
 			};
+			page.mainFrame[PropertySymbol.access].pages = [
+				{
+					frame: childPage.mainFrame,
+					window: null
+				}
+			];
 			const oldWindow = childPage.mainFrame.window;
 
 			await childPage.mainFrame.goto('http://github.com/capricorn86/happy-dom');
@@ -1177,10 +1209,16 @@ Task #1
 			});
 			const page = browser.newPage();
 			const childPage = browser.newPage();
-			childPage.mainFrame[PropertySymbol.opener] = {
+			childPage.mainFrame[PropertySymbol.access].opener = {
 				frame: page.mainFrame,
 				window: null
 			};
+			page.mainFrame[PropertySymbol.access].pages = [
+				{
+					frame: childPage.mainFrame,
+					window: null
+				}
+			];
 			const oldWindow = childPage.mainFrame.window;
 
 			page.mainFrame.url = 'https://github.com';
@@ -1283,10 +1321,16 @@ Task #1
 			});
 			const page = browser.newPage();
 			const childPage = browser.newPage();
-			childPage.mainFrame[PropertySymbol.opener] = {
+			childPage.mainFrame[PropertySymbol.access].opener = {
 				frame: page.mainFrame,
 				window: null
 			};
+			page.mainFrame[PropertySymbol.access].pages = [
+				{
+					frame: childPage.mainFrame,
+					window: null
+				}
+			];
 			const oldWindow = childPage.mainFrame.window;
 
 			await childPage.mainFrame.goto('http://localhost:9999');
@@ -1310,10 +1354,16 @@ Task #1
 			});
 			const page = browser.newPage();
 			const childPage = browser.newPage();
-			childPage.mainFrame[PropertySymbol.opener] = {
+			childPage.mainFrame[PropertySymbol.access].opener = {
 				frame: page.mainFrame,
 				window: null
 			};
+			page.mainFrame[PropertySymbol.access].pages = [
+				{
+					frame: childPage.mainFrame,
+					window: null
+				}
+			];
 			const oldWindow = childPage.mainFrame.window;
 
 			const response = await childPage.mainFrame.goto('http://localhost:9999');

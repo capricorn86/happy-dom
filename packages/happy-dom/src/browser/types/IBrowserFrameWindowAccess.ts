@@ -7,5 +7,7 @@ import type IBrowserFrame from './IBrowserFrame.js';
  */
 export default interface IBrowserFrameWindowAccess {
 	frame: IBrowserFrame;
-	window: BrowserWindow | CrossOriginBrowserWindow;
+	window: BrowserWindow | CrossOriginBrowserWindow | null;
+	// Indicates if the window access is restricted due to noreferrer.
+	noreferrer?: boolean;
 }

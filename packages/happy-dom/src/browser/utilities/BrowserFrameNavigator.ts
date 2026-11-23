@@ -12,7 +12,6 @@ import HistoryScrollRestorationEnum from '../../history/HistoryScrollRestoration
 import type IHistoryItem from '../../history/IHistoryItem.js';
 import DOMExceptionNameEnum from '../../exception/DOMExceptionNameEnum.js';
 import Fetch from '../../fetch/Fetch.js';
-import BrowserFrameCrossOriginIsolation from './BrowserFrameCrossOriginIsolation.js';
 
 /**
  * Browser frame navigation utility.
@@ -145,7 +144,7 @@ export default class BrowserFrameNavigator {
 					url: targetURL.href,
 					inheritedOrigin: historyItem ? historyItem.documentState.inheritedOrigin : inheritedOrigin
 				};
-				BrowserFrameCrossOriginIsolation.isolate(frame);
+				frame[PropertySymbol.access].update();
 			}
 
 			return null;
@@ -186,7 +185,7 @@ export default class BrowserFrameNavigator {
 		(<BrowserWindow>frame.window) = new windowClass(frame, { url: targetURL.href, width, height });
 		(<number>frame.window.devicePixelRatio) = devicePixelRatio;
 
-		BrowserFrameCrossOriginIsolation.isolate(frame);
+		frame[PropertySymbol.access].update();
 
 		if (exceptionObserver) {
 			exceptionObserver.observe(frame.window);
@@ -218,14 +217,10 @@ export default class BrowserFrameNavigator {
 		}
 
 		// Popups should loose their opener references
-		for (const popup of frame[PropertySymbol.openedPages]) {
-			if (popup.mainFrame[PropertySymbol.opener]) {
-				popup.mainFrame[PropertySymbol.opener].window = null;
-				popup.mainFrame[PropertySymbol.opener].frame = null;
-			}
-			BrowserFrameCrossOriginIsolation.isolate(popup.mainFrame);
+		for (const access of frame[PropertySymbol.access].pages) {
+			access.frame[PropertySymbol.access].opener = null;
 		}
-		frame[PropertySymbol.openedPages].length = 0;
+		frame[PropertySymbol.access].pages = [];
 
 		// Handle "about" protocol URL
 		if (targetURL.protocol === 'about:') {
@@ -324,7 +319,7 @@ export default class BrowserFrameNavigator {
 				url: response.url
 			};
 			history.currentItem.state = null;
-			BrowserFrameCrossOriginIsolation.isolate(frame);
+			frame[PropertySymbol.access].update();
 		}
 
 		if (!response.ok) {

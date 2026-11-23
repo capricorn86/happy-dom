@@ -240,7 +240,12 @@ export default class HTMLIFrameElement extends HTMLElement {
 	 * @returns Content window.
 	 */
 	public get contentWindow(): BrowserWindow | CrossOriginBrowserWindow | null {
-		return this.#iframe?.[PropertySymbol.contentWindow] ?? null;
+		// Parent wants to access the window of the iframe, so we need to lookup the access information for the iframe within its parent's context.
+		return (
+			this.#iframe?.parentFrame?.[PropertySymbol.access].children.find(
+				(child) => child.frame === this.#iframe
+			)?.window ?? null
+		);
 	}
 
 	/**

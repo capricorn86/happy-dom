@@ -857,8 +857,8 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	public [PropertySymbol.localStorage]: Storage;
 	public [PropertySymbol.cookieStore]: CookieStore;
 	public [PropertySymbol.self]: BrowserWindow | null = this;
-	public [PropertySymbol.top]: BrowserWindow | null = this;
-	public [PropertySymbol.parent]: BrowserWindow | null = this;
+	public [PropertySymbol.top]: BrowserWindow | null = null;
+	public [PropertySymbol.parent]: BrowserWindow | null = null;
 	public [PropertySymbol.window]: BrowserWindow = this;
 	public [PropertySymbol.frames]: BrowserWindow = this;
 	public [PropertySymbol.internalId]: number = -1;
@@ -1990,7 +1990,9 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	 * @returns Top.
 	 */
 	public get top(): BrowserWindow {
-		return this[PropertySymbol.top]!;
+		return <BrowserWindow>(
+			(this[PropertySymbol.top] || this.#browserFrame[PropertySymbol.access].top?.window || null)
+		);
 	}
 
 	/**
@@ -1999,7 +2001,11 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	 * @returns Parent.
 	 */
 	public get parent(): BrowserWindow {
-		return this[PropertySymbol.parent]!;
+		return <BrowserWindow>(
+			(this[PropertySymbol.parent] ||
+				this.#browserFrame[PropertySymbol.access].parent?.window ||
+				null)
+		);
 	}
 
 	/**
@@ -2877,13 +2883,8 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 			);
 		}
 
-		const opener = this.#browserFrame[PropertySymbol.access].opener?.frame;
-		const isPopup = !!opener?.[PropertySymbol.access].popups.find(
-			(popup) => popup.frame === this.#browserFrame
-		);
-
 		// We can only resize the window if it is a popup.
-		if (isPopup) {
+		if (this.#browserFrame[PropertySymbol.access].opener?.frame.page[PropertySymbol.popup]) {
 			this.#browserFrame.page.setViewport({ width, height });
 		}
 	}
@@ -2905,13 +2906,8 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 			);
 		}
 
-		const opener = this.#browserFrame[PropertySymbol.access].opener?.frame;
-		const isPopup = !!opener?.[PropertySymbol.access].popups.find(
-			(popup) => popup.frame === this.#browserFrame
-		);
-
 		// We can only resize the window if it is a popup.
-		if (isPopup) {
+		if (this.#browserFrame[PropertySymbol.access].opener?.frame.page[PropertySymbol.popup]) {
 			const viewport = this.#browserFrame.page.viewport;
 			this.#browserFrame.page.setViewport({
 				width: viewport.width + width,

@@ -16,6 +16,8 @@ export default interface ICSSStyleDeclaration {
 	'animation-iteration-count': string;
 	animationName: string;
 	'animation-name': string;
+	animationNavigationBehavior: string;
+	'animation-navigation-behavior': string;
 	animationPlayState: string;
 	'animation-play-state': string;
 	animationRangeStart: string;

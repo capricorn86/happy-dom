@@ -8,6 +8,7 @@ import type IGoToOptions from './IGoToOptions.js';
 import type Response from '../../fetch/Response.js';
 import type IReloadOptions from './IReloadOptions.js';
 import type IOptionalBrowserPageViewport from './IOptionalBrowserPageViewport.js';
+import type * as PropertySymbol from '../../PropertySymbol.js';
 
 /**
  * Browser page.
@@ -22,6 +23,7 @@ export default interface IBrowserPage {
 	readonly closed: boolean;
 	content: string;
 	url: string;
+	[PropertySymbol.popup]: boolean;
 
 	/**
 	 * Aborts all ongoing operations and destroys the page.

@@ -15,7 +15,6 @@ export default class BrowserFrameAccess {
 	public opener: IBrowserFrameWindowAccess | null = null;
 	public children: IBrowserFrameWindowAccess[] = [];
 	public pages: IBrowserFrameWindowAccess[] = [];
-	public popups: IBrowserFrameWindowAccess[] = [];
 
 	/**
 	 * Constructor.
@@ -43,13 +42,9 @@ export default class BrowserFrameAccess {
 			});
 		}
 		if (this.opener) {
-			const sourceAccess =
-				this.opener.frame[PropertySymbol.access].pages?.find(
-					(child) => child.frame === this.frame
-				) ||
-				this.opener.frame[PropertySymbol.access].popups?.find(
-					(child) => child.frame === this.frame
-				);
+			const sourceAccess = this.opener.frame[PropertySymbol.access].pages?.find(
+				(child) => child.frame === this.frame
+			);
 			this.opener.window = this.getWindow(this.frame, this.opener.frame, sourceAccess);
 		}
 		for (const child of this.children) {
@@ -63,12 +58,6 @@ export default class BrowserFrameAccess {
 				page.frame[PropertySymbol.access].opener?.frame === this.frame ? page : undefined;
 			page.window = this.getWindow(this.frame, page.frame, sourceAccess);
 			page.frame[PropertySymbol.access].update();
-		}
-		for (const popup of this.popups) {
-			const sourceAccess =
-				popup.frame[PropertySymbol.access].opener?.frame === this.frame ? popup : undefined;
-			popup.window = this.getWindow(this.frame, popup.frame, sourceAccess);
-			popup.frame[PropertySymbol.access].update();
 		}
 	}
 

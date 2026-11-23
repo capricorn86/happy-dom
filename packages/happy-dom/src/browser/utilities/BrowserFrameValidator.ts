@@ -19,8 +19,9 @@ export default class BrowserFrameValidator {
 		const settings = frame.page.context.browser.settings;
 		let fromURL = frame.page.mainFrame.window.location;
 
-		if (frame[PropertySymbol.opener]?.frame) {
-			fromURL = frame[PropertySymbol.opener].frame.window.location;
+		if (frame[PropertySymbol.access]?.opener) {
+			// TODO: We need to handle cross origin using BrowserFrameAccess
+			fromURL = frame[PropertySymbol.access]?.opener.frame.window.location;
 		} else if (frame.parentFrame) {
 			fromURL = frame.parentFrame.window.location;
 		}

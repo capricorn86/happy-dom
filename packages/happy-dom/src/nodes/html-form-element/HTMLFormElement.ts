@@ -22,6 +22,8 @@ import ElementEventAttributeUtility from '../element/ElementEventAttributeUtilit
 import type HTMLTextAreaElement from '../html-text-area-element/HTMLTextAreaElement.js';
 import type HTMLOutputElement from '../html-output-element/HTMLOutputElement.js';
 import BrowserFrameURL from '../../browser/utilities/BrowserFrameURL.js';
+import DOMTokenList from '../../dom/DOMTokenList.js';
+import BrowserPageFactory from '../../browser/utilities/BrowserPageFactory.js';
 
 /**
  * HTML Form Element.
@@ -36,6 +38,7 @@ export default class HTMLFormElement extends HTMLElement {
 	// Internal properties.
 	public [PropertySymbol.elements]: HTMLFormControlsCollection | null = null;
 	public [PropertySymbol.proxy]: HTMLFormElement;
+	public [PropertySymbol.relList]: DOMTokenList | null = null;
 
 	/* eslint-enable jsdoc/require-jsdoc */
 
@@ -404,6 +407,49 @@ export default class HTMLFormElement extends HTMLElement {
 	}
 
 	/**
+	 * Returns rel.
+	 *
+	 * @returns Rel.
+	 */
+	public get rel(): string {
+		return this.getAttribute('rel') || '';
+	}
+
+	/**
+	 * Sets rel.
+	 *
+	 * @param rel Rel.
+	 */
+	public set rel(rel: string) {
+		this.setAttribute('rel', rel);
+	}
+
+	/**
+	 * Returns rel list.
+	 *
+	 * @returns Rel list.
+	 */
+	public get relList(): DOMTokenList {
+		if (!this[PropertySymbol.relList]) {
+			this[PropertySymbol.relList] = new DOMTokenList(
+				PropertySymbol.illegalConstructor,
+				this,
+				'rel'
+			);
+		}
+		return <DOMTokenList>this[PropertySymbol.relList];
+	}
+
+	/**
+	 * Sets rel list.
+	 *
+	 * @param value Value.
+	 */
+	public set relList(value: string) {
+		this.setAttribute('rel', value);
+	}
+
+	/**
 	 * Submits form. No submit event is raised. In particular, the form's "submit" event handler is not run.
 	 */
 	public submit(): void {
@@ -630,12 +676,11 @@ export default class HTMLFormElement extends HTMLElement {
 				targetFrame = browserFrame.parentFrame ?? browserFrame;
 				break;
 			case '_blank':
-				const newPage = browserFrame.page.context.newPage();
+				const noreferrer = this.relList.contains('noreferrer') || this.relList.contains('noopener');
+				const newPage = BrowserPageFactory.createBlankPage(browserFrame, {
+					noreferrer
+				});
 				targetFrame = newPage.mainFrame;
-				targetFrame[PropertySymbol.opener] = {
-					frame: browserFrame,
-					window: null
-				};
 				break;
 		}
 
