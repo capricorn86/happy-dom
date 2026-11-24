@@ -765,6 +765,32 @@ export default class Node extends EventTarget {
 	 * @returns Replaced node.
 	 */
 	public [PropertySymbol.replaceChild](newChild: Node, oldChild: Node): Node {
+		if (newChild[PropertySymbol.proxy]) {
+			newChild = newChild[PropertySymbol.proxy];
+		}
+
+		if (oldChild[PropertySymbol.proxy]) {
+			oldChild = oldChild[PropertySymbol.proxy];
+		}
+
+		const self = this[PropertySymbol.proxy] || this;
+
+		// Everything that can fail is checked before the tree changes, as in "ensure pre-replace
+		// validity", so that a failed replace leaves the old child where it was.
+		if (NodeUtility.isInclusiveAncestor(newChild, self, true)) {
+			throw new this[PropertySymbol.window].DOMException(
+				"Failed to execute 'replaceChild' on 'Node': The new child element contains the parent.",
+				DOMExceptionNameEnum.hierarchyRequestError
+			);
+		}
+
+		if (oldChild[PropertySymbol.parentNode] !== self) {
+			throw new this[PropertySymbol.window].DOMException(
+				"Failed to execute 'replaceChild' on 'Node': The node to be replaced is not a child of this node.",
+				DOMExceptionNameEnum.notFoundError
+			);
+		}
+
 		// The old child is removed before the new one is inserted, as "replace a child with node
 		// within parent" does. Inserting first makes the tree hold both at once, which fails the
 		// checks that only allow a single element on a document.
@@ -774,8 +800,8 @@ export default class Node extends EventTarget {
 			referenceChild = newChild.nextSibling;
 		}
 
-		this.removeChild(oldChild);
-		this.insertBefore(newChild, referenceChild);
+		this[PropertySymbol.removeChild](oldChild);
+		this[PropertySymbol.insertBefore](newChild, referenceChild, true);
 
 		return oldChild;
 	}

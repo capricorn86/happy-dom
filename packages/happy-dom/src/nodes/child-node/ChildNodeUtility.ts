@@ -31,7 +31,8 @@ export default class ChildNodeUtility {
 			return;
 		}
 
-		const document = parent[PropertySymbol.ownerDocument];
+		// The child's owner document, as a document's own owner document is null.
+		const document = childNode[PropertySymbol.ownerDocument];
 
 		// A single node is replaced directly, so that the tree never holds the old and the new one
 		// at the same time. Inserting first fails the checks that only allow one element on a

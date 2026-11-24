@@ -961,6 +961,58 @@ describe('Node', () => {
 			expect(document.documentElement.parentNode).toBe(document);
 		});
 
+		it('Replaces the document element with the children of a document fragment.', () => {
+			const fragment = document.createDocumentFragment();
+			const comment = document.createComment('comment');
+			const html = document.createElement('html');
+
+			fragment.appendChild(comment);
+			fragment.appendChild(html);
+
+			document.replaceChild(fragment, document.documentElement);
+
+			expect(Array.from(document.childNodes).slice(-2)).toEqual([comment, html]);
+			expect(document.documentElement).toBe(html);
+			expect(fragment.childNodes.length).toBe(0);
+		});
+
+		it('Leaves the document element in place when the new child is a text node.', () => {
+			const documentElement = document.documentElement;
+
+			expect(() => document.replaceChild(document.createTextNode('text'), documentElement)).toThrow(
+				"Nodes of type '#text' may not be inserted inside nodes of type '#document'."
+			);
+			expect(document.documentElement).toBe(documentElement);
+		});
+
+		it('Leaves the document element in place when a document fragment has two elements.', () => {
+			const documentElement = document.documentElement;
+			const fragment = document.createDocumentFragment();
+
+			fragment.appendChild(document.createElement('html'));
+			fragment.appendChild(document.createElement('html'));
+
+			expect(() => document.replaceChild(fragment, documentElement)).toThrow(
+				'Only one element on document allowed.'
+			);
+			expect(document.documentElement).toBe(documentElement);
+			expect(fragment.childNodes.length).toBe(2);
+		});
+
+		it('Leaves the old child in place when the new child contains the parent.', () => {
+			const grandparent = document.createElement('div');
+			const parent = document.createElement('div');
+			const child = document.createElement('span');
+
+			grandparent.appendChild(parent);
+			parent.appendChild(child);
+
+			expect(() => parent.replaceChild(grandparent, child)).toThrow(
+				'The new child element contains the parent.'
+			);
+			expect(Array.from(parent.childNodes)).toEqual([child]);
+		});
+
 		it('Inserts a Node before another reference Node.', () => {
 			const child1 = document.createElement('span');
 			const child2 = document.createElement('span');
