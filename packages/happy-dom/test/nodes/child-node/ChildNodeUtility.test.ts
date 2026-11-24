@@ -24,6 +24,28 @@ describe('ChildNodeUtility', () => {
 	});
 
 	describe('replaceWith()', () => {
+		it('Replaces the document element.', () => {
+			const parsed = new window.DOMParser().parseFromString(
+				'<html><body>replaced</body></html>',
+				'text/html'
+			);
+
+			document.documentElement.replaceWith(document.importNode(parsed.documentElement, true));
+
+			expect(document.body.textContent).toBe('replaced');
+			expect(document.documentElement.parentNode).toBe(document);
+		});
+
+		it('Replaces the document element with several nodes.', () => {
+			const comment = document.createComment('comment');
+			const html = document.createElement('html');
+
+			document.documentElement.replaceWith(comment, html);
+
+			expect(Array.from(document.childNodes).slice(-2)).toEqual([comment, html]);
+			expect(document.documentElement).toBe(html);
+		});
+
 		it('Replaces a node with another node.', () => {
 			const parent = document.createElement('div');
 			const newChild = document.createElement('span');
