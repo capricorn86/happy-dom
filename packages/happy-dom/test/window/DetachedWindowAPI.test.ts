@@ -182,6 +182,21 @@ describe('DetachedWindowAPI', () => {
 	});
 
 	describe('abort()', () => {
+		it('Resolves without waiting for timers that are started after it was called.', async () => {
+			const promise = window.happyDOM?.abort();
+			// For example the handler of an aborted request that starts a timer.
+			Promise.resolve().then(() => window.setTimeout(() => {}, 60000));
+
+			const result = await Promise.race([
+				promise?.then(() => 'resolved'),
+				new Promise((resolve) => setTimeout(() => resolve('pending'), 1000))
+			]);
+
+			expect(result).toBe('resolved');
+
+			await window.happyDOM?.close();
+		});
+
 		it('Cancels all ongoing asynchrounous tasks.', async () => {
 			await new Promise((resolve) => {
 				const responseText = '{ "test": "test" }';

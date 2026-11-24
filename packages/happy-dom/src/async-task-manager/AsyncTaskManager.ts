@@ -331,10 +331,12 @@ export default class AsyncTaskManager {
 			runningTasks[key](destroy);
 		}
 
+		// Callers of waitUntilComplete() are still resolved when the manager is idle.
+		this.resolveWhenComplete();
+
 		// We need to wait for microtasks to complete before resolving.
-		return new Promise((resolve, reject) => {
-			this.waitUntilCompleteResolvers.push({ resolve, reject });
-			this.resolveWhenComplete();
-		});
+		// The returned promise does not wait for tasks and timers that are started after this point (e.g. a timer that is started by the handler of a request that was just aborted),
+		// as that would make it wait for as long as the new timer runs.
+		return new Promise((resolve) => TIMER.setTimeout(resolve, 1));
 	}
 }
