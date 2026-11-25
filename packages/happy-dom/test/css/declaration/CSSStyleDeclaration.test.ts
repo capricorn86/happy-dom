@@ -2162,6 +2162,23 @@ describe('CSSStyleDeclaration', () => {
 
 			expect(declaration.backgroundColor).toBe('rgba(0, 55, 1, 0.5)');
 		});
+
+		it('Keeps var() when the custom property name contains escapes or non-ASCII characters.', () => {
+			const declaration = new CSSStyleDeclaration(PropertySymbol.illegalConstructor, window, {
+				element
+			});
+
+			for (const value of [
+				'var(--a-b)',
+				'var(--colors-\\@scope\\/b\\/static-black)',
+				'var(--colors-\\@scope\\/b\\/static-black, red)',
+				'var(--색상)'
+			]) {
+				element.setAttribute('style', `background-color: ${value}`);
+
+				expect(declaration.backgroundColor).toBe(value);
+			}
+		});
 	});
 
 	describe('get backgroundRepeat()', () => {
