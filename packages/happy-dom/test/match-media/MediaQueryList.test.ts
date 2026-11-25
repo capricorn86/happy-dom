@@ -550,6 +550,21 @@ describe('MediaQueryList', () => {
 			expect((<MediaQueryListEvent>(<unknown>triggeredEvent)).matches).toBe(true);
 			expect((<MediaQueryListEvent>(<unknown>triggeredEvent)).media).toBe(media);
 		});
+
+		it('Dispatches a "change" event when a query that matches on attach stops matching.', () => {
+			const events: boolean[] = [];
+			const mediaQueryList = new MediaQueryList({ window: window, media: '(max-width: 1024px)' });
+
+			mediaQueryList.addEventListener('change', (event): void => {
+				events.push((<MediaQueryListEvent>event).matches);
+			});
+
+			expect(mediaQueryList.matches).toBe(true);
+
+			window.happyDOM?.setInnerWidth(1025);
+
+			expect(events).toEqual([false]);
+		});
 	});
 
 	describe('removeEventListener()', () => {
