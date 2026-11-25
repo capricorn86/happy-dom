@@ -19,7 +19,9 @@ export default class CrossOriginBrowserWindow
 
 	// Internal properties
 	public [PropertySymbol.self]: CrossOriginBrowserWindow | null = this;
-	public [PropertySymbol.parent]: BrowserWindow | CrossOriginBrowserWindow | null = null;
+	public [PropertySymbol.parent]: BrowserWindow | CrossOriginBrowserWindow | null;
+	public [PropertySymbol.top]: BrowserWindow | CrossOriginBrowserWindow | null;
+	public [PropertySymbol.opener]: BrowserWindow | CrossOriginBrowserWindow | null;
 
 	// Private properties
 	#targetFrame: IBrowserFrame;
@@ -30,14 +32,31 @@ export default class CrossOriginBrowserWindow
 	 *
 	 * The window references in the options should be restricted based on the origin of the window that is given access to the target window, and not the origin of the target window.
 	 *
-	 * @param sourceAccess Source access.
 	 * @param targetFrame Target frame.
+	 * @param [options]
+	 * @param options.sourceAccess
+	 * @param options.parent
+	 * @param options.top
+	 * @param options.opener
+	 * @param options.source
 	 */
-	constructor(targetFrame: IBrowserFrame, sourceAccess?: IBrowserFrameWindowAccess) {
+	constructor(
+		targetFrame: IBrowserFrame,
+		options?: {
+			parent?: BrowserWindow | CrossOriginBrowserWindow;
+			top?: BrowserWindow | CrossOriginBrowserWindow;
+			opener?: BrowserWindow | CrossOriginBrowserWindow;
+			sourceAccess?: IBrowserFrameWindowAccess;
+		}
+	) {
 		super();
 
 		this.#targetFrame = targetFrame;
-		this.#sourceAccess = sourceAccess || null;
+		this.#sourceAccess = options?.sourceAccess || null;
+
+		this[PropertySymbol.parent] = options?.parent || this;
+		this[PropertySymbol.top] = options?.top || this;
+		this[PropertySymbol.opener] = options?.opener || null;
 
 		this.location = <Location>new Proxy(
 			{},
@@ -76,7 +95,7 @@ export default class CrossOriginBrowserWindow
 	 * @returns Top.
 	 */
 	public get top(): BrowserWindow | CrossOriginBrowserWindow {
-		return <BrowserWindow>this.#targetFrame[PropertySymbol.access].top?.window;
+		return <BrowserWindow>this[PropertySymbol.top];
 	}
 
 	/**
@@ -85,9 +104,7 @@ export default class CrossOriginBrowserWindow
 	 * @returns Parent.
 	 */
 	public get parent(): BrowserWindow | CrossOriginBrowserWindow {
-		return <BrowserWindow>(
-			(this[PropertySymbol.parent] || this.#targetFrame[PropertySymbol.access].parent?.window)
-		);
+		return <BrowserWindow>this[PropertySymbol.parent];
 	}
 
 	/**
@@ -105,7 +122,7 @@ export default class CrossOriginBrowserWindow
 	 * @returns Opener.
 	 */
 	public get opener(): BrowserWindow | CrossOriginBrowserWindow | null {
-		return this.#targetFrame[PropertySymbol.access].opener?.window || null;
+		return this[PropertySymbol.opener];
 	}
 
 	/**

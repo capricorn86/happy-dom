@@ -29,34 +29,35 @@ export default class BrowserFrameAccess {
 	 * Updates the cross-origin access between a frame and its related frames.
 	 */
 	public update(): void {
+		if (this.top) {
+			this.top.window = this.getWindow(this.frame, this.top.frame);
+		}
 		if (this.parent) {
-			const sourceAccess = this.parent.frame[PropertySymbol.access].children?.find(
+			let parentAccess = this.parent.frame[PropertySymbol.access].children?.find(
 				(child) => child.frame === this.frame
 			);
-			this.parent.window = this.getWindow(this.frame, this.parent.frame, sourceAccess);
-		}
-		if (this.top) {
-			this.top.window = this.getWindow(this.frame, this.top.frame, {
-				frame: this.frame,
-				window: this.getWindow(this.top.frame, this.frame)
-			});
+			if (!parentAccess) {
+				parentAccess = { frame: this.frame, window: null };
+				this.parent.frame[PropertySymbol.access].children?.push(parentAccess);
+			}
+			parentAccess.window = this.getWindow(this.parent.frame, this.frame);
+			this.parent.window = this.getWindow(this.frame, this.parent.frame);
 		}
 		if (this.opener) {
-			const sourceAccess = this.opener.frame[PropertySymbol.access].pages?.find(
+			let openerAccess = this.opener.frame[PropertySymbol.access].pages?.find(
 				(child) => child.frame === this.frame
 			);
-			this.opener.window = this.getWindow(this.frame, this.opener.frame, sourceAccess);
+			if (!openerAccess) {
+				openerAccess = { frame: this.frame, window: null };
+				this.opener.frame[PropertySymbol.access].pages?.push(openerAccess);
+			}
+			openerAccess.window = this.getWindow(this.opener.frame, this.frame);
+			this.opener.window = this.getWindow(this.frame, this.opener.frame);
 		}
 		for (const child of this.children) {
-			const sourceAccess =
-				child.frame[PropertySymbol.access].parent?.frame === this.frame ? child : undefined;
-			child.window = this.getWindow(this.frame, child.frame, sourceAccess);
 			child.frame[PropertySymbol.access].update();
 		}
 		for (const page of this.pages) {
-			const sourceAccess =
-				page.frame[PropertySymbol.access].opener?.frame === this.frame ? page : undefined;
-			page.window = this.getWindow(this.frame, page.frame, sourceAccess);
 			page.frame[PropertySymbol.access].update();
 		}
 	}
@@ -66,17 +67,17 @@ export default class BrowserFrameAccess {
 	 *
 	 * @param sourceFrame Source frame.
 	 * @param targetFrame Target frame.
-	 * @param [sourceAccess] Source access.
 	 * @returns Window object, either same-origin or cross-origin.
 	 */
 	private getWindow(
 		sourceFrame: IBrowserFrame,
-		targetFrame: IBrowserFrame,
-		sourceAccess?: IBrowserFrameWindowAccess
+		targetFrame: IBrowserFrame
 	): BrowserWindow | CrossOriginBrowserWindow {
 		if (BrowserFrameURL.isSameOrigin(sourceFrame, targetFrame)) {
 			return targetFrame.window;
 		}
-		return new CrossOriginBrowserWindow(targetFrame, sourceAccess);
+		return new CrossOriginBrowserWindow(targetFrame, {
+			top: sourceAccess
+		});
 	}
 }
