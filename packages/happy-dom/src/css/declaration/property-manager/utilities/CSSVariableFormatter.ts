@@ -1,6 +1,6 @@
-const GET_SIMPLE_VARIABLE_REGEXP = /^var\(\s*(--[a-zA-Z0-9-_]+)\s*\)$/;
-const GET_FALLBACK_VARIABLE_REGEXP = /^var\(\s*(--[a-zA-Z0-9-_]+),\s*(.+)\)$/;
-const RESOLVE_REGEXP = /var\(\s*(--[a-zA-Z0-9-_]+),?|(\()|(\))/;
+const GET_SIMPLE_VARIABLE_REGEXP = /^var\(\s*(--(?:\\.|[^,)\s\\])+)\s*\)$/;
+const GET_FALLBACK_VARIABLE_REGEXP = /^var\(\s*(--(?:\\.|[^,)\s\\])+),\s*(.+)\)$/;
+const RESOLVE_REGEXP = /var\(\s*(--(?:\\.|[^,)\s\\])+),?|(\()|(\))/;
 
 /**
  * CSS variable formatter.
