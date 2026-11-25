@@ -242,6 +242,14 @@ describe('Window', () => {
 		});
 	});
 
+	describe('set location()', () => {
+		it('Sets the location.', () => {
+			const window = new Window();
+			window.location = 'https://localhost:8080/test/page/';
+			expect(window.location.href).toBe('https://localhost:8080/test/page/');
+		});
+	});
+
 	describe('get happyDOM()', () => {
 		it('Returns an instance of DetachedWindowAPI.', () => {
 			expect(window.happyDOM).toBeInstanceOf(DetachedWindowAPI);

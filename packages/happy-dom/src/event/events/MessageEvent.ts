@@ -1,4 +1,5 @@
 import type BrowserWindow from '../../window/BrowserWindow.js';
+import type CrossOriginBrowserWindow from '../../window/CrossOriginBrowserWindow.js';
 import Event from '../Event.js';
 import type MessagePort from '../MessagePort.js';
 import type IMessageEventInit from './IMessageEventInit.js';
@@ -12,7 +13,7 @@ export default class MessageEvent extends Event {
 	public readonly data: unknown | null;
 	public readonly origin: string;
 	public readonly lastEventId: string;
-	public readonly source: BrowserWindow | null;
+	public readonly source: BrowserWindow | CrossOriginBrowserWindow | null;
 	public readonly ports: MessagePort[];
 
 	/**

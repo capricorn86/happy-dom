@@ -1,6 +1,7 @@
 import type IBrowserFrame from '../types/IBrowserFrame.js';
 import * as PropertySymbol from '../../PropertySymbol.js';
 import type IBrowserPage from '../types/IBrowserPage.js';
+import BrowserFrameURL from './BrowserFrameURL.js';
 
 /**
  * Browser frame factory.
@@ -18,6 +19,21 @@ export default class BrowserFrameFactory {
 		);
 		(<IBrowserFrame>frame.parentFrame) = parentFrame;
 		parentFrame.childFrames.push(frame);
+		frame[PropertySymbol.access].parent = {
+			frame: parentFrame,
+			window: null
+		};
+		frame[PropertySymbol.access].top = {
+			frame: parentFrame.page.mainFrame,
+			window: null
+		};
+		parentFrame[PropertySymbol.access].children.push({
+			frame,
+			window: null
+		});
+		frame[PropertySymbol.history].currentItem.documentState.inheritedOrigin =
+			BrowserFrameURL.getOrigin(parentFrame);
+		parentFrame[PropertySymbol.access].update();
 		return frame;
 	}
 
@@ -27,8 +43,6 @@ export default class BrowserFrameFactory {
 	 * @param frame Frame.
 	 */
 	public static destroyFrame(frame: IBrowserFrame): Promise<void> {
-		const exceptionObserver = frame.page.context.browser[PropertySymbol.exceptionObserver];
-
 		if (frame.closed) {
 			return Promise.resolve();
 		}
@@ -42,30 +56,14 @@ export default class BrowserFrameFactory {
 				return;
 			}
 
-			if (frame.parentFrame) {
-				const index = frame.parentFrame.childFrames.indexOf(frame);
-				if (index !== -1) {
-					frame.parentFrame.childFrames.splice(index, 1);
-				}
-			}
+			this.removeFromParent(frame);
+			this.removeFromOpener(frame);
 
 			if (!frame.childFrames.length) {
 				frame[PropertySymbol.asyncTaskManager]
 					.destroy()
 					.then(() => {
-						if (exceptionObserver && frame.window) {
-							exceptionObserver.disconnect(frame.window);
-						}
-
-						(<object>frame.window) = { closed: true };
-						frame[PropertySymbol.openerFrame] = null;
-						frame[PropertySymbol.openerWindow] = null;
-
-						// Clear navigation listeners
-						if (frame[PropertySymbol.listeners]) {
-							frame[PropertySymbol.listeners].navigation = [];
-						}
-
+						this.clearFrameReferences(frame);
 						resolve();
 					})
 					.catch((error) => reject(error));
@@ -80,19 +78,7 @@ export default class BrowserFrameFactory {
 					frame[PropertySymbol.asyncTaskManager]
 						.destroy()
 						.then(() => {
-							if (exceptionObserver && frame.window) {
-								exceptionObserver.disconnect(frame.window);
-							}
-
-							(<object>frame.window) = { closed: true };
-							frame[PropertySymbol.openerFrame] = null;
-							frame[PropertySymbol.openerWindow] = null;
-
-							// Clear navigation listeners
-							if (frame[PropertySymbol.listeners]) {
-								frame[PropertySymbol.listeners].navigation = [];
-							}
-
+							this.clearFrameReferences(frame);
 							resolve();
 						})
 						.catch((error) => reject(error));
@@ -102,5 +88,65 @@ export default class BrowserFrameFactory {
 				})
 				.catch((error) => reject(error));
 		});
+	}
+
+	/**
+	 * Removes the frame from its parent's list of child frames.
+	 *
+	 * @param frame Frame.
+	 */
+	private static removeFromParent(frame: IBrowserFrame): void {
+		if (frame.parentFrame) {
+			const index = frame.parentFrame.childFrames.indexOf(frame);
+			if (index !== -1) {
+				frame.parentFrame.childFrames.splice(index, 1);
+			}
+		}
+	}
+
+	/**
+	 * Removes the frame from its opener's list of pages.
+	 *
+	 * @param frame
+	 */
+	private static removeFromOpener(frame: IBrowserFrame): void {
+		if (frame[PropertySymbol.access].opener) {
+			const opener = frame[PropertySymbol.access].opener;
+			if (opener?.frame) {
+				const index = opener.frame[PropertySymbol.access].pages.findIndex(
+					(page) => page.frame === frame
+				);
+				if (index !== -1) {
+					opener.frame[PropertySymbol.access].pages.splice(index, 1);
+				}
+			}
+		}
+	}
+
+	/**
+	 * Clears all references and listeners associated with the frame.
+	 *
+	 * @param frame Frame to clear references for.
+	 */
+	private static clearFrameReferences(frame: IBrowserFrame): void {
+		const exceptionObserver = frame.page.context.browser[PropertySymbol.exceptionObserver];
+
+		if (exceptionObserver && frame.window) {
+			exceptionObserver.disconnect(frame.window);
+		}
+
+		(<object>frame.window) = { closed: true };
+
+		// Clear navigation listeners
+		if (frame[PropertySymbol.listeners]) {
+			frame[PropertySymbol.listeners].navigation = [];
+		}
+
+		for (const page of frame[PropertySymbol.access].pages) {
+			page.frame[PropertySymbol.access].opener = null;
+		}
+
+		frame.childFrames.length = 0;
+		frame[PropertySymbol.access].pages.length = 0;
 	}
 }

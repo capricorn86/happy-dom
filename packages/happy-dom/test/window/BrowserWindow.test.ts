@@ -24,6 +24,7 @@ import Clipboard from '../../src/clipboard/Clipboard.js';
 import PackageVersion from '../../src/version.js';
 import type HTMLDialogElement from '../../src/nodes/html-dialog-element/HTMLDialogElement.js';
 import Browser from '../../src/browser/Browser.js';
+import * as PropertySymbol from '../../src/PropertySymbol.js';
 import CrossOriginBrowserWindow from '../../src/window/CrossOriginBrowserWindow.js';
 import BrowserFrameFactory from '../../src/browser/utilities/BrowserFrameFactory.js';
 import type IBrowser from '../../src/browser/types/IBrowser.js';
@@ -464,10 +465,15 @@ describe('BrowserWindow', () => {
 	});
 
 	describe('set location()', () => {
-		it('Sets the location.', () => {
-			browser.settings.navigation.disableMainFrameNavigation = true;
+		it('Sets the location.', async () => {
+			vi.spyOn(Fetch.prototype, 'send').mockImplementation(function (
+				this: Fetch
+			): Promise<Response> {
+				return Promise.resolve(new window.Response(''));
+			});
 			window.location = 'https://localhost:8080/test/page/';
-			expect(window.location.href).toBe('https://localhost:8080/test/page/');
+			expect(window === browserFrame.window).toBe(false);
+			expect(browserFrame.window.location.href).toBe('https://localhost:8080/test/page/');
 		});
 	});
 
@@ -2386,7 +2392,7 @@ describe('BrowserWindow', () => {
 				setTimeout(() => {
 					expect((<MessageEvent>triggeredEvent).data).toBe(message);
 					expect((<MessageEvent>triggeredEvent).origin).toBe('https://localhost:8080');
-					expect((<MessageEvent>triggeredEvent).source).toBe(browserFrame.window);
+					expect((<MessageEvent>triggeredEvent).source).toBe(frame.window);
 					expect((<MessageEvent>triggeredEvent).lastEventId).toBe('');
 
 					triggeredEvent = null;
@@ -2396,12 +2402,43 @@ describe('BrowserWindow', () => {
 					setTimeout(() => {
 						expect((<MessageEvent>triggeredEvent).data).toBe(message);
 						expect((<MessageEvent>triggeredEvent).origin).toBe('https://localhost:8080');
-						expect((<MessageEvent>triggeredEvent).source).toBe(browserFrame.window);
+						expect((<MessageEvent>triggeredEvent).source).toBe(frame.window);
 						expect((<MessageEvent>triggeredEvent).lastEventId).toBe('');
 						resolve(null);
 					}, 20);
 				}, 20);
 			});
+		});
+
+		it('Posts a message from the accessing window through a cross-origin window reference.', async () => {
+			const frame = BrowserFrameFactory.createChildFrame(browserFrame);
+			browserFrame.url = 'https://parent.example/';
+			frame.url = 'https://child.example/';
+
+			let triggeredEvent: MessageEvent | null = null;
+			frame.window.addEventListener('message', (event) => (triggeredEvent = <MessageEvent>event));
+
+			(<CrossOriginBrowserWindow>frame[PropertySymbol.contentWindow]).postMessage('test');
+			await new Promise((resolve) => setTimeout(resolve, 20));
+
+			expect(triggeredEvent!.data).toBe('test');
+			expect(triggeredEvent!.origin).toBe('https://parent.example');
+			expect(triggeredEvent!.source).toBeInstanceOf(CrossOriginBrowserWindow);
+			expect((<any>triggeredEvent!.source).document).toBe(undefined);
+		});
+
+		it('Uses the posting document as the source instead of exposing its parent.', async () => {
+			const frame = BrowserFrameFactory.createChildFrame(browserFrame);
+			browserFrame.url = 'https://parent.example/';
+			frame.url = 'https://child.example/';
+
+			let triggeredEvent: MessageEvent | null = null;
+			frame.window.addEventListener('message', (event) => (triggeredEvent = <MessageEvent>event));
+			frame.window.postMessage('test');
+			await new Promise((resolve) => setTimeout(resolve, 20));
+
+			expect(triggeredEvent!.origin).toBe('https://child.example');
+			expect(triggeredEvent!.source).toBe(frame.window);
 		});
 
 		it('Posts a data object as message.', async () => {
@@ -2432,19 +2469,29 @@ describe('BrowserWindow', () => {
 			);
 		});
 
-		it('Throws an exception if the target origin differs from the document origin.', () => {
+		it('Silently drops a message if the target origin differs from the document origin.', async () => {
 			const message = 'test';
 			const targetOrigin = 'https://localhost:8081';
-			const documentOrigin = 'https://localhost:8080';
+			browserFrame.url = 'https://localhost:8080';
+			let triggeredEvent: MessageEvent | null = null;
+			window.addEventListener('message', (event) => (triggeredEvent = <MessageEvent>event));
 
-			browserFrame.url = documentOrigin;
+			expect(() => window.postMessage(message, targetOrigin)).not.toThrow();
+			await new Promise((resolve) => setTimeout(resolve, 20));
+			expect(triggeredEvent).toBe(null);
+		});
 
-			expect(() => window.postMessage(message, targetOrigin)).toThrow(
-				new window.DOMException(
-					`Failed to execute 'postMessage' on 'Window': The target origin provided ('${targetOrigin}') does not match the recipient window\'s origin ('${documentOrigin}').`,
-					DOMExceptionNameEnum.securityError
-				)
-			);
+		it('Drops a message if the recipient navigates to a different origin before delivery.', async () => {
+			const frame = BrowserFrameFactory.createChildFrame(browserFrame);
+			frame.url = 'https://target.example/';
+			let triggeredEvent: MessageEvent | null = null;
+			frame.window.addEventListener('message', (event) => (triggeredEvent = <MessageEvent>event));
+
+			frame.window.postMessage('test', 'https://target.example');
+			frame.url = 'https://other.example/';
+			await new Promise((resolve) => setTimeout(resolve, 20));
+
+			expect(triggeredEvent).toBe(null);
 		});
 	});
 

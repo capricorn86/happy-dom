@@ -1,10 +1,9 @@
 import type BrowserWindow from './BrowserWindow.js';
-import CrossOriginBrowserWindow from './CrossOriginBrowserWindow.js';
+import type CrossOriginBrowserWindow from './CrossOriginBrowserWindow.js';
 import type IBrowserFrame from '../browser/types/IBrowserFrame.js';
-import FetchCORSUtility from '../fetch/utilities/FetchCORSUtility.js';
 import BrowserFrameURL from '../browser/utilities/BrowserFrameURL.js';
-import { URL } from 'url';
 import * as PropertySymbol from '../PropertySymbol.js';
+import BrowserPageFactory from '../browser/utilities/BrowserPageFactory.js';
 
 /**
  * Window page open handler.
@@ -29,7 +28,6 @@ export default class WindowPageOpenUtility {
 	): BrowserWindow | CrossOriginBrowserWindow | null {
 		const features = this.getWindowFeatures(options?.features || '');
 		const target = options?.target !== undefined ? String(options.target) : null;
-		const originURL = new URL(browserFrame.window.location.href);
 		const targetURL = BrowserFrameURL.getRelativeURL(browserFrame, options?.url);
 		const oldWindow = browserFrame.window;
 		let targetFrame: IBrowserFrame;
@@ -50,33 +48,30 @@ export default class WindowPageOpenUtility {
 				break;
 			case '_blank':
 			default:
-				const newPage = browserFrame.page.context.newPage();
+				const newPage = BrowserPageFactory.createBlankPage(browserFrame, {
+					popup: features.popup,
+					noreferrer: features.noopener || features.noreferrer
+				});
 				targetFrame = newPage.mainFrame;
-				targetFrame[PropertySymbol.openerFrame] = browserFrame;
 				break;
 		}
 
 		targetFrame
 			.goto(targetURL.href, {
 				referrer: features.noreferrer ? undefined : browserFrame.window.location.origin,
-				referrerPolicy: features.noreferrer ? 'no-referrer' : undefined
+				referrerPolicy: features.noreferrer ? 'no-referrer' : undefined,
+				inheritOrigin: !!targetFrame[PropertySymbol.access].opener
 			})
 			.catch((error) => {
 				targetFrame.page.console.error(error);
 			});
-
-		if (targetURL.protocol === 'javascript:') {
-			return targetFrame.window;
-		}
 
 		// When using a detached Window instance directly and not via the Browser API we will not navigate and the window for the frame will not have changed.
 		if (targetFrame === browserFrame && browserFrame.window === oldWindow) {
 			return null;
 		}
 
-		if (features.popup && target !== '_self' && target !== '_top' && target !== '_parent') {
-			targetFrame[PropertySymbol.popup] = true;
-
+		if (features.popup && !!targetFrame[PropertySymbol.access].opener) {
 			if (features?.width || features?.height) {
 				targetFrame.page.setViewport({
 					width: features?.width,
@@ -105,29 +100,10 @@ export default class WindowPageOpenUtility {
 			(<string>targetFrame.window.name) = target;
 		}
 
-		const isCORS = FetchCORSUtility.isCORS(originURL, targetFrame.url);
-
-		if (
-			!features.noopener &&
-			!features.noreferrer &&
-			browserFrame.window &&
-			targetFrame[PropertySymbol.openerFrame] &&
-			targetFrame.window !== browserFrame.window
-		) {
-			targetFrame[PropertySymbol.openerWindow] = isCORS
-				? new CrossOriginBrowserWindow(browserFrame.window)
-				: browserFrame.window;
-		}
-
-		if (features.noopener || features.noreferrer) {
-			return null;
-		}
-
-		if (isCORS) {
-			return new CrossOriginBrowserWindow(targetFrame.window, browserFrame.window);
-		}
-
-		return targetFrame.window;
+		return (
+			browserFrame[PropertySymbol.access].pages.find((page) => page.frame === targetFrame)
+				?.window ?? null
+		);
 	}
 
 	/**

@@ -7,12 +7,15 @@ import type IHistoryItem from './IHistoryItem.js';
 export default class HistoryItemList {
 	public currentItem: IHistoryItem = {
 		title: '',
-		href: 'about:blank',
+		url: 'about:blank',
+		documentState: {
+			url: 'about:blank',
+			method: 'GET',
+			formData: null,
+			inheritedOrigin: null
+		},
 		state: null,
-		popState: false,
-		scrollRestoration: HistoryScrollRestorationEnum.auto,
-		method: 'GET',
-		formData: null
+		scrollRestoration: HistoryScrollRestorationEnum.auto
 	};
 	public readonly items: IHistoryItem[] = [this.currentItem];
 
@@ -34,16 +37,12 @@ export default class HistoryItemList {
 	}
 
 	/**
+	 * Replaces the current history item with the provided one.
 	 *
-	 * @param historyItem
+	 * @param historyItem History item to replace the current one with.
 	 */
 	public replace(historyItem: IHistoryItem): void {
 		const index = this.items.indexOf(this.currentItem);
-
-		// If the current item is not the last one, remove all items after it.
-		if (index !== this.items.length - 1) {
-			this.items.length = index + 1;
-		}
 
 		if (index === -1) {
 			throw new Error('Current history item not found');
@@ -60,12 +59,15 @@ export default class HistoryItemList {
 		this.items.length = 0;
 		this.currentItem = {
 			title: '',
-			href: 'about:blank',
+			url: 'about:blank',
+			documentState: {
+				url: 'about:blank',
+				method: 'GET',
+				formData: null,
+				inheritedOrigin: null
+			},
 			state: null,
-			popState: false,
-			scrollRestoration: HistoryScrollRestorationEnum.auto,
-			method: 'GET',
-			formData: null
+			scrollRestoration: HistoryScrollRestorationEnum.auto
 		};
 		this.items.push(this.currentItem);
 	}

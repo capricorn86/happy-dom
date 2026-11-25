@@ -12,6 +12,7 @@ import type IReloadOptions from '../types/IReloadOptions.js';
 import type IOptionalBrowserPageViewport from '../types/IOptionalBrowserPageViewport.js';
 import type IBrowserPageViewport from '../types/IBrowserPageViewport.js';
 import Event from '../../event/Event.js';
+import * as PropertySymbol from '../../PropertySymbol.js';
 
 /**
  * Detached browser page used when constructing a Window instance without a browser.
@@ -23,6 +24,7 @@ export default class DetachedBrowserPage implements IBrowserPage {
 	public readonly console: IConsole;
 	public readonly viewport: IBrowserPageViewport;
 	public readonly closed: boolean = false;
+	public readonly [PropertySymbol.popup] = false;
 
 	/**
 	 * Constructor.

@@ -6,6 +6,7 @@ import { ReadableStream } from 'stream/web';
 import { URLSearchParams } from 'url';
 import VM from 'vm';
 import * as PropertySymbol from '../PropertySymbol.js';
+import BrowserFrameURL from '../browser/utilities/BrowserFrameURL.js';
 import type Animation from '../animation/Animation.js';
 import AnimationTimeline from '../animation/AnimationTimeline.js';
 import DocumentTimeline from '../animation/DocumentTimeline.js';
@@ -333,6 +334,7 @@ import ImageBitmap from '../canvas/ImageBitmap.js';
 import type ImageData from '../canvas/ImageData.js';
 import type OffscreenCanvas from '../canvas/OffscreenCanvas.js';
 import type SelectorItem from '../query-selector/SelectorItem.js';
+import type IBrowserFrameWindowAccess from '../browser/types/IBrowserFrameWindowAccess.js';
 
 const TIMER = {
 	setTimeout: globalThis.setTimeout.bind(globalThis),
@@ -855,8 +857,8 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	public [PropertySymbol.localStorage]: Storage;
 	public [PropertySymbol.cookieStore]: CookieStore;
 	public [PropertySymbol.self]: BrowserWindow | null = this;
-	public [PropertySymbol.top]: BrowserWindow | null = this;
-	public [PropertySymbol.parent]: BrowserWindow | null = this;
+	public [PropertySymbol.top]: BrowserWindow | null = null;
+	public [PropertySymbol.parent]: BrowserWindow | null = null;
 	public [PropertySymbol.window]: BrowserWindow = this;
 	public [PropertySymbol.frames]: BrowserWindow = this;
 	public [PropertySymbol.internalId]: number = -1;
@@ -914,7 +916,10 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 		this[PropertySymbol.location] = new Location(this.#browserFrame, options?.url ?? 'about:blank');
 		this[PropertySymbol.history] = new History(this.#browserFrame, this);
 
-		browserFrame[PropertySymbol.history].currentItem.href = options?.url ?? 'about:blank';
+		if (options?.url) {
+			browserFrame[PropertySymbol.history].currentItem.url = options?.url;
+			browserFrame[PropertySymbol.history].currentItem.documentState.url = options.url;
+		}
 
 		WindowBrowserContext.setWindowBrowserFrameRelation(this, this.#browserFrame);
 
@@ -1985,7 +1990,9 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	 * @returns Top.
 	 */
 	public get top(): BrowserWindow {
-		return this[PropertySymbol.top]!;
+		return <BrowserWindow>(
+			(this[PropertySymbol.top] || this.#browserFrame[PropertySymbol.access].top?.window || null)
+		);
 	}
 
 	/**
@@ -1994,7 +2001,11 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	 * @returns Parent.
 	 */
 	public get parent(): BrowserWindow {
-		return this[PropertySymbol.parent]!;
+		return <BrowserWindow>(
+			(this[PropertySymbol.parent] ||
+				this.#browserFrame[PropertySymbol.access].parent?.window ||
+				null)
+		);
 	}
 
 	/**
@@ -2090,7 +2101,7 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	 * @returns Opener.
 	 */
 	public get opener(): BrowserWindow | CrossOriginBrowserWindow | null {
-		return this.#browserFrame[PropertySymbol.openerWindow];
+		return this.#browserFrame[PropertySymbol.access].opener?.window ?? null;
 	}
 
 	/**
@@ -2382,17 +2393,22 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 
 	/**
 	 * Closes the window.
+	 *
+	 * @see https://developer.mozilla.org/en-US/docs/Web/API/Window/close
 	 */
 	public close(): void {
 		// Users can only close the main frame of a page (not child frames such as iframes).
+		// Windows are script-closable if they were created by web content. This generally includes:
+		// - Windows opened using Window.open()
+		// - Windows opened via web content, such as links (<a target="_blank">) or forms (<form target="_blank">), without user modifier actions
 		if (
 			this.#browserFrame.page.mainFrame === this.#browserFrame &&
-			// Scripts may close only the windows that were opened by them.
-			// In this case, this means windows that have been opened by another window
-			this.#browserFrame[PropertySymbol.openerWindow]
+			this.#browserFrame[PropertySymbol.access].opener
 		) {
 			this[PropertySymbol.destroy]();
 			this.#browserFrame.page.close();
+		} else if (!this.#browserFrame[PropertySymbol.access].opener) {
+			this.console.warn('Scripts may close only the windows that were opened by them.');
 		}
 	}
 
@@ -2796,16 +2812,28 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 	 */
 	public postMessage(message: unknown, targetOrigin = '*', _transfer?: unknown[]): void {
 		// TODO: Implement transfer.
+		this[PropertySymbol.postMessage](message, targetOrigin, {
+			frame: this.#browserFrame,
+			window: this
+		});
+	}
+
+	/**
+	 * Posts a message with an explicit sender window.
+	 *
+	 * @param message Message.
+	 * @param targetOrigin Target origin.
+	 * @param source Sender window.
+	 */
+	public [PropertySymbol.postMessage](
+		message: unknown,
+		targetOrigin: string,
+		source: IBrowserFrameWindowAccess
+	): void {
+		// TODO: Implement transfer.
 
 		if (this.closed) {
 			return;
-		}
-
-		if (targetOrigin && targetOrigin !== '*' && this.location.origin !== targetOrigin) {
-			throw new this.DOMException(
-				`Failed to execute 'postMessage' on 'Window': The target origin provided ('${targetOrigin}') does not match the recipient window\'s origin ('${this.location.origin}').`,
-				DOMExceptionNameEnum.securityError
-			);
 		}
 
 		try {
@@ -2817,20 +2845,25 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 			);
 		}
 
-		this.setTimeout(() =>
+		this.setTimeout(() => {
+			if (
+				this.closed ||
+				(targetOrigin &&
+					targetOrigin !== '*' &&
+					BrowserFrameURL.getSerializedOrigin(this.#browserFrame) !== targetOrigin)
+			) {
+				return;
+			}
+
 			this.dispatchEvent(
 				new MessageEvent('message', {
 					data: message,
-					origin: this.#browserFrame.parentFrame
-						? this.#browserFrame.parentFrame.window.location.origin
-						: this.#browserFrame.window.location.origin,
-					source: this.#browserFrame.parentFrame
-						? this.#browserFrame.parentFrame.window
-						: this.#browserFrame.window,
+					origin: BrowserFrameURL.getSerializedOrigin(source.frame),
+					source: source.window,
 					lastEventId: ''
 				})
-			)
-		);
+			);
+		});
 	}
 
 	/**
@@ -2851,7 +2884,7 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 		}
 
 		// We can only resize the window if it is a popup.
-		if (this.#browserFrame[PropertySymbol.popup]) {
+		if (this.#browserFrame[PropertySymbol.access].opener?.frame.page[PropertySymbol.popup]) {
 			this.#browserFrame.page.setViewport({ width, height });
 		}
 	}
@@ -2874,7 +2907,7 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 		}
 
 		// We can only resize the window if it is a popup.
-		if (this.#browserFrame[PropertySymbol.popup]) {
+		if (this.#browserFrame[PropertySymbol.access].opener?.frame.page[PropertySymbol.popup]) {
 			const viewport = this.#browserFrame.page.viewport;
 			this.#browserFrame.page.setViewport({
 				width: viewport.width + width,
