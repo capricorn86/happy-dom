@@ -105,7 +105,7 @@ export default class MediaQueryList extends EventTarget {
 	public addEventListener(type: string, listener: TEventListener): void {
 		super.addEventListener(type, listener);
 		if (type === 'change') {
-			let matchesState = false;
+			let matchesState = this.matches;
 			const resizeListener = (): void => {
 				const matches = this.matches;
 				if (matches !== matchesState) {
