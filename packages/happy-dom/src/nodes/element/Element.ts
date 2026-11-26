@@ -1577,10 +1577,11 @@ export default class Element
 			}
 		}
 
+		// The name is checked first, as reading the property calls any getter with that name (e.g. "list").
 		if (
-			this[<'constructor'>attribute[PropertySymbol.name]] !== undefined &&
 			attribute[PropertySymbol.name][0] === 'o' &&
-			attribute[PropertySymbol.name][1] === 'n'
+			attribute[PropertySymbol.name][1] === 'n' &&
+			this[<'constructor'>attribute[PropertySymbol.name]] !== undefined
 		) {
 			this[PropertySymbol.propertyEventListeners].delete(attribute[PropertySymbol.name]);
 		}
