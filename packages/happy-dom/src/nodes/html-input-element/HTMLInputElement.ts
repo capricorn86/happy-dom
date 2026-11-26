@@ -1167,13 +1167,16 @@ export default class HTMLInputElement extends HTMLElement {
 	 * @returns Data list element.
 	 */
 	public get list(): HTMLDataListElement | null {
+		// Specs at https://html.spec.whatwg.org/multipage/input.html#attr-input-list
 		const id = this.getAttribute('list');
 		if (!id) {
 			return null;
 		}
 		const rootNode =
 			<Document | ShadowRoot>this[PropertySymbol.rootNode] || this[PropertySymbol.ownerDocument];
-		return <HTMLDataListElement | null>rootNode.querySelector(`datalist#${id}`);
+		// Looked up by ID, as an ID can contain characters that are not valid in a selector (e.g. ":").
+		const element = rootNode.getElementById(id);
+		return element?.[PropertySymbol.localName] === 'datalist' ? <HTMLDataListElement>element : null;
 	}
 
 	/**

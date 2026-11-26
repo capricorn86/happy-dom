@@ -734,6 +734,39 @@ describe('HTMLInputElement', () => {
 			const list = component.shadowRoot?.querySelector('datalist');
 			expect(input?.list === list).toBe(true);
 		});
+
+		it('Returns the associated datalist element when the ID contains characters that have a special meaning in CSS selectors.', () => {
+			document.body.appendChild(element);
+
+			for (const id of [':r1:', 'test:rg:', 'list.id', 'list#id', 'list[id]', 'list"id', '1list']) {
+				const datalist = document.createElement('datalist');
+				datalist.id = id;
+				document.body.appendChild(datalist);
+				element.setAttribute('list', id);
+				expect(element.list).toBe(datalist);
+			}
+		});
+
+		it('Finds datalist inside a shadowroot when the ID contains characters that have a special meaning in CSS selectors.', () => {
+			const host = document.createElement('div');
+			const shadowRoot = host.attachShadow({ mode: 'open' });
+			document.body.appendChild(host);
+			shadowRoot.innerHTML = '<datalist id=":r1:"></datalist><input list=":r1:">';
+			const input = <HTMLInputElement>shadowRoot.querySelector('input');
+			expect(input.list).toBe(shadowRoot.querySelector('datalist'));
+		});
+
+		it('Returns null if the first element with the ID in the attribute "list" is not a datalist element.', () => {
+			const div = document.createElement('div');
+			div.id = 'list_id';
+			const datalist = document.createElement('datalist');
+			datalist.id = 'list_id';
+			document.body.appendChild(div);
+			document.body.appendChild(datalist);
+			document.body.appendChild(element);
+			element.setAttribute('list', 'list_id');
+			expect(element.list).toBe(null);
+		});
 	});
 
 	describe('set selectionEnd()', () => {

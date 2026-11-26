@@ -1952,6 +1952,13 @@ describe('Element', () => {
 				expect((<any>error).name).toBe(DOMExceptionNameEnum.invalidCharacterError);
 			}
 		});
+
+		it("Doesn't call a property getter with the same name as the attribute.", () => {
+			const getter = vi.fn(() => 'value');
+			Object.defineProperty(element, 'test', { get: getter, configurable: true });
+			element.setAttribute('test', 'value');
+			expect(getter).not.toHaveBeenCalled();
+		});
 	});
 
 	describe('setAttributeNS()', () => {
