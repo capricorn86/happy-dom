@@ -293,6 +293,7 @@ describe('HTMLIFrameElement', () => {
 				});
 			});
 
+			expect(element.contentWindow?.parent).toBe(window);
 			expect(element.contentDocument?.documentElement.scrollLeft).toBe(10);
 			expect(element.contentDocument?.documentElement.scrollTop).toBe(20);
 		});
@@ -590,6 +591,44 @@ describe('HTMLIFrameElement', () => {
 					}, 10);
 				});
 			});
+		});
+
+		it('Restricts access between a data URL iframe and its parent.', async () => {
+			const browser = new Browser({
+				settings: {
+					enableJavaScriptEvaluation: true,
+					enableIframePageLoading: true
+				}
+			});
+			const page = browser.newPage();
+			const parentWindow = page.mainFrame.window;
+			const iframe = <HTMLIFrameElement>parentWindow.document.createElement('iframe');
+
+			page.mainFrame.url = 'https://parent.example/';
+			iframe.src =
+				'data:text/html,' +
+				encodeURIComponent(
+					'<body><script>try {' +
+						'parent.document.body.setAttribute("data-pwned", "1");' +
+						'document.body.setAttribute("data-parent-access", "allowed");' +
+						'} catch (error) {' +
+						'document.body.setAttribute("data-parent-access", error.name);' +
+						'}</script></body>'
+				);
+			parentWindow.document.body.appendChild(iframe);
+
+			await page.mainFrame.waitUntilComplete();
+
+			const childWindow = page.mainFrame.childFrames[0].window;
+
+			expect(iframe.contentWindow).toBeInstanceOf(CrossOriginBrowserWindow);
+			expect(iframe.contentDocument).toBe(null);
+			expect(childWindow.parent).toBeInstanceOf(CrossOriginBrowserWindow);
+			expect(childWindow.top).toBe(childWindow.parent);
+			expect(childWindow.parent.document).toBeUndefined();
+			expect(childWindow.top.document).toBeUndefined();
+			expect(childWindow.document.body.getAttribute('data-parent-access')).toBe('TypeError');
+			expect(parentWindow.document.body.getAttribute('data-pwned')).toBe(null);
 		});
 
 		it('Dispatches an error event when the page fails to load.', async () => {
